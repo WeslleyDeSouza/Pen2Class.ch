@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { AppModule } from './app/app.module';
+import { AppModule } from './modules/app.module';
 import { PeerService } from './modules/peer/peer.service';
 import {swagger} from "./main.swagger";
 
