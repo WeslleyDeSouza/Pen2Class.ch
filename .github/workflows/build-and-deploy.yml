@@ -120,6 +120,7 @@ jobs:
           node-version: '22'
           cache: 'npm'
       - run: npm install
+      - run: cd apps/landing-page && npm install
       - run: npx nx build api --prod && npm run ng-swagger
       - run: npx nx build app --prod
       - run: ls dist
