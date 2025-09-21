@@ -14,7 +14,8 @@ export class PeerService {
   enablePeerServer(app: NestExpressApplication) {
     this.peerServer = ExpressPeerServer(app.getHttpServer(), {
       path: '/peer-server',
-      allow_discovery: true
+      allow_discovery: true,
+      proxied: true,
     });
 
     app.use(this.peerServer);

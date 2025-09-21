@@ -35,7 +35,7 @@ export class CoreStaticFileModule {
 // Landing Page
 
 export const fileStaticPathLandingPage =
-  process.env['APP_DIST_PATH'] ||
+  process.env['APP_DIST_PATH_LANDING_PAGE'] ||
   join(
     ...[
       __dirname,
