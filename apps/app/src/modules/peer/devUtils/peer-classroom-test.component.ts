@@ -1,17 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
 import { PeerChannelService } from '../services/peer-channel.service';
 import { Channel, User } from '../services/api.service';
 import { Observable, Subscription } from 'rxjs';
+import {AsyncPipe, DatePipe} from "@angular/common";
 
 declare var Peer: any;
 
 @Component({
   selector: 'app-classroom',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [FormsModule, AsyncPipe, DatePipe],
   template: `
     <div class="min-h-screen bg-gray-50">
       <!-- Header -->
@@ -19,9 +18,11 @@ declare var Peer: any;
         <div class="max-w-6xl mx-auto flex justify-between items-center">
           <h1 class="text-2xl font-bold">Pen2Class - Peer-to-Peer Classrooms</h1>
           <div class="flex items-center gap-4">
-            <span *ngIf="currentUser$ | async as user" class="text-blue-100">
-              Welcome, {{user.displayName}}!
-            </span>
+            @if (currentUser$ | async; as user) {
+              <span class="text-blue-100">
+                Welcome, {{user.displayName}}!
+              </span>
+            }
             <div class="flex items-center gap-2">
               <div
                 class="w-3 h-3 rounded-full"
@@ -37,7 +38,8 @@ declare var Peer: any;
 
       <div class="max-w-6xl mx-auto p-6">
         <!-- Login/Signup Section -->
-        <div *ngIf="!(currentUser$ | async)" class="mb-8">
+        @if (!(currentUser$ | async)) {
+          <div class="mb-8">
           <div class="bg-white rounded-lg shadow-lg p-6">
             <h2 class="text-xl font-bold mb-4">Sign Up to Join Classrooms</h2>
             <div class="flex gap-4">
@@ -62,25 +64,30 @@ declare var Peer: any;
             </div>
           </div>
         </div>
+        }
 
         <!-- Main Content (only show if logged in) -->
-        <div *ngIf="currentUser$ | async">
+        @if (currentUser$ | async) {
+          <div>
           <!-- Connection Status -->
           <div class="mb-6">
             <div class="bg-white rounded-lg shadow p-4">
               <div class="flex justify-between items-center">
                 <div>
                   <h3 class="font-semibold">Peer Connection</h3>
-                  <span class="text-sm text-gray-600" *ngIf="myPeerId$ | async as peerId">
-                    Your Peer ID: <code class="bg-gray-100 px-2 py-1 rounded">{{peerId}}</code>
-                  </span>
+                  @if (myPeerId$ | async; as peerId) {
+                    <span class="text-sm text-gray-600">
+                      Your Peer ID: <code class="bg-gray-100 px-2 py-1 rounded">{{peerId}}</code>
+                    </span>
+                  }
                 </div>
-                <button
-                  *ngIf="(isConnected$ | async) === false"
-                  (click)="connectToPeer()"
-                  class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors">
-                  Connect to Peer Network
-                </button>
+                @if ((isConnected$ | async) === false) {
+                  <button
+                    (click)="connectToPeer()"
+                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors">
+                    Connect to Peer Network
+                  </button>
+                }
               </div>
             </div>
           </div>
@@ -98,7 +105,8 @@ declare var Peer: any;
               </div>
 
               <!-- Create Channel Form -->
-              <div *ngIf="showCreateChannel" class="mb-4 p-4 border rounded-lg bg-gray-50">
+              @if (showCreateChannel) {
+                <div class="mb-4 p-4 border rounded-lg bg-gray-50">
                 <div class="flex gap-2 mb-2">
                   <input
                     [(ngModel)]="newChannelName"
@@ -121,28 +129,32 @@ declare var Peer: any;
                   placeholder="Description (optional)"
                   class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
               </div>
+              }
 
               <!-- Channel List -->
               <div class="space-y-3 max-h-96 overflow-y-auto">
-                <div *ngFor="let channel of availableChannels$ | async"
-                     class="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                  <div class="flex justify-between items-start">
-                    <div class="flex-1">
-                      <h3 class="font-semibold">{{channel.name}}</h3>
-                      <p *ngIf="channel.description" class="text-sm text-gray-600 mb-2">{{channel.description}}</p>
-                      <div class="text-xs text-gray-500">
-                        <span>{{channel.members.length}} member(s)</span>
-                        <span class="ml-2">Created: {{channel.createdAt | date:'short'}}</span>
+                @for (channel of availableChannels$ | async; track channel.id) {
+                  <div class="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex justify-between items-start">
+                      <div class="flex-1">
+                        <h3 class="font-semibold">{{channel.name}}</h3>
+                        @if (channel.description) {
+                          <p class="text-sm text-gray-600 mb-2">{{channel.description}}</p>
+                        }
+                        <div class="text-xs text-gray-500">
+                          <span>{{channel.members.length}} member(s)</span>
+                          <span class="ml-2">Created: {{channel.createdAt | date:'short'}}</span>
+                        </div>
                       </div>
+                      <button
+                        (click)="joinChannel(channel)"
+                        [disabled]="(isConnected$ | async) === false"
+                        class="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white px-3 py-1 rounded text-sm transition-colors">
+                         {{(isConnected$ | async) === false ? 'Not Connected' : 'Join'}}
+                      </button>
                     </div>
-                    <button
-                      (click)="joinChannel(channel)"
-                      [disabled]="(isConnected$ | async) === false"
-                      class="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white px-3 py-1 rounded text-sm transition-colors">
-                       {{(isConnected$ | async) === false ? 'Not Connected' : 'Join'}}
-                    </button>
                   </div>
-                </div>
+                }
               </div>
             </div>
 
@@ -150,39 +162,42 @@ declare var Peer: any;
             <div class="bg-white rounded-lg shadow-lg p-6">
               <h2 class="text-xl font-bold mb-4">My Classrooms</h2>
               <div class="space-y-3 max-h-96 overflow-y-auto">
-                <div *ngFor="let channel of joinedChannels$ | async"
-                     class="p-4 border rounded-lg bg-blue-50">
-                  <div class="flex justify-between items-start">
-                    <div class="flex-1">
-                      <h3 class="font-semibold text-blue-800">{{channel.name}}</h3>
-                      <p *ngIf="channel.description" class="text-sm text-blue-600 mb-2">{{channel.description}}</p>
-                      <div class="text-xs text-blue-500 mb-3">
-                        <span>{{channel.members.length}} member(s)</span>
-                      </div>
+                @for (channel of joinedChannels$ | async; track channel.id) {
+                  <div class="p-4 border rounded-lg bg-blue-50">
+                    <div class="flex justify-between items-start">
+                      <div class="flex-1">
+                        <h3 class="font-semibold text-blue-800">{{channel.name}}</h3>
+                        @if (channel.description) {
+                          <p class="text-sm text-blue-600 mb-2">{{channel.description}}</p>
+                        }
+                        <div class="text-xs text-blue-500 mb-3">
+                          <span>{{channel.members.length}} member(s)</span>
+                        </div>
 
-                      <!-- Simple messaging -->
-                      <div class="mt-3">
-                        <div class="flex gap-2">
-                          <input
-                            [(ngModel)]="channelMessages[channel.id]"
-                            placeholder="Send message to classroom..."
-                            class="flex-1 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            (keyup.enter)="sendMessage(channel.id)">
-                          <button
-                            (click)="sendMessage(channel.id)"
-                            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors">
-                            Send
-                          </button>
+                        <!-- Simple messaging -->
+                        <div class="mt-3">
+                          <div class="flex gap-2">
+                            <input
+                              [(ngModel)]="channelMessages[channel.id]"
+                              placeholder="Send message to classroom..."
+                              class="flex-1 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              (keyup.enter)="sendMessage(channel.id)">
+                            <button
+                              (click)="sendMessage(channel.id)"
+                              class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors">
+                              Send
+                            </button>
+                          </div>
                         </div>
                       </div>
+                      <button
+                        (click)="leaveChannel(channel)"
+                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors ml-2">
+                        Leave
+                      </button>
                     </div>
-                    <button
-                      (click)="leaveChannel(channel)"
-                      class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors ml-2">
-                      Leave
-                    </button>
                   </div>
-                </div>
+                }
               </div>
             </div>
           </div>
@@ -198,13 +213,15 @@ declare var Peer: any;
               </button>
             </div>
             <div class="bg-gray-50 p-4 rounded h-48 overflow-y-auto font-mono text-sm">
-              <div *ngFor="let entry of logEntries" class="mb-1">
-                [{{entry.timestamp}}] {{entry.message}}
-              </div>
+              @for (entry of logEntries; track entry.timestamp) {
+                <div class="mb-1">
+                  [{{entry.timestamp}}] {{entry.message}}
+                </div>
+              }
             </div>
           </div>
         </div>
-      </div>
+        }
     </div>
   `
 })
