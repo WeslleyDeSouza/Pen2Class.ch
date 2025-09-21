@@ -1,16 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X, Code2, Globe, Check } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement | null>(null);
   const { t, setLanguage, language } = useLanguage();
 
   const languages = [
     { code: 'en', name: 'English' },
     { code: 'es', name: 'Español' },
+    { code: 'de', name: 'Deutsch' },
+    { code: 'fr', name: 'Français' },
+    { code: 'it', name: 'Italiano' },
   ];
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (isLangOpen && langRef.current && !langRef.current.contains(e.target as Node)) {
+        setIsLangOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isLangOpen]);
 
   const scrollToSection = (sectionId: string) => {
     const section = document.getElementById(sectionId);
@@ -57,13 +72,30 @@ const Header: React.FC = () => {
             <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md" onClick={() => handleAuthClick(t('navStart'))}>
               {t('navStart')}
             </button>
-            <div className="relative">
-              <button className="border rounded-md p-2" aria-label="language">
+            <div className="relative" ref={langRef}>
+              <button
+                className="border rounded-md p-2"
+                aria-label="language"
+                aria-haspopup="listbox"
+                aria-expanded={isLangOpen}
+                aria-controls="language-chooser"
+                onClick={() => setIsLangOpen((v) => !v)}
+              >
                 <Globe className="h-[1.2rem] w-[1.2rem]" />
               </button>
-              <div className="absolute right-0 mt-2 bg-white border rounded-md shadow-md p-2 hidden md:block">
+              <div
+                id={"language-chooser"}
+                className={`absolute right-0 mt-2 bg-white border rounded-md shadow-md p-2 ${isLangOpen ? 'block' : 'hidden'}`}
+                role="listbox"
+              >
                 {languages.map((lang) => (
-                  <button key={lang.code} onClick={() => setLanguage(lang.code)} className="flex justify-between items-center w-full text-left px-3 py-2 rounded hover:bg-slate-100">
+                  <button
+                    key={lang.code}
+                    onClick={() => { setLanguage(lang.code); setIsLangOpen(false); }}
+                    className="flex justify-between items-center w-full text-left px-3 py-2 rounded hover:bg-slate-100"
+                    role="option"
+                    aria-selected={language === lang.code}
+                  >
                     <span>{lang.name}</span>
                     {language === lang.code && <Check className="h-4 w-4" />}
                   </button>

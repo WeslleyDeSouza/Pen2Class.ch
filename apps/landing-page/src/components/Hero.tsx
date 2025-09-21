@@ -75,10 +75,10 @@ const Hero: React.FC = () => {
                 <div className="w-3 h-3 bg-green-400 rounded-full"></div>
               </div>
               <div className="flex-grow bg-white rounded-md p-4 text-left text-sm font-mono text-slate-700 overflow-hidden">
-                <span className="text-blue-600">const</span> <span className="text-purple-600">greet</span> = (<span className="text-orange-500">name</span>) => {'{'}<br/>
-                &nbsp;&nbsp;<span className="text-blue-600">return</span> <span className="text-green-600">`{t('heroCodeExample1')}, <span className="text-orange-500">${'{name}'}</span>!`</span>;<br/>
+                <span className="text-blue-600">const</span> <span className="text-purple-600">greet</span> = (<span className="text-orange-500">name</span>) =&gt; {'{'}<br/>
+                &nbsp;&nbsp;<span className="text-blue-600">return</span>{' '}<span className="text-green-600">&#96;</span>{t('heroCodeExample1')}, <span className="text-orange-500">${'{' }name{ '}'}</span>!<span className="text-green-600">&#96;</span>;<br/>
                 {'}'};<br/><br/>
-                <span className="text-purple-600">console</span>.<span className="text-yellow-500">log</span>(<span className="text-purple-600">greet</span>(<span className="text-green-600">'{'{'}t('heroCodeExample2'){'}'}'</span>));
+                <span className="text-purple-600">console</span>.<span className="text-yellow-500">log</span>(<span className="text-purple-600">greet</span>(<span className="text-green-600">'{t('heroCodeExample2')}'</span>));
               </div>
             </div>
             <div className="absolute -bottom-4 -right-4 -left-4 h-16 bg-gradient-to-t from-slate-50 to-transparent"></div>
