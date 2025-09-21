@@ -26,6 +26,10 @@ export class PeerChannelService {
     return this.currentUser$.asObservable();
   }
 
+  getCurrentUserValue(): User | null {
+    return this.currentUser$.value;
+  }
+
   getJoinedChannels(): Observable<Channel[]> {
     return this.joinedChannels$.asObservable();
   }

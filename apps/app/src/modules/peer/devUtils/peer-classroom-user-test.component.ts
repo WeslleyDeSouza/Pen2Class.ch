@@ -372,7 +372,7 @@ export class PeerClassroomUserTestComponent implements OnInit, OnDestroy {
         this.isLoading = false;
 
         // Save connection info to localStorage
-        const currentUser = this.peerChannelService.getCurrentUser().value;
+        const currentUser = this.peerChannelService.getCurrentUserValue();
         if (currentUser) {
           this.saveConnection(currentUser, result.channel);
         }

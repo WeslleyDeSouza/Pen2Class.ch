@@ -50,3 +50,4 @@ Thumbs.db
 /apps/app/public/assets/locales/.cache/
 
 .angular
+/libs/app/generated/core/

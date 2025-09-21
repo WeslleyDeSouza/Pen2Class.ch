@@ -5,7 +5,7 @@ const { NgOpenApiGen } = require("ng-openapi-gen");
 const $RefParser = require("json-schema-ref-parser");
 
 const options = {
-  input: path.resolve("./config/api-gateway-swagger-spec.json"),
+  input: path.resolve("./config/api-swagger-spec.json"),
   output: path.resolve("./libs/app/generated/core"),
   ignoreUnusedModels: false,
 };
