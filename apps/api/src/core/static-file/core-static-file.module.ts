@@ -30,3 +30,34 @@ export class CoreStaticFileModule {
     console.info('Serving files from:', fileStaticPath);
   }
 }
+
+
+// Landing Page
+
+export const fileStaticPathLandingPage =
+  process.env['APP_DIST_PATH'] ||
+  join(
+    ...[
+      __dirname,
+      '..',
+      '..',
+      isLocalEnv ? 'apps' : undefined,
+      'app',
+      'browser',
+    ].filter((hasValue) => !!hasValue)
+  );
+
+@Module({
+  imports: [
+    ServeStaticModule.forRoot({
+      rootPath: fileStaticPathLandingPage,
+      exclude: ['/api/{*splat}'],
+    }),
+  ],
+})
+export class CoreStaticFileLandingPageModule {
+  constructor() {
+    console.info('Serving files from:', fileStaticPath);
+  }
+}
+

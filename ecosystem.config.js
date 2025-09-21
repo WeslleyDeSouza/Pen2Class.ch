@@ -19,6 +19,20 @@ const APPS = [
       alwaysStat: true,
     },
   },
+  {
+    name: "api-landing-page",
+    script: "dist/api/main.js",
+    watch: ["dist/api/**/*"],
+    ignore_watch: ["*.ts", "*.log", "node_modules", "temp"],
+    io: {},
+    env: { ...process.env, APP_ENV:'landing-page' },
+    restart_delay: 5000,
+    post_update: ["yarn"],
+    watch_options: {
+      usePolling: true,
+      alwaysStat: true,
+    },
+  },
 ];
 
 process.env["--only"] =
