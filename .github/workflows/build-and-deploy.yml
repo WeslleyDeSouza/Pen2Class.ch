@@ -17,7 +17,6 @@ jobs:
       - run: npm install
       - run: npx nx run-many --parallel --target=build --projects="api*" && npm run ng-swagger
       - run: npx nx run-many --target=build --all --prod
-      - run: npm run ngsw
       - run: ls dist
 
       - name: Archive production artifacts

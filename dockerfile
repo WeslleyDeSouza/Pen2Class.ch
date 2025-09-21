@@ -40,7 +40,6 @@ ENV NODE_ENV=production \
 
 # Kopiere Anwendungsdateien
 COPY ./dist/apps/api ./dist/api/
-COPY ./dist/apps/api-mcp ./dist/api-mcp/
 COPY ./dist/apps/app ./dist/app/
 COPY ./config ./config/
 COPY ./ecosystem.config.js ./
