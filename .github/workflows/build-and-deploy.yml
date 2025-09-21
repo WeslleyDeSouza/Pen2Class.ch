@@ -4,8 +4,113 @@ on:
   push:
     branches:
       - '**'
+env:
+  NODE_VERSION: '22'
+  NX_BRANCH: ${{ github.event.number || github.ref_name }}
+  NX_RUN_GROUP: ${{ github.run_id }}
+
 jobs:
+  install:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.key }}
+      affected-apps: ${{ steps.affected.outputs.apps }}
+      affected-libs: ${{ steps.affected.outputs.libs }}
+      has-affected: ${{ steps.affected.outputs.has-affected }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Generate cache key
+        id: cache-key
+        run: echo "key=${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}" >> $GITHUB_OUTPUT
+      - name: Cache node_modules
+        id: cache-deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: ${{ steps.cache-key.outputs.key }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: npm i --legacy-peer-deps
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Derive appropriate SHAs for base and head for `nx affected` commands
+        uses: nrwl/nx-set-shas@v4
+      - name: Check affected projects
+        id: affected
+        run: |
+          echo "Checking affected projects..."
+          AFFECTED_APPS=$(npx nx print-affected --select=projects --type=app --base=${{ env.NX_BASE }} --head=${{ env.NX_HEAD }} | tr '\n' ' ')
+          AFFECTED_LIBS=$(npx nx print-affected --select=projects --type=lib --base=${{ env.NX_BASE }} --head=${{ env.NX_HEAD }} | tr '\n' ' ')
+          HAS_AFFECTED=$(npx nx print-affected --select=projects --base=${{ env.NX_BASE }} --head=${{ env.NX_HEAD }} | wc -l)
+
+          echo "apps=$AFFECTED_APPS" >> $GITHUB_OUTPUT
+          echo "libs=$AFFECTED_LIBS" >> $GITHUB_OUTPUT
+          echo "has-affected=$HAS_AFFECTED" >> $GITHUB_OUTPUT
+
+          echo "Affected apps: $AFFECTED_APPS"
+          echo "Affected libs: $AFFECTED_LIBS"
+          echo "Has affected projects: $HAS_AFFECTED"
+  tests:
+    needs: install
+    runs-on: ubuntu-latest
+    if: needs.install.outputs.has-affected != '0'
+    continue-on-error: false
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: ${{ needs.install.outputs.cache-key }}
+          fail-on-cache-miss: true
+      - name: Derive appropriate SHAs for base and head for `nx affected` commands
+        uses: nrwl/nx-set-shas@v4
+      - name: Cache Nx
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.cache/nx
+          key: nx-${{ runner.os }}-${{ hashFiles('**/nx.json', '**/project.json', '**/package.json') }}
+          restore-keys: |
+            nx-${{ runner.os }}-
+      - name: Run affected tests
+        run: |
+          echo "Running tests for affected projects..."
+          npx nx run-many --parallel --target=build --projects="api*" && npm run ng-swagger
+          npx nx affected --target=test --parallel=3 --base=${{ env.NX_BASE }} --head=${{ env.NX_HEAD }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   build:
+    needs: [install]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -28,6 +133,7 @@ jobs:
             ./dist
           if-no-files-found: error
   buildLandingPage:
+    needs: [install]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
