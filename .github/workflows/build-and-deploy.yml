@@ -119,32 +119,10 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-      - run: npm install
-      - run: cd apps/landing-page && npm install
+      - run: npm install #todo remove this from here
+      - run: cd apps/landing-page && npm install #todo remove this from here
       - run: npx nx build api --prod && npm run ng-swagger
       - run: npx nx build app --prod
-      - run: ls dist
-
-      - name: Archive production artifacts
-        if: github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
-        with:
-          name: nXdist
-          path: |
-            ./dist
-          if-no-files-found: error
-  buildLandingPage:
-    needs: [install]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-          cache: 'npm'
-      - run: npm install
-      - run: cd apps/landing-page && npm install
       - run: npx nx build landing-page
       - run: ls dist
 
@@ -156,8 +134,9 @@ jobs:
           path: |
             ./dist
           if-no-files-found: error
+
   deploy:
-    needs: [build, buildLandingPage]
+    needs: [build]
     if: github.ref == 'refs/heads/main'  # Only run on main branch
     runs-on: ubuntu-22.04
     steps:
