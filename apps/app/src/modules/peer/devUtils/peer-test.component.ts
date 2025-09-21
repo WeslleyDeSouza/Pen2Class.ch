@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
 
 declare var Peer: any;
 
@@ -136,8 +137,7 @@ export class PeerTestComponent implements OnInit, OnDestroy {
   connectToPeerServer() {
     try {
       this.peer = new Peer({
-        host: 'localhost',
-        port: 3000,
+        host: environment.apiHost, port: environment.apiPort,
         path: '/peer-server'
       });
 
