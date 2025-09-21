@@ -8,6 +8,7 @@ export interface Channel {
   createdBy: string;
   createdAt: Date;
   members: ChannelMember[];
+  code: string;
 }
 
 export interface ChannelMember {
@@ -22,17 +23,19 @@ export class ChannelService {
   private channels: Map<string, Channel> = new Map();
 
   createChannel(name: string, description?: string, createdBy?: string): Channel {
+    const code = this.generateUniqueCode();
     const channel: Channel = {
       id: uuidv4(),
       name,
       description,
       createdBy: createdBy || 'anonymous',
       createdAt: new Date(),
-      members: []
+      members: [],
+      code
     };
 
     this.channels.set(channel.id, channel);
-    this.logger.log(`Channel created: ${channel.name} (${channel.id})`);
+    this.logger.log(`Channel created: ${channel.name} (${channel.id}) with code: ${code}`);
 
     return channel;
   }
@@ -111,5 +114,36 @@ export class ChannelService {
     return Array.from(this.channels.values()).filter(channel =>
       channel.members.some(member => member.peerId === peerId)
     );
+  }
+
+  // Generate unique 6-digit numeric code
+  private generateUniqueCode(): string {
+    let code: string;
+    let attempts = 0;
+    const maxAttempts = 100;
+
+    do {
+      // Generate 6-digit code
+      code = Math.floor(100000 + Math.random() * 900000).toString();
+      attempts++;
+
+      if (attempts >= maxAttempts) {
+        // Fallback: use timestamp-based code if too many collisions
+        code = (Date.now() % 900000 + 100000).toString();
+        break;
+      }
+    } while (this.isCodeExists(code));
+
+    return code;
+  }
+
+  // Check if code already exists
+  private isCodeExists(code: string): boolean {
+    return Array.from(this.channels.values()).some(channel => channel.code === code);
+  }
+
+  // Find channel by code
+  getChannelByCode(code: string): Channel | null {
+    return Array.from(this.channels.values()).find(channel => channel.code === code) || null;
   }
 }

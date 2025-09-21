@@ -145,6 +145,10 @@ declare var Peer: any;
                           <span>{{channel.members.length}} member(s)</span>
                           <span class="ml-2">Created: {{channel.createdAt | date:'short'}}</span>
                         </div>
+                        <div class="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+                          <span class="text-xs text-blue-600 font-medium">Classroom Code:</span>
+                          <code class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded font-mono text-sm">{{channel.code}}</code>
+                        </div>
                       </div>
                       <button
                         (click)="joinChannel(channel)"
@@ -225,7 +229,7 @@ declare var Peer: any;
     </div>
   `
 })
-export class PeerClassroomTestComponent implements OnInit, OnDestroy {
+export class PeerClassroomAdminTestComponent implements OnInit, OnDestroy {
   currentUser$: Observable<User | null>;
   joinedChannels$: Observable<Channel[]>;
   availableChannels$: Observable<Channel[]>;

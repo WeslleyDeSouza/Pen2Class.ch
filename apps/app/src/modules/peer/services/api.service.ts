@@ -9,6 +9,7 @@ export interface Channel {
   createdBy: string;
   createdAt: Date;
   members: ChannelMember[];
+  code: string;
 }
 
 export interface ChannelMember {
@@ -86,6 +87,18 @@ export class ApiService {
 
   getChannelMembers(channelId: string): Observable<ChannelMember[]> {
     return this.http.get<ChannelMember[]>(`${this.baseUrl}/channels/${channelId}/members`);
+  }
+
+  getChannelByCode(code: string): Observable<Channel> {
+    return this.http.get<Channel>(`${this.baseUrl}/channels/by-code/${code}`);
+  }
+
+  joinChannelByCode(code: string, userId: string, peerId: string): Observable<{ success: boolean; channel: Channel }> {
+    return this.http.post<{ success: boolean; channel: Channel }>(`${this.baseUrl}/channels/join-by-code`, {
+      code,
+      userId,
+      peerId
+    });
   }
 
   deleteChannel(channelId: string): Observable<{ success: boolean }> {

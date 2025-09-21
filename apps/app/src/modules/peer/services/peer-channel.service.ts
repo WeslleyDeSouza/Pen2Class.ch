@@ -140,6 +140,21 @@ export class PeerChannelService {
     return result;
   }
 
+  joinChannelByCode(code: string): Observable<{ success: boolean; channel: Channel }> {
+    const currentUser = this.currentUser$.value;
+    const peerId = this.myPeerId$.value;
+
+    if (!currentUser || !peerId) {
+      throw new Error('Must be logged in and connected to join a channel');
+    }
+
+    const result = this.apiService.joinChannelByCode(code, currentUser.id, peerId);
+    result.subscribe(() => {
+      this.loadUserChannels();
+    });
+    return result;
+  }
+
   // Messaging
   sendMessageToChannel(channelId: string, message: any) {
     const channelConnections = Array.from(this.connections.values())
