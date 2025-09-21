@@ -26,16 +26,17 @@ async function bootstrap() {
     `🚀 Application is running on: http://localhost:${port}`
   );
 }
+
 async function bootstrapLandingPage() {
   const app = await NestFactory.create<NestExpressApplication>(
     AppLandingPageModule, {}
   );
 
-  const port =  process.env.PORT_LANDING_PAGE ||  process.env.PORT || 3000;
+  const port =  process.env.PORT_LANDING_PAGE ||  process.env.PORT || 3004;
   await app.listen(port);
 
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port} ${process.env['APP_ENV']}`
+    `🚀 Landing-Page is running on: http://localhost:${port} ${process.env['APP_ENV']}`
   );
 }
 
