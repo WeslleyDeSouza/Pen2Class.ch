@@ -1,16 +1,20 @@
-import {inject, Injectable, signal} from '@angular/core';
+import {computed, inject, Injectable, signal} from '@angular/core';
 import { environment } from '../../environments/environment';
 
 declare var Peer: any;
 
 @Injectable({ providedIn: 'root' })
 export class PeerUserStoreService {
-  user = signal(undefined);
+  user = signal<{id?:string} | undefined>(undefined);
+  userPeerId = signal<string | undefined>(undefined);
 
+  getCurrentUser(){
+    return this.user();
+  }
 }
 @Injectable({ providedIn: 'root' })
 export class PeerService {
-  peerId = signal<string | undefined>(undefined);
+  peerId = computed(()=> this.storeUser.userPeerId());
   isConnected = signal(false);
 
 
@@ -33,7 +37,7 @@ export class PeerService {
         });
 
         this.peer.on('open', (id: string) => {
-          this.peerId.set(id);
+          this.storeUser.userPeerId.set(id);
           this.isConnected.set(true);
 
           // Send user metadata if logged in
@@ -59,7 +63,7 @@ export class PeerService {
         this.peer.on('disconnected', () => {
           console.log('Disconnected from PeerJS server');
           this.isConnected.set(false);
-          this.peerId.set(undefined);
+          this.storeUser.userPeerId.set(undefined);
         });
 
       } catch (error) {
@@ -109,6 +113,6 @@ export class PeerService {
     }
     this.connections.clear();
     this.isConnected.set(false);
-    this.peerId.set(undefined);
+    this.storeUser.userPeerId.set(undefined);
   }
 }

@@ -231,7 +231,7 @@ export class EditorComponent implements OnInit, OnDestroy {
   protected resetCode(): void {
     // Reset to default values
     this.editorStore.updateHtmlCode(`<div class="container">
-  <h1>Hello CodePen!</h1>
+  <h1>Hello Pen2Class!</h1>
   <p>Edit the code to see changes live.</p>
   <button id="myButton">Click me!</button>
 </div>`);
@@ -275,7 +275,7 @@ button:hover {
   const button = document.getElementById('myButton');
 
   button.addEventListener('click', function() {
-    alert('Hello from CodePen replica!');
+    alert('Hello from Pen2Class!');
     button.style.background = 'linear-gradient(45deg, #e74c3c, #f39c12)';
   });
 });`);

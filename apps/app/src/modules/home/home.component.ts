@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AsyncPipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { Channel, User } from '../../common';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 import { ChannelService } from '../../common/services/channel.service';
@@ -213,11 +214,15 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
                     Back
                   </button>
                 }
-                <button
-                  (click)="goToInitial()"
-                  class="flex-1 text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors">
-                  Cancel
-                </button>
+                @if(currentChannel?.name){
+                  <button
+
+                    (click)="goToAdmin()"
+                    class="flex-1 text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors">
+                    Go to Admin
+                  </button>
+                }
+
               </div>
             </div>
           }
@@ -300,7 +305,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private channelService: ChannelService,
-    private userService: UserService
+    private userService: UserService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -441,6 +447,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.currentChannel = channel;
       this.joinStep = 3;
       this.isLoading = false;
+
+      setTimeout(()=> this.goToHome(),1000);
     }).catch((error) => {
       let errorMessage = 'Failed to join classroom';
       if (error.status === 404) {
@@ -514,5 +522,12 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private clearError() {
     this.errorMessage = '';
+  }
+
+  goToAdmin() {
+    this.router.navigate(['/admin']);
+  }
+  goToHome() {
+    this.router.navigate(['/class-room']);
   }
 }

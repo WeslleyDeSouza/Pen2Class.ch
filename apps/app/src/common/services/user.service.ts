@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {UserService as UserApiService, UserDto, SignupUserDto,UserChannelDto} from '@ui-lib/apiClient';
 import { environment } from '../../environments/environment';
+import {PeerUserStoreService} from "./peer.service";
 
 // @ts-ignore
 export interface User extends UserDto {
@@ -15,7 +16,10 @@ export interface User extends UserDto {
 export class UserService {
   private readonly rootUrl = environment.apiUrl;
 
-  constructor(private userApiService: UserApiService) {
+  constructor(
+    private userApiService: UserApiService,
+    private userStore: PeerUserStoreService,
+  ) {
     userApiService.rootUrl = this.rootUrl;
   }
 
@@ -23,6 +27,9 @@ export class UserService {
     return (
       this.userApiService.userSignup({
         body: { username, email, displayName }
+      }).then(res => {
+        this.userStore.user.set(res);
+        return res
       })
     )
   }
