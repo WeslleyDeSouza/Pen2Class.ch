@@ -48,6 +48,23 @@ export class ChannelService {
     }));
   }
 
+  /**
+   * Returns channels where the given user has permission to access:
+   * - User created the channel (createdBy === userId)
+   * - User is a member of the channel (by userId)
+   * Peer IDs are not exposed in the response, consistent with getAllChannels.
+   */
+  getAllChannelsWithPermission(userId: string): Channel[] {
+    const list = Array.from(this.channels.values()).filter(channel =>
+      channel.createdBy === userId || channel.members.some(m => m.userId === userId)
+    );
+
+    return list.map(channel => ({
+      ...channel,
+      members: channel.members.map(m => ({ ...m, peerId: undefined }))
+    }));
+  }
+
   getChannel(channelId: string): Channel {
     const channel = this.channels.get(channelId);
     if (!channel) {

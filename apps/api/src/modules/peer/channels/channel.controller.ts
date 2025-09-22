@@ -23,6 +23,16 @@ export class ChannelController {
     return this.channelService.getAllChannels();
   }
 
+  @Get('with-permission/:userId')
+  @ApiOperation({ summary: 'List channels the user can access (creator or member)' })
+  @ApiParam({ name: 'userId', type: 'string', description: 'User ID' })
+  @ApiOkResponse({ description: 'List of channels returned successfully', type: [ChannelDto] })
+  getAllChannelsWithPermission(@Param('userId') userId: string) {
+    // Return channels where the user is creator or a member
+    return this.channelService.getAllChannelsWithPermission(userId);
+  }
+
+
   @Get(':channelId')
   @ApiOperation({ summary: 'Get a channel by ID' })
   @ApiParam({ name: 'channelId', type: 'string', description: 'Channel ID' })
