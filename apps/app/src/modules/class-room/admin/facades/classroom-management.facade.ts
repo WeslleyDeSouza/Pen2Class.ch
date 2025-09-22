@@ -143,6 +143,23 @@ export class ClassroomManagementFacade {
     }
   }
 
+  /**
+   * Delete a classroom
+   */
+  async deleteClassroom(classroomId: string): Promise<boolean> {
+    this.isLoadingSignal.set(true);
+
+    try {
+      await this.channelService.deleteChannel(classroomId);
+      await this.loadClassrooms(); // Refresh the list
+      return true;
+    } catch (error) {
+      console.error('Failed to delete classroom:', error);
+      return false;
+    } finally {
+      this.isLoadingSignal.set(false);
+    }
+  }
 
   /**
    * Refresh the classrooms list

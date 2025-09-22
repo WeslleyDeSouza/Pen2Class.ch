@@ -44,7 +44,11 @@ export class ChannelTypeService {
 
   create(channelId: string, name: string, description: string | undefined, createdBy: string): ChannelType {
     const channel = this.channelService.getChannel(channelId);
-    if (channel.createdBy !== createdBy) throw new ForbiddenException('Only owner can create channel types');
+    if (channel.createdBy !== createdBy)
+    {
+      console.log('channel.createdBy', channel.createdBy, createdBy);
+      throw new ForbiddenException('Only owner can create channel types');
+    }
     const now = new Date();
     const type: ChannelType = {
       id: uuidv4(),

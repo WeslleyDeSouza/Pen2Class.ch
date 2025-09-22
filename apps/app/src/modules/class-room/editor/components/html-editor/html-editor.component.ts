@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, OnDestroy } from '@angular/core';
+import {Component, computed, inject, OnInit, OnDestroy, AfterViewInit} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { EditorStoreService } from '../../services/editor-store.service';
@@ -59,12 +59,14 @@ import { MonacoEditorService } from '../../services/monaco-editor.service';
     }
   `]
 })
-export class HtmlEditorComponent implements OnInit, OnDestroy {
+export class HtmlEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   protected readonly editorStore = inject(EditorStoreService);
   private readonly monacoService = inject(MonacoEditorService);
 
   protected htmlCode = '';
   protected editorOptions: any = {};
+
+  canShowEditor = false;
 
   protected readonly lineCount = computed(() =>
     this.editorStore.htmlCode().split('\n').length
@@ -80,6 +82,10 @@ export class HtmlEditorComponent implements OnInit, OnDestroy {
 
     // Set initial value
     this.htmlCode = this.editorStore.htmlCode();
+  }
+
+  ngAfterViewInit(): void {
+    this.canShowEditor = true;
   }
 
   ngOnDestroy(): void {

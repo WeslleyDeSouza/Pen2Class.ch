@@ -4,6 +4,6 @@ export const environment = {
   apiPort: 443,
   apiPeerPath: '/peer-server',
   get apiUrl() {
-    return `https://${this.apiHost}/api`;
+    return `https://${this.apiHost}`;
   }
 };
