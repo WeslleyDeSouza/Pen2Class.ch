@@ -5,7 +5,8 @@ import { Router } from '@angular/router';
 import { Channel, User } from '../../common';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 import { ChannelService } from '../../common/services/channel.service';
-import { UserService } from '../../common/services/user.service';
+import { UserService, UserType } from '../../common/services/user.service';
+import { PeerUserStoreService } from '../../common/services/peer.service';
 import {ChannelDto, UserDto} from "@ui-lib/apiClient";
 
 declare var Peer: any;
@@ -52,6 +53,18 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
                 </svg>
                 <span>Create Classroom</span>
               </button>
+
+              <!-- Continue with existing user Button -->
+              @if (hasExistingUser()) {
+                <button
+                  (click)="continueWithExistingUser()"
+                  class="w-full bg-purple-500 hover:bg-purple-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                  <span>Continue with {{ getExistingUserName() }}</span>
+                </button>
+              }
             </div>
           }
 
@@ -306,6 +319,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private channelService: ChannelService,
     private userService: UserService,
+    private userStore: PeerUserStoreService,
     private router: Router
   ) {}
 
@@ -412,7 +426,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.clearError();
 
-    this.userService.signup(this.username.trim(), undefined, this.username.trim()).then((user) => {
+    this.userService.signup(this.username.trim(), undefined, this.username.trim(), UserType.STUDENT).then((user) => {
       this.joinStep = 2;
       this.isLoading = false;
     }).catch((error) => {
@@ -486,7 +500,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     try {
       // First create the teacher user
-      const user = await this.userService.signup(this.teacherName.trim(), undefined, this.teacherName.trim());
+      const user = await this.userService.signup(this.teacherName.trim(), undefined, this.teacherName.trim(), UserType.TEACHER);
 
       // Then create the channel
       const channel = await this.channelService.createChannel(
@@ -529,5 +543,39 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
   goToHome() {
     this.router.navigate(['/class-room']);
+  }
+
+  hasExistingUser(): boolean {
+    const user = this.userStore.getCurrentUser();
+    return user && user.id ? true : false;
+  }
+
+  getExistingUserName(): string {
+    const user = this.userStore.getCurrentUser() as any;
+    return user?.displayName || user?.username || 'User';
+  }
+
+  continueWithExistingUser() {
+    const storedUser = this.userStore.getCurrentUser();
+    if (!storedUser?.id) {
+      return;
+    }
+
+    this.isLoading = true;
+    this.clearError();
+
+    this.userService.getCurrentUser(storedUser.id).then((user) => {
+      // User still exists, update stored data and continue
+      this.userStore.user.set(user);
+      this.userStore.persist();
+      this.router.navigate(['/admin']);
+      this.isLoading = false;
+    }).catch((error) => {
+      // User no longer exists, remove from storage
+      this.userStore.user.set(undefined);
+      this.userStore.persist();
+      this.showError('User no longer exists. Please create a new account.');
+      this.isLoading = false;
+    });
   }
 }

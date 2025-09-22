@@ -141,7 +141,7 @@ interface JoinClassroomForm {
       <!-- Main Content Area -->
       <div class="flex-1 flex flex-col">
         <!-- Header -->
-        @if (selectedClassroom() || selectedLesson()) {
+        @if ( (selectedClassroom() || selectedLesson())  && false) {
           <div class="bg-white shadow-sm border-b border-gray-200 p-4">
             <div class="flex items-center justify-between">
               <div>
@@ -280,14 +280,22 @@ export class ClassRoomLayout implements OnInit, OnDestroy {
       this.expandedClassrooms.add(classroom.id);
     }
     this.selectedClassroom.set(classroom);
+    this.userStore.selectedClassId.set(classroom.id);
+
     this.selectedLesson.set(null);
+    this.userStore.selectedLessonId.set(null);
   }
 
   selectLesson(classroom: ClassroomSummary, lesson: LessonSummary) {
     this.selectedClassroom.set(classroom);
+    this.userStore.selectedClassId.set(classroom.id);
+
     this.selectedLesson.set(lesson);
-    if( lesson.id)
+    this.userStore.selectedLessonId.set(lesson?.id);
+
+    if( lesson.id) {
       this.initLessonMainPage()
+    }
   }
 
   initLessonMainPage(){

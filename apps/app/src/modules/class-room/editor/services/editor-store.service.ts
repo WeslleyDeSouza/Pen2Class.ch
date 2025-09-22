@@ -1,6 +1,7 @@
-import { Injectable, signal, computed } from '@angular/core';
+import {Injectable, signal, computed, inject} from '@angular/core';
 import cssValidator from 'w3c-css-validator';
 import {ValidateTextResultWithWarnings} from "w3c-css-validator/dist/types/result";
+import {PeerUserStoreService} from "../../../../common/services/peer.service";
 
 export interface EditorError {
   line: number;
@@ -25,6 +26,7 @@ export interface ConsoleMessage {
 })
 export class EditorStoreService {
   // Code content signals
+  private _objectId = signal<string | undefined>(undefined);
   private _htmlCode = signal<string>(`<div class="container">
   <h1>Hello Pen2Class!</h1>
   <p>Edit the code to see changes live.</p>

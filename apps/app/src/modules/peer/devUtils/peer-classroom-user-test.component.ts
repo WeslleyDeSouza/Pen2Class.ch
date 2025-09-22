@@ -4,7 +4,7 @@ import { AsyncPipe } from '@angular/common';
 import { Channel, User } from '../../../common';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 import { ChannelService } from '../../../common/services/channel.service';
-import { UserService } from '../../../common/services/user.service';
+import { UserService, UserType } from '../../../common/services/user.service';
 import { PeerService } from '../../../common/services/peer.service';
 
 declare var Peer: any;
@@ -308,7 +308,7 @@ export class PeerClassroomUserTestComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.userService.signup(this.username.trim(), undefined, this.username.trim()).then((user: any) => {
+    this.userService.signup(this.username.trim(), undefined, this.username.trim(), UserType.STUDENT).then((user: any) => {
       this.log(`User created: ${user.username}`);
       this.currentUserSubject.next(user);
       this.currentStep = 2;

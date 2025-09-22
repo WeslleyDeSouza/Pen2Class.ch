@@ -1,9 +1,11 @@
-import { Component, computed, inject, OnInit, OnDestroy } from '@angular/core';
+import {Component, computed, inject, OnInit, OnDestroy, effect, signal} from '@angular/core';
 import { EditorStoreService } from './services/editor-store.service';
 import { HtmlEditorComponent } from './components/html-editor/html-editor.component';
 import { CssEditorComponent } from './components/css-editor/css-editor.component';
 import { JsEditorComponent } from './components/js-editor/js-editor.component';
 import { PreviewComponent } from './components/preview/preview.component';
+import {PeerUserStoreService} from "../../../common/services/peer.service";
+import {EditorService} from "./services/editor-facade.service";
 
 @Component({
   selector: 'app-editor',
@@ -52,47 +54,49 @@ import { PreviewComponent } from './components/preview/preview.component';
 
       <!-- Main Content -->
       <div class="flex-1 flex">
-        <!-- Code Editor Section -->
-        <div class="w-1/2 flex flex-col border-r border-gray-700">
-          <!-- Tab Navigation -->
-          <div class="bg-gray-800 flex border-b border-gray-700">
-            @for (tab of tabs; track tab.id) {
-              <button
-                (click)="setActiveTab(tab.id)"
-                class="px-6 py-3 text-sm font-medium transition-colors border-b-2 relative"
-                [class]="getTabClasses(tab)"
-              >
-                {{ tab.label }}
-                @if (hasTabErrors(tab.id)) {
-                  <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        @if(loaded()){
+          <!-- Code Editor Section -->
+          <div class="w-1/2 flex flex-col border-r border-gray-700">
+            <!-- Tab Navigation -->
+            <div class="bg-gray-800 flex border-b border-gray-700">
+              @for (tab of tabs; track tab.id) {
+                <button
+                  (click)="setActiveTab(tab.id)"
+                  class="px-6 py-3 text-sm font-medium transition-colors border-b-2 relative"
+                  [class]="getTabClasses(tab)"
+                >
+                  {{ tab.label }}
+                  @if (hasTabErrors(tab.id)) {
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                  }
+                </button>
+              }
+            </div>
+
+            <!-- Active Editor -->
+            <div class="flex-1">
+              @switch (editorStore.activeTab()) {
+                @case ('html') {
+                  <app-html-editor />
                 }
-              </button>
-            }
+                @case ('css') {
+                  <app-css-editor />
+                }
+                @case ('js') {
+                  <app-js-editor />
+                }
+                @default {
+                  <app-html-editor />
+                }
+              }
+            </div>
           </div>
 
-          <!-- Active Editor -->
-          <div class="flex-1">
-            @switch (editorStore.activeTab()) {
-              @case ('html') {
-                <app-html-editor />
-              }
-              @case ('css') {
-                <app-css-editor />
-              }
-              @case ('js') {
-                <app-js-editor />
-              }
-              @default {
-                <app-html-editor />
-              }
-            }
+          <!-- Preview Section -->
+          <div class="w-1/2">
+            <app-preview />
           </div>
-        </div>
-
-        <!-- Preview Section -->
-        <div class="w-1/2">
-          <app-preview />
-        </div>
+        }
       </div>
 
       <!-- Status Bar -->
@@ -133,7 +137,11 @@ export class EditorComponent implements OnInit, OnDestroy {
 
   lessonName!:string
 
+  protected readonly userStore = inject(PeerUserStoreService);
   protected readonly editorStore = inject(EditorStoreService);
+  protected readonly editorApi = inject(EditorService);
+
+  private saveTimeout: any = null;
 
   protected readonly tabs = [
     { id: 'html' as const, label: 'HTML', color: 'text-orange-500' },
@@ -147,13 +155,69 @@ export class EditorComponent implements OnInit, OnDestroy {
     this.editorStore.jsErrors().length
   );
 
+  loaded = signal(false);
+
+  constructor() {
+    effect(() => {
+      const editorState = this.editorStore.editorState();
+
+      // Clear existing timeout
+      if (this.saveTimeout) {
+        clearTimeout(this.saveTimeout);
+      }
+
+      // Debounce the save call by 500ms
+      this.saveTimeout = setTimeout(() => {
+        this.editorApi.saveEditorState({}, this.id);
+      }, 800);
+    });
+
+    effect(() => {
+      const selectedLessonId = this.userStore.selectedLessonId();
+      if(selectedLessonId) this.getByKey()
+    });
+
+
+  }
+
+  get id(){
+    return ''
+  }
+
+  getByKey(){
+    this.editorApi.getByKey().then(data => {
+      if (data?.data) {
+        const editorData = data.data as any;
+
+        // Update editor state with the retrieved data
+        if (editorData.html !== undefined) {
+          this.editorStore.updateHtmlCode(editorData.html);
+        }
+        if (editorData.css !== undefined) {
+          this.editorStore.updateCssCode(editorData.css);
+        }
+        if (editorData.js !== undefined) {
+          this.editorStore.updateJsCode(editorData.js);
+        }
+      }
+    }).catch(error => {
+      console.error('Failed to load editor state:', error);
+    }).finally(() => {
+      this.loaded.set(true)
+    })
+  }
+
   ngOnInit(): void {
     // Any initialization logic can go here
     console.log('Editor component initialized');
   }
 
   ngOnDestroy(): void {
-    // Cleanup if needed
+    // Clean up the save timeout
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+      this.saveTimeout = null;
+    }
     console.log('Editor component destroyed');
   }
 

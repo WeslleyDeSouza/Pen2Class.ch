@@ -27,6 +27,15 @@ export class UserController {
     return this.userService.getAllUsers();
   }
 
+  @Get('self/:userId')
+  @ApiOperation({ summary: 'Get a user by ID' })
+  @ApiParam({ name: 'userId', type: 'string', description: 'User ID' })
+  @ApiOkResponse({ description: 'User returned successfully', type: UserDto })
+  getCurrentUser(@Param('userId') userId: string) {
+    // todo implement get current user
+    return this.userService.getUser(userId);
+  }
+
   @Get(':userId')
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiParam({ name: 'userId', type: 'string', description: 'User ID' })
