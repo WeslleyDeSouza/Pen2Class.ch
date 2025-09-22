@@ -21,9 +21,10 @@ import { PreviewComponent } from './components/preview/preview.component';
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
             <div class="text-2xl font-bold text-white">
-              <span class="text-green-400">Code</span>Pen
+              <span class="text-green-400">Pen</span>
+              <span class="text-blue-500">2</span>Class
             </div>
-            <div class="text-gray-400 text-sm">Classroom Editor</div>
+            <div class="text-gray-400 text-sm">Classroom Editor - {{lessonName}}</div>
           </div>
           <div class="flex space-x-2">
             <button
@@ -129,6 +130,9 @@ import { PreviewComponent } from './components/preview/preview.component';
   `]
 })
 export class EditorComponent implements OnInit, OnDestroy {
+
+  lessonName!:string
+
   protected readonly editorStore = inject(EditorStoreService);
 
   protected readonly tabs = [
