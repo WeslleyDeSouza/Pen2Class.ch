@@ -85,6 +85,7 @@ export class HtmlEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    console.log('HTML Editor View Init', this.editorOptions );
     this.canShowEditor = true;
   }
 

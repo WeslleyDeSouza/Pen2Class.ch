@@ -38,7 +38,7 @@ interface CreateLessonForm {
                 </div>
                 <div>
                   <h1 class="text-2xl lg:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-                  <p class="text-gray-600 text-sm lg:text-base">Manage your classrooms and lessons</p>
+                  <p class="text-gray-600 text-sm lg:text-base">Manage your HTML coding classrooms and lessons</p>
                 </div>
               </div>
 
