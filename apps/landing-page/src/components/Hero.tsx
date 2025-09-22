@@ -6,8 +6,10 @@ import { useLanguage } from '../contexts/LanguageContext';
 const Hero: React.FC = () => {
   const { t } = useLanguage();
 
-  const handleCTAClick = (action: string) => {
-    alert("🚧 Action: This feature isn't implemented yet—but you can request it! 🚀");
+  const handleCTAClick = (_action: string) => {
+    if (typeof window !== 'undefined') {
+      window.location.href = 'https://app.pen2class.ch/';
+    }
   };
 
   return (

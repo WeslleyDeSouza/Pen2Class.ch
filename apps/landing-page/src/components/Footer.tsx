@@ -6,8 +6,10 @@ import { useLanguage } from '../contexts/LanguageContext';
 const Footer: React.FC = () => {
   const { t } = useLanguage();
 
-  const handleFooterClick = (action: string) => {
-    alert("🚧 Link: This feature isn't implemented yet—but you can request it! 🚀");
+  const handleFooterClick = (_action: string) => {
+    if (typeof window !== 'undefined') {
+      window.location.href = 'https://app.pen2class.ch/';
+    }
   };
 
   return (
@@ -28,8 +30,7 @@ const Footer: React.FC = () => {
           </p>
           <button
             className="bg-indigo-600 hover:bg-indigo-700 text-white text-lg px-8 py-3 h-auto rounded-md"
-            onClick={() => handleFooterClick('get-started')}
-          >
+            onClick={() => handleFooterClick('get-started')}>
             {t('footerCta')}
           </button>
         </motion.div>
@@ -41,20 +42,16 @@ const Footer: React.FC = () => {
             </div>
             <span className="font-bold text-slate-800">Pen2Class.ch</span>
           </div>
-          <p className="text-slate-500 text-sm mb-4 sm:mb-0">
-            {t('footerCopyright')}
-          </p>
-          <div className="flex space-x-4">
-            <button onClick={() => handleFooterClick('twitter')} className="text-slate-500 hover:text-indigo-600 transition-colors" aria-label="Twitter">
-              <Twitter className="w-5 h-5" />
-            </button>
-            <button onClick={() => handleFooterClick('github')} className="text-slate-500 hover:text-indigo-600 transition-colors" aria-label="GitHub">
-              <Github className="w-5 h-5" />
-            </button>
-            <button onClick={() => handleFooterClick('linkedin')} className="text-slate-500 hover:text-indigo-600 transition-colors" aria-label="LinkedIn">
-              <Linkedin className="w-5 h-5" />
-            </button>
+          <div className="text-slate-500 text-sm mb-4 sm:mb-0">
+            <p className="sm:mb-0">
+              {t('footerCopyright')}
+            </p>
+            <small className="sm:mb-0">
+              {t('footerMvpNote')}
+            </small>
           </div>
+          <div className="flex space-x-4">
+           </div>
         </div>
       </div>
     </footer>

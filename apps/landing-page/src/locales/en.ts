@@ -53,6 +53,7 @@ const en = {
     'Start for free now and experience how easy teaching coding can be.',
   footerCta: 'Start now',
   footerCopyright: '© 2025 Pen2Class.ch. All rights reserved.',
+  footerMvpNote: 'This is an MVP – a minimal version with core features to test the idea and gather feedback.',
 };
 
 export default en;

@@ -12,6 +12,7 @@ async function bootstrap() {
     bufferLogs: true,
   });
 
+  app.setGlobalPrefix('api');
   app.enableCors();
 
   // Enable global validation + transformation for DTOs

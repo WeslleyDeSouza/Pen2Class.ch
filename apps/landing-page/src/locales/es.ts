@@ -40,6 +40,7 @@ const es = {
   footerSubtitle: "Comience gratis ahora y experimente lo fácil que puede ser enseñar a programar.",
   footerCta: "Empezar ahora",
   footerCopyright: "© 2025 Pen2Class.ch. Todos los derechos reservados.",
+  footerMvpNote: "Este es un MVP: una versión mínima con funciones básicas para probar la idea y recoger comentarios.",
 };
 
 export default es;

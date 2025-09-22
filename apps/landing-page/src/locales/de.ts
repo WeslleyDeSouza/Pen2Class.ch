@@ -54,6 +54,7 @@ const de = {
   footerCta: "Jetzt starten",
   footerCopyright:
     "© 2025 Pen2Class.ch. Alle Rechte vorbehalten.",
+  footerMvpNote: "Dies ist ein MVP – eine minimale Version mit Kernfunktionen, um die Idee zu testen und Feedback zu sammeln.",
 };
 
 export default de;
