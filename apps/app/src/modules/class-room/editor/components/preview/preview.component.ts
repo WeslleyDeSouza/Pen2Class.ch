@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, HostListener } from '@angular/core';
+import {Component, inject, OnInit, OnDestroy, HostListener, effect, viewChild} from '@angular/core';
 import { EditorStoreService, ConsoleMessage } from '../../services/editor-store.service';
 
 @Component({
@@ -46,9 +46,8 @@ import { EditorStoreService, ConsoleMessage } from '../../services/editor-store.
         }
         <iframe
           #previewFrame
-          [srcdoc]="editorStore.previewContent()"
           class="w-full h-full border-none"
-          sandbox="allow-scripts allow-same-origin"
+          sandbox="allow-scripts allow-same-origin allow-modals"
           title="Code Preview"
           (load)="onIframeLoad()"
         ></iframe>
@@ -123,8 +122,21 @@ import { EditorStoreService, ConsoleMessage } from '../../services/editor-store.
   `]
 })
 export class PreviewComponent implements OnInit, OnDestroy {
+  iframe = viewChild('previewFrame',)
   protected readonly editorStore = inject(EditorStoreService);
   protected isLoading = false;
+
+  constructor() {
+    effect(() => {
+     const updated = [
+        this.editorStore.htmlCode(),
+        this.editorStore.cssCode(),
+        this.editorStore.jsCode(),
+      ];
+
+     this.refreshPreview()
+    });
+  }
 
   ngOnInit(): void {
     // Listen for messages from iframe
@@ -149,7 +161,19 @@ export class PreviewComponent implements OnInit, OnDestroy {
 
   protected refreshPreview(): void {
     this.isLoading = true;
-    // Force iframe reload by updating srcdoc
+    const iframe = this.iframe() as any;
+
+    if (iframe) {
+      const iframeElement = iframe.nativeElement as HTMLIFrameElement;
+      const doc = iframeElement.contentDocument || iframeElement.contentWindow?.document;
+
+      if (doc) {
+        doc.open();
+        doc.write(this.editorStore.previewContent());
+        doc.close();
+      }
+    }
+
     setTimeout(() => {
       this.isLoading = false;
     }, 300);
