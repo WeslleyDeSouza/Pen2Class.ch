@@ -4,6 +4,8 @@
 
 Diese Anwendung ist eine vollständige Nachbildung des beliebten Online-Code-Editors CodePen. Sie ermöglicht es Entwicklern, HTML, CSS und JavaScript in Echtzeit zu schreiben, zu bearbeiten und sofort die Ergebnisse in einer Live-Vorschau zu sehen.
 
+Demo: https://pen2class.ch/
+
 ## Hauptfunktionen
 
 ### 🎨 Multi-Language Code Editor

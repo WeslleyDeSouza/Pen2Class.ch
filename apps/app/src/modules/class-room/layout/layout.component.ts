@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 import { ClassroomManagementFacade, ClassroomSummary } from '../admin/facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from '../admin/facades/lesson-management.facade';
 import { PeerUserStoreService } from '../../../common/services/peer.service';
-import { ChannelService } from '../../../common/services/channel.service';
+import { ChannelService } from '../../../common';
 
 interface JoinClassroomForm {
   code: string;
