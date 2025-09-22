@@ -26,7 +26,10 @@
             "output": "/assets/monaco/"
           }
         ],
-        "styles": ["apps/app/src/styles.scss"]
+        "styles": ["apps/app/src/styles.scss"],
+        "scripts": [
+          "node_modules/monaco-editor/min/vs/loader.js"
+        ]
       },
       "configurations": {
         "production": {

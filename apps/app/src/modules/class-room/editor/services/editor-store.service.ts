@@ -1,7 +1,6 @@
 import {Injectable, signal, computed, inject} from '@angular/core';
 import cssValidator from 'w3c-css-validator';
 import {ValidateTextResultWithWarnings} from "w3c-css-validator/dist/types/result";
-import {PeerUserStoreService} from "../../../../common/services/peer.service";
 
 export interface EditorError {
   line: number;

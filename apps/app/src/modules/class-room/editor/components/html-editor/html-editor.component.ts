@@ -25,12 +25,15 @@ import { MonacoEditorService } from '../../services/monaco-editor.service';
 
       <!-- Monaco Editor -->
       <div class="flex-1 relative">
-        <ngx-monaco-editor
-          [(ngModel)]="htmlCode"
-          (ngModelChange)="onCodeChange($event)"
-          [options]="editorOptions"
-          class="w-full h-full"
-        ></ngx-monaco-editor>
+        @if(editorOptions){
+          <ngx-monaco-editor
+            [(ngModel)]="htmlCode"
+            (ngModelChange)="onCodeChange($event)"
+            [options]="editorOptions"
+            class="w-full h-full"
+          ></ngx-monaco-editor>
+        }
+
 
         <!-- Error Panel -->
         @if (hasErrors()) {
@@ -64,7 +67,7 @@ export class HtmlEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly monacoService = inject(MonacoEditorService);
 
   protected htmlCode = '';
-  protected editorOptions: any = {};
+  protected editorOptions: any = undefined;
 
   canShowEditor = false;
 
