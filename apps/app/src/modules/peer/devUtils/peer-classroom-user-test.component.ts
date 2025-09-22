@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AsyncPipe } from '@angular/common';
-import { PeerChannelService } from '../services/peer-channel.service';
-import { Channel, User } from '../services/api.service';
-import { Observable, Subscription } from 'rxjs';
+import { Channel, User } from '../../../common';
+import { Observable, BehaviorSubject, Subscription } from 'rxjs';
+import { ChannelService } from '../../../common/services/channel.service';
+import { UserService } from '../../../common/services/user.service';
+import { PeerService } from '../../../common/services/peer.service';
 
 declare var Peer: any;
 interface StoredConnectionInfo {
@@ -244,10 +246,14 @@ export class PeerClassroomUserTestComponent implements OnInit, OnDestroy {
   private readonly STORAGE_KEY = 'pen2class_connection';
   private readonly CONNECTION_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
-  constructor(private peerChannelService: PeerChannelService) {
-    this.currentUser$ = this.peerChannelService.getCurrentUser();
-    this.isConnected$ = this.peerChannelService.getConnectionStatus();
-    this.myPeerId$ = this.peerChannelService.getMyPeerId();
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private isConnectedSubject = new BehaviorSubject<boolean>(false);
+  private myPeerIdSubject = new BehaviorSubject<string>('');
+
+  constructor(private channelService: ChannelService, private userService: UserService, private peerService: PeerService) {
+    this.currentUser$ = this.currentUserSubject.asObservable();
+    this.isConnected$ = this.isConnectedSubject.asObservable();
+    this.myPeerId$ = this.myPeerIdSubject.asObservable();
   }
 
   ngOnInit() {
@@ -258,7 +264,8 @@ export class PeerClassroomUserTestComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
-    this.peerChannelService.disconnect();
+    this.isConnectedSubject.next(false);
+    this.myPeerIdSubject.next('');
   }
 
   private loadPeerJS() {
@@ -301,23 +308,20 @@ export class PeerClassroomUserTestComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.peerChannelService.signup(this.username.trim(), undefined, this.username.trim()).subscribe({
-      next: (user) => {
-        this.log(`User created: ${user.username}`);
-        this.peerChannelService.setCurrentUser(user);
-        this.currentStep = 2;
-        this.isLoading = false;
+    this.userService.signup(this.username.trim(), undefined, this.username.trim()).then((user: any) => {
+      this.log(`User created: ${user.username}`);
+      this.currentUserSubject.next(user);
+      this.currentStep = 2;
+      this.isLoading = false;
 
-        // Auto-focus the code input after animation
-        setTimeout(() => {
-          const codeInput = document.querySelector('input[placeholder*="Enter 6-digit"]') as HTMLInputElement;
-          if (codeInput) codeInput.focus();
-        }, 300);
-      },
-      error: (error) => {
-        this.showError(error.error?.message || 'Failed to create user');
-        this.isLoading = false;
-      }
+      // Auto-focus the code input after animation
+      setTimeout(() => {
+        const codeInput = document.querySelector('input[placeholder*="Enter 6-digit"]') as HTMLInputElement;
+        if (codeInput) codeInput.focus();
+      }, 300);
+    }).catch((error: any) => {
+      this.showError(error.error?.message || 'Failed to create user');
+      this.isLoading = false;
     });
   }
 
@@ -345,74 +349,69 @@ export class PeerClassroomUserTestComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
 
     // First connect to peer server
-    this.peerChannelService.connectToPeerServer().then(() => {
+    this.peerService.connectToPeerServer().then((peerId: string) => {
       this.log('Connected to peer network');
-
-      // Find channel by code
-      this.peerChannelService.loadAvailableChannels();
-
-      // Wait a moment for channels to load, then search
-      setTimeout(() => {
-        this.findAndJoinChannelByCode();
-      }, 500);
-
-    }).catch(error => {
+      // Directly try to join by code using API
+      this.findAndJoinChannelByCode(peerId);
+    }).catch(() => {
       this.showError('Failed to connect to peer network');
       this.isLoading = false;
     });
   }
 
-  private findAndJoinChannelByCode() {
-    // Use the new joinChannelByCode method
-    this.peerChannelService.joinChannelByCode(this.classroomCode).subscribe({
-      next: (result) => {
-        this.log(`Joined classroom: ${result.channel.name}`);
-        this.currentChannel = result.channel;
+  private findAndJoinChannelByCode(peerId: string) {
+    const currentUser = this.currentUserSubject.value;
+    if (!currentUser) {
+      this.showError('Please create a user first');
+      this.isLoading = false;
+      return;
+    }
+
+    this.channelService.getChannelByCode(this.classroomCode).then((channel: any) => {
+      this.channelService.joinChannel(channel.id, (currentUser as any).id, peerId).then(() => {
+        this.log(`Joined classroom: ${channel.name}`);
+        this.currentChannel = channel;
         this.currentStep = 3;
         this.isLoading = false;
-
-        // Save connection info to localStorage
-        const currentUser = this.peerChannelService.getCurrentUserValue();
-        if (currentUser) {
-          this.saveConnection(currentUser, result.channel);
-        }
-      },
-      error: (error) => {
-        let errorMessage = 'Failed to join classroom';
-        if (error.status === 404) {
-          errorMessage = 'Classroom not found. Please check the code and try again.';
-        } else if (error.error?.message) {
-          errorMessage = error.error.message;
-        }
+        this.saveConnection(currentUser as any, channel as any);
+      }).catch((error: any) => {
+        const errorMessage = error?.error?.message || 'Failed to join classroom';
         this.showError(errorMessage);
         this.isLoading = false;
+      });
+    }).catch((error: any) => {
+      let errorMessage = 'Failed to join classroom';
+      if (error?.status === 404) {
+        errorMessage = 'Classroom not found. Please check the code and try again.';
+      } else if (error?.error?.message) {
+        errorMessage = error.error.message;
       }
+      this.showError(errorMessage);
+      this.isLoading = false;
     });
   }
 
   sendMessage() {
     if (!this.messageInput.trim() || !this.currentChannel) return;
-
-    this.peerChannelService.sendMessageToChannel(this.currentChannel.id, this.messageInput.trim());
+    // Messaging via PeerJS is not implemented in this test component.
     this.log(`Sent: ${this.messageInput.trim()}`);
     this.messageInput = '';
   }
 
   leaveClassroom() {
     if (!this.currentChannel) return;
+    const user = this.currentUserSubject.value;
+    if (!user) { this.showError('Please create a user first'); return; }
 
-    this.peerChannelService.leaveChannel(this.currentChannel).subscribe({
-      next: () => {
-        this.log(`Left classroom: ${this.currentChannel!.name}`);
-        this.clearStoredConnection(); // Clear saved data
-        this.currentChannel = null;
-        this.currentStep = 2;
-        this.classroomCode = '';
-        this.peerChannelService.disconnect();
-      },
-      error: (error) => {
-        this.showError('Failed to leave classroom');
-      }
+    this.channelService.leaveChannel(this.currentChannel.id, (user as any).id).then(() => {
+      this.log(`Left classroom: ${this.currentChannel!.name}`);
+      this.clearStoredConnection(); // Clear saved data
+      this.currentChannel = null;
+      this.currentStep = 2;
+      this.classroomCode = '';
+      this.peerService.disconnect();
+    }).catch(() => {
+      this.showError('Failed to leave classroom');
     });
   }
 
@@ -469,32 +468,37 @@ export class PeerClassroomUserTestComponent implements OnInit, OnDestroy {
       this.isLoading = true;
       this.currentStep = 2; // Show loading state
 
-      // Set user in service
-      this.peerChannelService.setCurrentUser(connectionInfo.user);
+      // Restore user locally
+      this.currentUserSubject.next(connectionInfo.user);
       this.log(`Restored user: ${connectionInfo.user.username}`);
 
       // Connect to peer network
-      await this.peerChannelService.connectToPeerServer();
+      const peerId = await this.peerService.connectToPeerServer();
       this.log('Reconnected to peer network');
 
-      // Rejoin the channel using the new method
-      this.peerChannelService.joinChannelByCode(connectionInfo.channel.code).subscribe({
-        next: (result) => {
-          this.currentChannel = result.channel;
+      // Rejoin the channel by code
+      this.channelService.getChannelByCode(connectionInfo.channel.code).then((channel: any) => {
+        this.channelService.joinChannel(channel.id, (connectionInfo.user as any).id, peerId).then(() => {
+          this.currentChannel = channel;
           this.currentStep = 3;
-          this.log(`Rejoined classroom: ${result.channel.name}`);
+          this.log(`Rejoined classroom: ${channel.name}`);
           this.isLoading = false;
 
           // Update stored info with fresh data
-          this.saveConnection(connectionInfo.user, result.channel);
-        },
-        error: (error) => {
+          this.saveConnection(connectionInfo.user as any, channel as any);
+        }).catch((error: any) => {
           this.log('Failed to rejoin classroom: ' + (error.error?.message || error.message));
           this.showError('Failed to restore previous session. Please start over.');
           this.clearStoredConnection();
           this.currentStep = 1;
           this.isLoading = false;
-        }
+        });
+      }).catch((error: any) => {
+        this.log('Failed to rejoin classroom: ' + (error.error?.message || error.message));
+        this.showError('Failed to restore previous session. Please start over.');
+        this.clearStoredConnection();
+        this.currentStep = 1;
+        this.isLoading = false;
       });
 
     } catch (error: any) {
@@ -535,10 +539,10 @@ export class PeerClassroomUserTestComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.log('Attempting to reconnect...');
 
-    this.peerChannelService.connectToPeerServer().then(() => {
+    this.peerService.connectToPeerServer().then(() => {
       this.log('Reconnected to peer network');
       this.isLoading = false;
-    }).catch(error => {
+    }).catch(() => {
       this.showError('Failed to reconnect to peer network');
       this.isLoading = false;
     });

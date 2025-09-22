@@ -8,6 +8,7 @@ const options = {
   input: path.resolve("./config/api-swagger-spec.json"),
   output: path.resolve("./libs/app/generated/core"),
   ignoreUnusedModels: false,
+  services: true,
 };
 
 // load the openapi-spec and resolve all $refs

@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
+import {OnEvent} from "@nestjs/event-emitter";
 
 export interface Channel {
   id: string;
@@ -145,5 +146,15 @@ export class ChannelService {
   // Find channel by code
   getChannelByCode(code: string): Channel | null {
     return Array.from(this.channels.values()).find(channel => channel.code === code) || null;
+  }
+
+  @OnEvent('peer.disconnected')
+  protected onPeerDisconnected({ peerId}: { peerId: string }){
+    // Remove from all channels that this peer was connected to
+    const userChannels = this.getChannelsByPeerId(peerId);
+    userChannels.forEach(channel => {
+      // Find the member with this peerId and remove them
+      channel.members = channel.members.filter(member => member.peerId !== peerId);
+    });
   }
 }

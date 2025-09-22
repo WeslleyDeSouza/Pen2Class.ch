@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Logger } from '@nestjs/common';
+import {Logger, ValidationPipe} from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import {AppLandingPageModule, AppModule} from './modules/app.module';
@@ -13,6 +13,20 @@ async function bootstrap() {
   });
 
   app.enableCors();
+
+  // Enable global validation + transformation for DTOs
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true,
+    transformOptions: { enableImplicitConversion: true },
+  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      forbidUnknownValues: false,
+      skipUndefinedProperties: true,
+      skipNullProperties: true,
+    })
+  );
 
   const peerService = app.get(PeerService);
   peerService.enablePeerServer(app);

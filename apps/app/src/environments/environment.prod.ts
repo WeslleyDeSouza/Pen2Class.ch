@@ -1,8 +1,9 @@
 export const environment = {
   production: true,
-  apiHost: 'localhost',
-  apiPort: 3000,
+  apiHost: 'app.pen2class.ch',
+  apiPort: 80,
+  apiPeerPath: '/peer-server',
   get apiUrl() {
-    return `http://${this.apiHost}:${this.apiPort}`;
+    return `https://${this.apiHost}:${this.apiPort}`;
   }
 };

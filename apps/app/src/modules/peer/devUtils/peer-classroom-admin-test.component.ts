@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { PeerChannelService } from '../services/peer-channel.service';
-import { Channel, User } from '../services/api.service';
-import { Observable, Subscription } from 'rxjs';
-import {AsyncPipe, DatePipe} from "@angular/common";
+import { Channel, User } from '../../../common';
+import { Observable, BehaviorSubject, Subscription } from 'rxjs';
+import { AsyncPipe, DatePipe } from '@angular/common';
+import { ChannelService } from '../../../common/services/channel.service';
+import { UserService } from '../../../common/services/user.service';
 
 declare var Peer: any;
 
@@ -251,12 +252,19 @@ export class PeerClassroomAdminTestComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
-  constructor(private peerChannelService: PeerChannelService) {
-    this.currentUser$ = this.peerChannelService.getCurrentUser();
-    this.joinedChannels$ = this.peerChannelService.getJoinedChannels();
-    this.availableChannels$ = this.peerChannelService.getAvailableChannels();
-    this.isConnected$ = this.peerChannelService.getConnectionStatus();
-    this.myPeerId$ = this.peerChannelService.getMyPeerId();
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private joinedChannelsSubject = new BehaviorSubject<Channel[]>([]);
+  private availableChannelsSubject = new BehaviorSubject<Channel[]>([]);
+  private isConnectedSubject = new BehaviorSubject<boolean>(false);
+  private myPeerIdSubject = new BehaviorSubject<string>('');
+
+  constructor(private channelService: ChannelService, private userService: UserService) {
+    this.currentUser$ = this.currentUserSubject.asObservable();
+    this.joinedChannels$ = this.joinedChannelsSubject.asObservable();
+    this.availableChannels$ = this.availableChannelsSubject.asObservable();
+    this.isConnected$ = this.isConnectedSubject.asObservable();
+    this.myPeerId$ = this.myPeerIdSubject.asObservable();
+    this.loadAvailableChannels();
   }
 
   ngOnInit() {
@@ -266,7 +274,8 @@ export class PeerClassroomAdminTestComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
-    this.peerChannelService.disconnect();
+    this.isConnectedSubject.next(false);
+    this.myPeerIdSubject.next('');
   }
 
   private loadPeerJS() {
@@ -293,30 +302,28 @@ export class PeerClassroomAdminTestComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.peerChannelService.signup(
+    this.userService.signup(
       this.signupForm.username,
       this.signupForm.email || undefined,
       this.signupForm.displayName || undefined
-    ).subscribe({
-      next: (user) => {
-        this.log(`Signed up successfully as ${user.username}`);
-        this.peerChannelService.setCurrentUser(user);
-        this.signupForm = { username: '', displayName: '', email: '' };
-      },
-      error: (error) => {
-        this.log(`Signup failed: ${error.error?.message || error.message}`);
-      }
+    ).then((user: any) => {
+      this.log(`Signed up successfully as ${user.username}`);
+      this.currentUserSubject.next(user);
+      this.signupForm = { username: '', displayName: '', email: '' };
+      // Load user's channels
+      this.userService.getUserChannels(user.id).then((channels: any) => this.joinedChannelsSubject.next(channels as any));
+    }).catch((error: any) => {
+      this.log(`Signup failed: ${error.error?.message || error.message}`);
     });
   }
 
   connectToPeer() {
-    this.peerChannelService.connectToPeerServer().then(peerId => {
-      this.log(`Connected to peer network with ID: ${peerId}`);
-      // Reload available channels after successful connection
-      this.peerChannelService.loadAvailableChannels();
-    }).catch(error => {
-      this.log(`Failed to connect to peer network: ${error.message}`);
-    });
+    // Peer functionality removed. Simulate a connection for UI purposes.
+    const id = 'web-client';
+    this.isConnectedSubject.next(true);
+    this.myPeerIdSubject.next(id);
+    this.log(`Connected to peer network with ID: ${id}`);
+    this.loadAvailableChannels();
   }
 
 
@@ -331,43 +338,47 @@ export class PeerClassroomAdminTestComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const currentUser = this.currentUserSubject.value;
+    if (!currentUser) {
+      this.log('Please sign up first');
+      return;
+    }
+
     this.isCreatingChannel = true;
 
-    this.peerChannelService.createChannel(this.newChannelName, this.newChannelDescription || undefined).subscribe({
-      next: (channel) => {
-        this.log(`Created classroom: ${channel.name}`);
-        this.newChannelName = '';
-        this.newChannelDescription = '';
-        this.showCreateChannel = false;
-        this.isCreatingChannel = false;
-        this.peerChannelService.loadAvailableChannels();
-      },
-      error: (error) => {
-        this.log(`Failed to create classroom: ${error.error?.message || error.message}`);
-        this.isCreatingChannel = false;
-      }
+    this.channelService.createChannel(this.newChannelName, this.newChannelDescription || undefined, currentUser.id).then((channel: any) => {
+      this.log(`Created classroom: ${channel.name}`);
+      this.newChannelName = '';
+      this.newChannelDescription = '';
+      this.showCreateChannel = false;
+      this.isCreatingChannel = false;
+      this.loadAvailableChannels();
+    }).catch((error: any) => {
+      this.log(`Failed to create classroom: ${error.error?.message || error.message}`);
+      this.isCreatingChannel = false;
     });
   }
 
   joinChannel(channel: Channel) {
-    this.peerChannelService.joinChannel(channel).subscribe({
-      next: () => {
-        this.log(`Joined classroom: ${channel.name}`);
-      },
-      error: (error) => {
-        this.log(`Failed to join classroom: ${error.error?.message || error.message}`);
-      }
+    const user = this.currentUserSubject.value;
+    if (!user) { this.log('Please sign up first'); return; }
+    const peerId = this.myPeerIdSubject.value || 'web-client';
+    this.channelService.joinChannel(channel.id, user.id, peerId).then(() => {
+      this.log(`Joined classroom: ${channel.name}`);
+      this.userService.getUserChannels(user.id).then((chs: any) => this.joinedChannelsSubject.next(chs as any));
+    }).catch((error: any) => {
+      this.log(`Failed to join classroom: ${error.error?.message || error.message}`);
     });
   }
 
   leaveChannel(channel: Channel) {
-    this.peerChannelService.leaveChannel(channel).subscribe({
-      next: () => {
-        this.log(`Left classroom: ${channel.name}`);
-      },
-      error: (error) => {
-        this.log(`Failed to leave classroom: ${error.error?.message || error.message}`);
-      }
+    const user = this.currentUserSubject.value;
+    if (!user) { this.log('Please sign up first'); return; }
+    this.channelService.leaveChannel(channel.id, user.id).then(() => {
+      this.log(`Left classroom: ${channel.name}`);
+      this.userService.getUserChannels(user.id).then((chs: any) => this.joinedChannelsSubject.next(chs as any));
+    }).catch((error: any) => {
+      this.log(`Failed to leave classroom: ${error.error?.message || error.message}`);
     });
   }
 
@@ -375,7 +386,7 @@ export class PeerClassroomAdminTestComponent implements OnInit, OnDestroy {
     const message = this.channelMessages[channelId];
     if (!message?.trim()) return;
 
-    this.peerChannelService.sendMessageToChannel(channelId, message);
+    // Peer messaging removed; only log locally.
     this.log(`Sent message to classroom: ${message}`);
     this.channelMessages[channelId] = '';
   }
@@ -391,5 +402,9 @@ export class PeerClassroomAdminTestComponent implements OnInit, OnDestroy {
 
   clearLog() {
     this.logEntries = [];
+  }
+
+  private loadAvailableChannels() {
+    this.channelService.getChannels().then((chs: any) => this.availableChannelsSubject.next(chs as any));
   }
 }

@@ -1,5 +1,6 @@
 import { Injectable, Logger, ConflictException, NotFoundException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
+import {OnEvent} from "@nestjs/event-emitter";
 
 export interface User {
   id: string;
@@ -63,5 +64,10 @@ export class UserService {
 
     // Return empty array for now - this will be handled by the channel controller
     return [];
+  }
+
+  @OnEvent('peer.disconnected')
+  protected onPeerDisconnected({ peerId}: { peerId: string }){
+
   }
 }

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { PeerService } from './peer.service';
-import { ChannelService } from './channel.service';
-import { UserService } from './user.service';
-import { ChannelController } from './channel.controller';
-import { UserController } from './user.controller';
+import { ChannelService } from './channels/channel.service';
+import { UserService } from './users/user.service';
+import { ChannelController } from './channels/channel.controller';
+import { UserController } from './users/user.controller';
 
 @Module({
   providers: [PeerService, ChannelService, UserService],

@@ -24,6 +24,7 @@
     "@nestjs/common": "^11.1.4",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.4",
+    "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/microservices": "^11.1.4",
     "@nestjs/passport": "^11.0.5",
@@ -40,6 +41,8 @@
     "@softarc/native-federation-node": "^2.0.10",
     "@types/uuid": "^10.0.0",
     "axios": "^1.9.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
     "es-module-shims": "^1.5.12",
@@ -124,7 +127,7 @@
     "typescript": "~5.8.2",
     "typescript-eslint": "^8.29.0",
     "verdaccio": "^6.1.6",
-    "webpack-cli": "^5.1.4",
-    "vite": "^4.4.5"
+    "vite": "^4.4.5",
+    "webpack-cli": "^5.1.4"
   }
 }
