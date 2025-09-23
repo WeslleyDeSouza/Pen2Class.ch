@@ -4,9 +4,6 @@ Demo: https://pen2class.ch/
 
 ---
 
-![Status](https://img.shields.io/badge/status-MVP-orange)  
-![Security](https://img.shields.io/badge/security-not%20production%20ready-red)
-
 **Pen2Class** is an MVP browser-based coding platform designed for classrooms.  
 It enables students to code in **HTML, CSS, and JavaScript** with a live preview and built-in error detection, while teachers can monitor each student’s editor in real time and provide instant feedback – no setup or registration required.
 
@@ -18,6 +15,8 @@ It enables students to code in **HTML, CSS, and JavaScript** with a live preview
 
 ---
 
+![Status](https://img.shields.io/badge/status-MVP-orange) 
+![Security](https://img.shields.io/badge/security-not%20production%20ready-red)
 
 ## ✨ Features
 
