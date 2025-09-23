@@ -48,8 +48,11 @@ COPY ./ecosystem.config.js ./
 
 # Setze korrekten Besitzer und Berechtigungen
 RUN mkdir /usr/src/app/storage
+RUN mkdir /usr/src/app/uploads
+
 RUN chown -R node:node /usr/src/app
 RUN chown -R node:node /usr/src/app/storage
+RUN chown -R node:node /usr/src/app/uploads
 
 USER node
 

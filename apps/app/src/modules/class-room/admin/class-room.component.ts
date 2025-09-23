@@ -42,6 +42,20 @@ import { RouteConstants} from "../../../app/route.constants";
       <aside class="lg:col-span-3">
         <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow p-4">
           <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-gray-800">Me</h3>
+          </div>
+          <ul class="divide-y divide-gray-100">
+              <li (click)="onMemberSelect({userId:currentUser?.id})"  class="py-3 flex items-center">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center mr-3">
+                  <span class="text-xs font-medium">{{ ((currentUser?.displayName  || 'Self') +'') | slice:0:2 | uppercase }}</span>
+                </div>
+              </li>
+
+          </ul>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow mt-2 p-4">
+          <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-semibold text-gray-800">Members</h3>
             <span class="text-xs text-gray-500">{{ members.length }}</span>
           </div>
@@ -94,6 +108,10 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
     private channelService: ChannelService,
     private userStore: PeerUserStoreService,
   ) {}
+
+  get currentUser(){
+    return this.userStore.getCurrentUser();
+  }
 
   async ngOnInit() {
     // track router outlet activation
