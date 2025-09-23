@@ -1,110 +1,66 @@
 # Pen2Class
 
-## Überblick
-
-Diese Anwendung ist eine vollständige Nachbildung des beliebten Online-Code-Editors CodePen. Sie ermöglicht es Entwicklern, HTML, CSS und JavaScript in Echtzeit zu schreiben, zu bearbeiten und sofort die Ergebnisse in einer Live-Vorschau zu sehen.
-
 Demo: https://pen2class.ch/
 
-## Hauptfunktionen
+---
 
-### 🎨 Multi-Language Code Editor
-- Drei separate Editoren für HTML, CSS und JavaScript
-- Syntax-highlighting durch Monaco-Editor-ähnliche Darstellung
-- Zeilennummerierung mit automatischer Synchronisation
-- Tab-basierte Navigation zwischen den verschiedenen Code-Bereichen
+![Status](https://img.shields.io/badge/status-MVP-orange)  
+![Security](https://img.shields.io/badge/security-not%20production%20ready-red)
 
-### 📱 Live Preview
-- Sofortige Aktualisierung der Vorschau bei Code-Änderungen
-- Sichere Iframe-Ausführung mit Sandbox-Modus
-- Vollständige HTML-Darstellung mit CSS-Styling und JavaScript-Funktionalität
-- Responsive Design für optimale Darstellung
+**Pen2Class** is an MVP browser-based coding platform designed for classrooms.  
+It enables students to code in **HTML, CSS, and JavaScript** with a live preview and built-in error detection, while teachers can monitor each student’s editor in real time and provide instant feedback – no setup or registration required.
 
-### 🔍 Intelligente Fehlererkennung
-- HTML-Validierung: Erkennt nicht geschlossene Tags und Syntax-Fehler
-- CSS-Validierung: Findet fehlende Semikolons und falsche Klammer-Syntax
-- JavaScript-Validierung: Identifiziert Syntax-Fehler in Echtzeit
-- Visuelle Fehler-Indikatoren mit roten Punkten auf den Tabs
-- Detaillierte Fehlermeldungen mit Zeilennummern
+---
 
-### 💻 Console & Debug-Features
-- Integrierte Konsole für console.log Ausgaben
-- Fehler-Logging mit Stack-Traces
-- Clear-Funktion zum Zurücksetzen der Konsole
-- Real-time Output durch Message-Passing zwischen Frames
+> ⚠️ **Important Note**  
+> This project is an **MVP prototype** and **not a production-ready tool**.  
+> It does **not implement full security standards** and should only be used for testing, experimentation, or educational demonstrations.
 
-### 🎯 Benutzerfreundlichkeit
-- Intuitive Benutzeroberfläche im CodePen-Design
-- Dunkles Theme für angenehmes Arbeiten
-- Keyboard-freundlich mit Standard-Editor-Shortcuts
-- Responsive Layout für verschiedene Bildschirmgrößen
+---
 
-## Technische Spezifikationen
 
-### Frontend-Technologien
-- HTML5 für die Grundstruktur
-- Tailwind CSS für modernes, responsives Styling
-- Vanilla JavaScript ohne externe Abhängigkeiten
-- ES6+ Features für moderne JavaScript-Funktionalität
+## ✨ Features
 
-### Architektur
-- Class-based JavaScript für saubere Code-Organisation
-- Event-driven Architecture für reaktive Benutzerinteraktionen
-- Module Pattern für Kapselung und Wiederverwendbarkeit
-- Observer Pattern für automatische UI-Updates
+- **Multi-Language Code Editor**
+  - Separate editors for HTML, CSS, and JavaScript
+  - Syntax highlighting, line numbers, and tab navigation
 
-### Sicherheitsfeatures
-- Iframe Sandboxing verhindert schädlichen Code
-- Content Security Policy für sichere Code-Ausführung
-- Input Validation für alle Code-Eingaben
-- Safe Evaluation mit Function Constructor
+- **Live Preview**
+  - Instant updates on every code change
+  - Secure iframe sandbox for execution
+  - Full HTML/CSS/JS rendering
 
-## Anwendungsfälle
+- **Error Detection**
+  - HTML: unclosed tags and syntax errors
+  - CSS: missing semicolons, incorrect braces
+  - JavaScript: real-time syntax validation
+  - Visual indicators + detailed error messages
 
-### Für Entwickler
-- Schnelles Prototyping von Web-Komponenten
-- Testing von CSS-Animationen und -Effekten
-- JavaScript-Snippet-Entwicklung
-- HTML-Template-Erstellung
+- **Teacher View**
+  - Monitor each student’s editor in real time
+  - Provide direct feedback on their code
+  - Creates a collaborative, interactive classroom experience
 
-### Für Lernende
-- Interaktives Lernen von Web-Technologien
-- Experimentieren mit Code in sicherer Umgebung
-- Sofortiges visuelles Feedback
-- Fehlerdiagnose und -behebung
+- **User-Friendly**
+  - Dark theme for comfortable coding
+  - Keyboard shortcuts supported
+  - No registration, no installation, works in any modern browser
 
-### Für Teams
-- Code-Sharing und Kollaboration
-- Präsentation von Konzepten
-- Rapid Prototyping in Meetings
-- Educational Workshops
+---
 
-## Vorteile gegenüber anderen Editoren
+## 🚀 Use Cases
 
-### Performance
-- Keine externen Dependencies - schnelle Ladezeiten
-- Optimierte Rendering für flüssige Benutzerinteraktion
-- Minimaler Memory Footprint durch effiziente Implementierung
+- **Students**: Learn web development with instant feedback
+- **Teachers**: Run interactive, engaging coding sessions
+- **Workshops**: Fast prototyping and real-time collaboration
 
-### Flexibilität
-- Vollständig anpassbar durch offenen Quellcode
-- Erweiterbar für zusätzliche Programmiersprachen
-- Integrierbar in bestehende Workflows und Tools
+---
 
-### Zugänglichkeit
-- Keine Registrierung erforderlich
-- Funktioniert offline nach dem ersten Laden
-- Cross-Platform Kompatibilität in allen modernen Browsern
+## 🛠 Technology Stack
 
-## Installation & Verwendung
+- **Frontend**: APP: Angular, Landing Page: React
+- **Backend**: API: NestJS, DB: 
+- **Editor**: Powered by [Monaco Editor](https://microsoft.github.io/monaco-editor/)
+- **Realtime**: WebRTC/PeerJS for peer-to-peer connections (teacher ↔ students)
 
-Die Anwendung ist sofort einsatzbereit - einfach die HTML-Datei in einem modernen Webbrowser öffnen. Keine Installation oder Setup erforderlich.
-
-## Browser-Kompatibilität
-
-✅ Chrome 70+
-✅ Firefox 65+
-✅ Safari 12+
-✅ Edge 79+
-
-Diese CodePen-Alternative bietet eine professionelle, funktionsreiche Entwicklungsumgebung, die sowohl für Anfänger als auch für erfahrene Entwickler geeignet ist.
+---
