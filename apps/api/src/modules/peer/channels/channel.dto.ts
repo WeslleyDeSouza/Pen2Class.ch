@@ -27,6 +27,10 @@ export class JoinChannelDto {
   @Expose()
   userId!: string;
 
+  @ApiProperty({ example: 'user_displayName' })
+  @IsOptional()
+  @Expose()
+  displayName!: string;
   @ApiProperty({ example: 'peer-connection-id' })
   @IsString()
   @Expose()
@@ -46,6 +50,11 @@ export class JoinByCodeDto {
   @Expose()
   code!: string;
 
+  @ApiProperty({ example: 'Michael' })
+  @IsOptional()
+  @Expose()
+  displayName!: string;
+
   @ApiProperty({ example: 'user_123' })
   @IsString()
   @Expose()
@@ -62,6 +71,10 @@ export class ChannelMemberDto {
   @ApiProperty({ example: 'user_123' })
   @Expose()
   userId!: string;
+
+  @ApiProperty({ example: 'user_DisplayName' })
+  @Expose()
+  displayName!: string;
 
   @ApiProperty({ example: 'peer-connection-id' })
   @Expose()

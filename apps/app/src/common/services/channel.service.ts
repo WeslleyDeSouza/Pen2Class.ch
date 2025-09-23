@@ -28,15 +28,20 @@ export class ChannelService {
     return (promise);
   }
 
+  getChannelsFromUser(userId:string): Promise<Channel[]> {
+    const promise = this.channelApiService.channelGetAllChannelsWithPermission({userId}) as unknown as Promise<Channel[]>;
+    return (promise);
+  }
+
   getChannel(channelId: string): Promise<ChannelDto> {
     const promise = this.channelApiService.channelGetChannel({ channelId })
     return (promise);
   }
 
-  joinChannel(channelId: string, userId: string, peerId: string): Promise<JoinLeaveResponseDto> {
+  joinChannel(channelId: string, userId: string, peerId: string, displayName:string): Promise<JoinLeaveResponseDto> {
     const promise = this.channelApiService.channelJoinChannel({
       channelId,
-      body: { userId, peerId }
+      body: { userId, peerId ,displayName}
     })
     return (promise);
   }
@@ -59,9 +64,9 @@ export class ChannelService {
     return (promise);
   }
 
-  joinByCode(code: string, userId: string, peerId: string): Promise<JoinLeaveResponseDto> {
+  joinByCode(code: string, userId: string, peerId: string,displayName:string): Promise<JoinLeaveResponseDto> {
     return  this.channelApiService.channelJoinChannelByCode({
-      body: { code, userId, peerId }
+      body: { code, userId, peerId ,displayName}
     })
   }
 

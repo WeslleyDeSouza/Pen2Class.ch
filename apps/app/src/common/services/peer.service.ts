@@ -4,7 +4,7 @@ import { Peer } from 'peerjs';
 
 @Injectable({ providedIn: 'root' })
 export class PeerUserStoreService {
-  user = signal<{id?:string} | undefined>(undefined);
+  user = signal<{id?:string,displayName?:string} | undefined>(undefined);
   userPeerId = signal<string | undefined>(undefined);
   selectedClassId = signal<string | null>(null);
   selectedLessonId = signal<string | null>(null);
@@ -104,6 +104,58 @@ export class PeerService {
     });
   }
 
+  checkPeerServerConnection(): Promise<boolean> {
+    return new Promise((resolve) => {
+      try {
+        const testPeer = new Peer({
+          host: this.rootHost,
+          port: this.rootPort,
+          path: this.rootPeerPath,
+        });
+
+        let settled = false;
+
+        const cleanup = () => {
+          try {
+            // @ts-ignore
+            if (testPeer && typeof testPeer.destroy === 'function') {
+              testPeer.destroy();
+            }
+          } catch {}
+        };
+
+        testPeer.on('open', () => {
+          this.isConnected.set(true);
+          if (!settled) {
+            settled = true;
+            cleanup();
+            resolve(true);
+          }
+        });
+
+        testPeer.on('error', () => {
+          this.isConnected.set(false);
+          if (!settled) {
+            settled = true;
+            cleanup();
+            resolve(false);
+          }
+        });
+
+        setTimeout(() => {
+          if (!settled) {
+            this.isConnected.set(false);
+            settled = true;
+            cleanup();
+            resolve(false);
+          }
+        }, 5000);
+      } catch (e) {
+        this.isConnected.set(false);
+        resolve(false);
+      }
+    });
+  }
 
   private setupConnection(conn: any) {
     this.connections.set(conn.peer, conn);

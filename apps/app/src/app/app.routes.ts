@@ -6,7 +6,7 @@ import { RouteConstants as RC } from './route.constants';
 const canActivate = () => {
   const router = inject(Router)
   const store = inject(PeerUserStoreService)
-  if(!store.getCurrentUser() || store.userPeerId()) {
+  if(!store.getCurrentUser() || !store.userPeerId()) {
     router.navigate(['/'])
     return false;
   }

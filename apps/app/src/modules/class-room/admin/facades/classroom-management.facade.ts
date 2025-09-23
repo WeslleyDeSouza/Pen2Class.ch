@@ -79,7 +79,9 @@ export class ClassroomManagementFacade {
     this.isLoadingSignal.set(true);
 
     try {
-      const channels = await this.channelService.getChannels();
+      const channels = await this.channelService.getChannelsFromUser(
+        this.userStore.getCurrentUser()?.id as string,
+      );
       const classrooms = channels.map(channel => this.mapChannelToSummary(channel));
       this.classroomsSignal.set(classrooms);
       return classrooms;
@@ -120,9 +122,9 @@ export class ClassroomManagementFacade {
   /**
    * Add a user to classroom
    */
-  async addUserToClassroom(classroomId: string, userId: string): Promise<void> {
+  async addUserToClassroom(classroomId: string, userId: string,displayName:string): Promise<void> {
     try {
-      await this.channelService.joinChannel(classroomId, userId, 'web-admin');
+      await this.channelService.joinChannel(classroomId, userId, 'web-admin',displayName);
       await this.loadClassrooms(); // Refresh to update member count
     } catch (error) {
       console.error('Failed to add user to classroom:', error);

@@ -15,6 +15,7 @@ export interface Channel {
 export interface ChannelMember {
   userId: string;
   peerId: string;
+  displayName?: string;
   joinedAt: Date;
 }
 
@@ -73,7 +74,7 @@ export class ChannelService {
     return channel;
   }
 
-  joinChannel(channelId: string, userId: string, peerId: string): { success: boolean; channel: Channel } {
+  joinChannel(channelId: string, userId: string, peerId: string, displayName?:string): { success: boolean; channel: Channel } {
     const channel = this.getChannel(channelId);
 
     // Remove existing membership if any
@@ -83,10 +84,11 @@ export class ChannelService {
     channel.members.push({
       userId,
       peerId,
+      displayName,
       joinedAt: new Date()
     });
 
-    this.logger.log(`User ${userId} joined channel ${channel.name} with peer ${peerId}`);
+    this.logger.log(`User ${userId}:${displayName} joined channel ${channel.name} with peer ${peerId}`);
 
     return { success: true, channel };
   }

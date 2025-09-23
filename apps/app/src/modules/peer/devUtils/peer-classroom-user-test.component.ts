@@ -368,7 +368,9 @@ export class PeerClassroomUserTestComponent implements OnInit, OnDestroy {
     }
 
     this.channelService.getChannelByCode(this.classroomCode).then((channel: any) => {
-      this.channelService.joinChannel(channel.id, (currentUser as any).id, peerId).then(() => {
+      this.channelService.joinChannel(channel.id,
+        (currentUser as any).id, peerId,
+        (currentUser as any).displayName).then(() => {
         this.log(`Joined classroom: ${channel.name}`);
         this.currentChannel = channel;
         this.currentStep = 3;
@@ -478,7 +480,10 @@ export class PeerClassroomUserTestComponent implements OnInit, OnDestroy {
 
       // Rejoin the channel by code
       this.channelService.getChannelByCode(connectionInfo.channel.code).then((channel: any) => {
-        this.channelService.joinChannel(channel.id, (connectionInfo.user as any).id, peerId).then(() => {
+        this.channelService.joinChannel(channel.id,
+          (connectionInfo.user as any).id,
+          peerId,
+          (connectionInfo.user as any).displayName).then(() => {
           this.currentChannel = channel;
           this.currentStep = 3;
           this.log(`Rejoined classroom: ${channel.name}`);

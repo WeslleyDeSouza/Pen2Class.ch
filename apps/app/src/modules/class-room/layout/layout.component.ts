@@ -254,7 +254,9 @@ export class ClassRoomLayout implements OnInit, OnDestroy {
       await this.channelService.joinByCode(
         this.joinForm.code.trim(),
         currentUser.id as string,
-        'web-client'
+        'web-client',
+        currentUser.displayName as string,
+
       );
 
       this.joinSuccess = 'Successfully joined classroom!';

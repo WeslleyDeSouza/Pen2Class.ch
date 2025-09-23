@@ -363,7 +363,7 @@ export class PeerClassroomAdminTestComponent implements OnInit, OnDestroy {
     const user = this.currentUserSubject.value;
     if (!user) { this.log('Please sign up first'); return; }
     const peerId = this.myPeerIdSubject.value || 'web-client';
-    this.channelService.joinChannel(channel.id, user.id, peerId).then(() => {
+    this.channelService.joinChannel(channel.id, user.id, peerId, user?.displayName).then(() => {
       this.log(`Joined classroom: ${channel.name}`);
       this.userService.getUserChannels(user.id).then((chs: any) => this.joinedChannelsSubject.next(chs as any));
     }).catch((error: any) => {

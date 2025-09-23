@@ -1,16 +1,15 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AsyncPipe } from '@angular/common';
-import { Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import { Channel, User } from '../../common';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 import { ChannelService } from '../../common/services/channel.service';
 import { UserService, UserType } from '../../common/services/user.service';
-import { PeerUserStoreService } from '../../common/services/peer.service';
+import {PeerService, PeerUserStoreService} from '../../common/services/peer.service';
 import {ChannelDto, UserDto} from "@ui-lib/apiClient";
 import {RouteConstants} from "../../app/route.constants";
 
-declare var Peer: any;
 
 type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
 
@@ -320,72 +319,48 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private channelService: ChannelService,
     private userService: UserService,
+    private peerService: PeerService,
     private userStore: PeerUserStoreService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit() {
-    this.loadPeerJS();
-    this.checkPeerServerConnection();
+    this.peerService.checkPeerServerConnection().then((ok) => {
+      this.isConnectedToPeer = ok;
+      if (!ok && this.currentView !== 'initial') {
+        this.currentView = 'hasError';
+      }
+    });
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  private loadPeerJS() {
-    if (typeof Peer === 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/peerjs@1.5.0/dist/peerjs.min.js';
-      document.head.appendChild(script);
-    }
-  }
 
-  private checkPeerServerConnection() {
-    // Try to connect to peer server to check availability
-    try {
-      const testPeer = new Peer();
-
-      testPeer.on('open', () => {
-        this.isConnectedToPeer = true;
-        testPeer.destroy();
-      });
-
-      testPeer.on('error', () => {
-        this.isConnectedToPeer = false;
-        if (this.currentView !== 'initial') {
-          this.currentView = 'hasError';
-        }
-        testPeer.destroy();
-      });
-
-      // Timeout after 5 seconds
-      setTimeout(() => {
-        if (!this.isConnectedToPeer && this.currentView !== 'initial') {
-          this.currentView = 'hasError';
-        }
-        testPeer.destroy();
-      }, 5000);
-
-    } catch (error) {
-      this.isConnectedToPeer = false;
-      if (this.currentView !== 'initial') {
-        this.currentView = 'hasError';
-      }
-    }
-  }
 
   // Navigation methods
   switchToJoinByCode() {
     this.resetForm();
     this.currentView = 'joinByCode';
-    this.checkPeerServerConnection();
+    this.peerService.checkPeerServerConnection().then((ok) => {
+      this.isConnectedToPeer = ok;
+      if (!ok && this.currentView !== 'initial') {
+        this.currentView = 'hasError';
+      }
+    });
   }
 
   switchToCreateClass() {
     this.resetForm();
     this.currentView = 'createClass';
-    this.checkPeerServerConnection();
+    this.peerService.checkPeerServerConnection().then((ok) => {
+      this.isConnectedToPeer = ok;
+      if (!ok && this.currentView !== 'initial') {
+        this.currentView = 'hasError';
+      }
+    });
   }
 
   goToInitial() {
@@ -395,7 +370,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   retryConnection() {
     this.isLoading = true;
-    this.checkPeerServerConnection();
+    this.peerService.checkPeerServerConnection().then((ok) => {
+      this.isConnectedToPeer = ok;
+    });
     setTimeout(() => {
       this.isLoading = false;
       if (this.isConnectedToPeer) {
@@ -458,11 +435,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.clearError();
 
-
     await this.channelService.joinByCode(
       this.classroomCode,
       this.userService.getUserFromStore()?.id as string,
-      this.userService.getUserPeerIdFromStore() as string
+      this.userService.getUserPeerIdFromStore() as string,
+      this.userService.getUserFromStore()?.displayName as string,
     ).then((res) => {
       this.currentChannel = res.channel;
       this.joinStep = 3;
@@ -545,10 +522,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   goToAdmin() {
-    this.router.navigate(['/admin/dashboard']);
+    this.router.navigate(['/', RouteConstants.Paths.admin, RouteConstants.Paths.dashboard]);
   }
   goToHome() {
-    this.router.navigate(['/classroom']);
+    this.router.navigate(['/', RouteConstants.Paths.classroom]);
   }
 
   hasExistingUser(): boolean {
@@ -574,14 +551,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       // User still exists, update stored data and continue
       this.userStore.user.set(user);
       this.userStore.persist();
-      this.router.navigate([
-        RouteConstants.Paths.admin,
-        RouteConstants.Paths.dashboard,
-      ]);
-      console.log([
-        RouteConstants.Paths.admin,
-        RouteConstants.Paths.dashboard,
-      ])
+      if(user)this.goToAdmin(); // todo verify type 1 or 2
       this.isLoading = false;
     }).catch((error) => {
       // User no longer exists, remove from storage

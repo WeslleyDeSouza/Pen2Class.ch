@@ -47,7 +47,7 @@ export class ChannelController {
   @ApiBody({ description: 'Join channel payload', type: JoinChannelDto })
   @ApiOkResponse({ description: 'Joined channel successfully', type: JoinLeaveResponseDto })
   joinChannel(@Param('channelId') channelId: string, @Body() body: JoinChannelDto) {
-    return this.channelService.joinChannel(channelId, body.userId, body.peerId);
+    return this.channelService.joinChannel(channelId, body.userId, body.peerId, body.displayName);
   }
 
   @Post(':channelId/leave')
@@ -77,7 +77,7 @@ export class ChannelController {
     if (!channel) {
       throw new NotFoundException(`Classroom with code ${body.code} not found`);
     }
-    return this.channelService.joinChannel(channel.id, body.userId, body.peerId);
+    return this.channelService.joinChannel(channel.id, body.userId, body.peerId, body.displayName);
   }
 
   @Get('by-code/:code')
