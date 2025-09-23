@@ -5,7 +5,6 @@ import { fromEvent } from 'rxjs';
 import { BaseEditor } from './base-editor';
 import { NgxEditorModel } from './types';
 
-declare var monaco: any;
 
 @Component({
   standalone: true,
@@ -82,23 +81,24 @@ export class EditorComponent extends BaseEditor implements ControlValueAccessor 
 
   protected initMonaco(options: any, insideNg: boolean): void {
 
+    console.log(options,this.monaco);
     const hasModel = !!options.model;
 
     if (hasModel) {
-      const model = monaco.editor.getModel(options.model.uri || '');
+      const model = this.monaco.editor.getModel(options.model.uri || '');
       if (model) {
         options.model = model;
         options.model.setValue(this._value);
       } else {
-        options.model = monaco.editor.createModel(options.model.value, options.model.language, options.model.uri);
+        options.model = this.monaco.editor.createModel(options.model.value, options.model.language, options.model.uri);
       }
     }
 
     if (insideNg) {
-      this._editor = monaco.editor.create(this._editorContainer.nativeElement, options);
+      this._editor = this.monaco.editor.create(this._editorContainer.nativeElement, options);
     } else {
       this.zone.runOutsideAngular(() => {
-        this._editor = monaco.editor.create(this._editorContainer.nativeElement, options);
+        this._editor = this.monaco.editor.create(this._editorContainer.nativeElement, options);
       })
     }
 
@@ -122,7 +122,7 @@ export class EditorComponent extends BaseEditor implements ControlValueAccessor 
 
     this._editor.setTheme = (themeName: string): void => {
       this.options.theme = themeName;
-      monaco.editor.setTheme(themeName);
+      this.monaco.editor.setTheme(themeName);
     };
 
     // refresh layout on resize event.

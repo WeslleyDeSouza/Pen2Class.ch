@@ -19,6 +19,10 @@ import { NGX_MONACO_EDITOR_CONFIG, NgxMonacoEditorConfig } from './config';
 export abstract class BaseEditor implements AfterViewInit, OnDestroy {
   config = inject<NgxMonacoEditorConfig>(NGX_MONACO_EDITOR_CONFIG);
 
+  get monaco(): any {
+    return (<any>window).monaco;
+  }
+
   @Input('insideNg')
   set insideNg(insideNg: boolean) {
     this._insideNg = insideNg;

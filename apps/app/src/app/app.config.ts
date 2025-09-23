@@ -18,6 +18,7 @@ export const appConfig: ApplicationConfig = {
     provideMonacoEditor({
       baseUrl: '/assets/monaco/min/vs',
       defaultOptions: MonacoEditorService.defaultOptions,
+      requireConfig: { preferScriptTags: true },
     })
   ],
 };
