@@ -830,7 +830,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     }
 
     try {
-      const success = await this.lessonFacade.deleteLesson(channelId, lessonId);
+      const success = await this.lessonFacade.deleteLesson(channelId, lessonId,
+        this.userStore.getCurrentUser()?.id as string);
       if (success) {
         this.log(`Deleted lesson successfully`);
       } else {

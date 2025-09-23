@@ -216,11 +216,11 @@ export class LessonManagementFacade {
   /**
    * Delete a lesson
    */
-  async deleteLesson(classroomId: string, lessonId: string): Promise<boolean> {
+  async deleteLesson(classroomId: string, lessonId: string,userId:string): Promise<boolean> {
     this.isLoadingSignal.set(true);
 
     try {
-      await this.channelTypesService.delete(classroomId, lessonId);
+      await this.channelTypesService.delete(classroomId, lessonId, userId);
       await this.loadLessonsForClassroom(classroomId);
       return true;
     } catch (error) {

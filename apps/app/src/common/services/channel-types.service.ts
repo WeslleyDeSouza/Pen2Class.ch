@@ -51,8 +51,10 @@ export class ChannelTypesService {
   }
 
   // Delete a channel type
-  delete(channelId: string, typeId: string): Promise<SuccessDto> {
-    return this.channelTypesApi.channelTypeDelete({ channelId, typeId, body: {} });
+  delete(channelId: string, typeId: string,userId:string): Promise<SuccessDto> {
+    return this.channelTypesApi.channelTypeDelete({ channelId, typeId, body: {
+        requestedBy:userId
+      } });
   }
 
   // Enable a channel type
