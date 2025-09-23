@@ -3,6 +3,7 @@ import { ChannelService } from '../channels/channel.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChannelTypeEntity } from './channel-type.entity';
+import { ChannelTypeLessonEntity } from './channel-type-lesson.entity';
 
 export interface ChannelType {
   id: string;
@@ -17,13 +18,12 @@ export interface ChannelType {
 
 @Injectable()
 export class ChannelTypeService {
-  // active lessons: typeId -> Set<userId> (kept in-memory; runtime state)
-  private activeLessons = new Map<string, Set<string>>();
-
   constructor(
     private readonly channelService: ChannelService,
     @InjectRepository(ChannelTypeEntity)
     private readonly typeRepo: Repository<ChannelTypeEntity>,
+    @InjectRepository(ChannelTypeLessonEntity)
+    private readonly lessonRepo: Repository<ChannelTypeLessonEntity>,
   ) {}
 
   async list(channelId: string, requesterId?: string): Promise<ChannelType[]> {
@@ -89,8 +89,9 @@ export class ChannelTypeService {
     const type = await this.typeRepo.findOne({ where: { id: typeId, channelId } });
     if (!type) throw new NotFoundException('Channel type not found');
     if (channel.createdBy !== requesterId) throw new ForbiddenException('Only owner can delete channel types');
+    // Remove active lessons for this type first (if any)
+    await this.lessonRepo.delete({ channelTypeId: typeId });
     await this.typeRepo.delete(typeId);
-    this.activeLessons.delete(typeId);
     return { success: true };
   }
 
@@ -103,8 +104,14 @@ export class ChannelTypeService {
     // must be a member of the channel
     const isMember = channel.members.some(m => m.userId === userId);
     if (!isMember) throw new ForbiddenException('User has no access to this channel');
-    if (!this.activeLessons.has(typeId)) this.activeLessons.set(typeId, new Set());
-    this.activeLessons.get(typeId)!.add(userId);
+
+    // idempotent create
+    const existing = await this.lessonRepo.findOne({ where: { channelTypeId: typeId, userId } });
+    if (!existing) {
+      const lesson = this.lessonRepo.create({ channelTypeId: typeId, userId, channelId });
+      await this.lessonRepo.save(lesson);
+    }
+
     return { success: true } as const;
   }
 
@@ -115,11 +122,13 @@ export class ChannelTypeService {
     // quitting allowed regardless of enabled state, but must have access
     const isMember = channel.members.some(m => m.userId === userId);
     if (!isMember) throw new ForbiddenException('User has no access to this channel');
-    this.activeLessons.get(typeId)?.delete(userId);
+
+    await this.lessonRepo.delete({ channelTypeId: typeId, userId });
     return { success: true } as const;
   }
 
-  getActiveUsers(typeId: string): string[] {
-    return Array.from(this.activeLessons.get(typeId) || []);
+  async getActiveUsers(typeId: string): Promise<string[]> {
+    const rows = await this.lessonRepo.find({ where: { channelTypeId: typeId } });
+    return rows.map(r => r.userId);
   }
 }

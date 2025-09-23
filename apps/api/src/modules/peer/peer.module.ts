@@ -14,10 +14,11 @@ import { ChannelEntity } from './channels/channel.entity';
 import { ChannelMemberEntity } from './channels/channel-member.entity';
 import { PeerObjectEntity } from './objects/peerObject.entity';
 import { ChannelTypeEntity } from './channel-types/channel-type.entity';
+import { ChannelTypeLessonEntity } from './channel-types/channel-type-lesson.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, ChannelEntity, ChannelMemberEntity, PeerObjectEntity, ChannelTypeEntity]),
+    TypeOrmModule.forFeature([UserEntity, ChannelEntity, ChannelMemberEntity, PeerObjectEntity, ChannelTypeEntity, ChannelTypeLessonEntity]),
   ],
   providers: [PeerService, ChannelService, UserService, ChannelTypeService, ObjectService],
   controllers: [ChannelController, UserController, ChannelTypeController, ObjectController],
