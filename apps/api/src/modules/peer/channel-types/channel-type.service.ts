@@ -1,6 +1,8 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
 import { ChannelService } from '../channels/channel.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ChannelTypeEntity } from './channel-type.entity';
 
 export interface ChannelType {
   id: string;
@@ -15,54 +17,45 @@ export interface ChannelType {
 
 @Injectable()
 export class ChannelTypeService {
-  // store by id
-  private types = new Map<string, ChannelType>();
-  // index: channelId -> Set<typeId>
-  private byChannel = new Map<string, Set<string>>();
-  // active lessons: typeId -> Set<userId>
+  // active lessons: typeId -> Set<userId> (kept in-memory; runtime state)
   private activeLessons = new Map<string, Set<string>>();
 
-  constructor(private readonly channelService: ChannelService) {}
+  constructor(
+    private readonly channelService: ChannelService,
+    @InjectRepository(ChannelTypeEntity)
+    private readonly typeRepo: Repository<ChannelTypeEntity>,
+  ) {}
 
   async list(channelId: string, requesterId?: string): Promise<ChannelType[]> {
     // ensure channel exists
     const channel = await this.channelService.getChannel(channelId);
-    const ids = Array.from(this.byChannel.get(channelId) || []);
-    const all = ids.map(id => this.types.get(id)!).filter(Boolean) as ChannelType[];
-    // owner can see all, others only enabled
-    if (requesterId && requesterId === channel.createdBy) return all;
-    return all.filter(t => t.enabled);
+    const all = await this.typeRepo.find({ where: { channelId } });
+    if (requesterId && requesterId === channel.createdBy) return all as unknown as ChannelType[];
+    return (all as unknown as ChannelType[]).filter(t => t.enabled);
   }
 
   async get(channelId: string, typeId: string, requesterId?: string): Promise<ChannelType> {
     const channel = await this.channelService.getChannel(channelId);
-    const type = this.types.get(typeId);
-    if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
+    const type = await this.typeRepo.findOne({ where: { id: typeId, channelId } });
+    if (!type) throw new NotFoundException('Channel type not found');
     if (!type.enabled && requesterId !== channel.createdBy) throw new ForbiddenException('Not visible');
-    return type;
+    return type as unknown as ChannelType;
   }
 
   async create(channelId: string, name: string, description: string | undefined, createdBy: string): Promise<ChannelType> {
     const channel = await this.channelService.getChannel(channelId);
     if (channel.createdBy !== createdBy) {
-      console.log('channel.createdBy', channel.createdBy, createdBy);
       throw new ForbiddenException('Only owner can create channel types');
     }
-    const now = new Date();
-    const type: ChannelType = {
-      id: uuidv4(),
+    const entity = this.typeRepo.create({
       channelId,
       name,
-      description,
+      description: description ?? null,
       enabled: true,
       createdBy,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.types.set(type.id, type);
-    if (!this.byChannel.has(channelId)) this.byChannel.set(channelId, new Set());
-    this.byChannel.get(channelId)!.add(type.id);
-    return type;
+    });
+    const saved = await this.typeRepo.save(entity);
+    return saved as unknown as ChannelType;
   }
 
   async update(
@@ -72,32 +65,31 @@ export class ChannelTypeService {
     patch: { name?: string; description?: string },
   ): Promise<ChannelType> {
     const channel = await this.channelService.getChannel(channelId);
-    const type = this.types.get(typeId);
-    if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
+    const type = await this.typeRepo.findOne({ where: { id: typeId, channelId } });
+    if (!type) throw new NotFoundException('Channel type not found');
     if (channel.createdBy !== requesterId) throw new ForbiddenException('Only owner can update channel types');
     if (typeof patch.name === 'string' && patch.name.trim()) type.name = patch.name;
-    if (typeof patch.description !== 'undefined') type.description = patch.description;
-    type.updatedAt = new Date();
-    return type;
+    if (typeof patch.description !== 'undefined') type.description = patch.description ?? null;
+    const saved = await this.typeRepo.save(type);
+    return saved as unknown as ChannelType;
   }
 
   async setEnabled(channelId: string, typeId: string, requesterId: string, enabled: boolean): Promise<ChannelType> {
     const channel = await this.channelService.getChannel(channelId);
-    const type = this.types.get(typeId);
-    if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
+    const type = await this.typeRepo.findOne({ where: { id: typeId, channelId } });
+    if (!type) throw new NotFoundException('Channel type not found');
     if (channel.createdBy !== requesterId) throw new ForbiddenException('Only owner can enable/disable channel types');
     type.enabled = enabled;
-    type.updatedAt = new Date();
-    return type;
+    const saved = await this.typeRepo.save(type);
+    return saved as unknown as ChannelType;
   }
 
   async delete(channelId: string, typeId: string, requesterId: string): Promise<{ success: boolean }> {
     const channel = await this.channelService.getChannel(channelId);
-    const type = this.types.get(typeId);
-    if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
+    const type = await this.typeRepo.findOne({ where: { id: typeId, channelId } });
+    if (!type) throw new NotFoundException('Channel type not found');
     if (channel.createdBy !== requesterId) throw new ForbiddenException('Only owner can delete channel types');
-    this.types.delete(typeId);
-    this.byChannel.get(channelId)?.delete(typeId);
+    await this.typeRepo.delete(typeId);
     this.activeLessons.delete(typeId);
     return { success: true };
   }
@@ -105,8 +97,8 @@ export class ChannelTypeService {
   // Lesson controls
   async startLesson(channelId: string, typeId: string, userId: string): Promise<{ success: true }> {
     const channel = await this.channelService.getChannel(channelId);
-    const type = this.types.get(typeId);
-    if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
+    const type = await this.typeRepo.findOne({ where: { id: typeId, channelId } });
+    if (!type) throw new NotFoundException('Channel type not found');
     if (!type.enabled) throw new ForbiddenException('Channel type is disabled');
     // must be a member of the channel
     const isMember = channel.members.some(m => m.userId === userId);
@@ -118,8 +110,8 @@ export class ChannelTypeService {
 
   async quitLesson(channelId: string, typeId: string, userId: string): Promise<{ success: true }> {
     const channel = await this.channelService.getChannel(channelId);
-    const type = this.types.get(typeId);
-    if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
+    const type = await this.typeRepo.findOne({ where: { id: typeId, channelId } });
+    if (!type) throw new NotFoundException('Channel type not found');
     // quitting allowed regardless of enabled state, but must have access
     const isMember = channel.members.some(m => m.userId === userId);
     if (!isMember) throw new ForbiddenException('User has no access to this channel');

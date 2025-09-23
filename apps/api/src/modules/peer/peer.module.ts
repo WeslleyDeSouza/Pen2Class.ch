@@ -13,10 +13,11 @@ import { UserEntity } from './users/user.entity';
 import { ChannelEntity } from './channels/channel.entity';
 import { ChannelMemberEntity } from './channels/channel-member.entity';
 import { PeerObjectEntity } from './objects/peerObject.entity';
+import { ChannelTypeEntity } from './channel-types/channel-type.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, ChannelEntity, ChannelMemberEntity, PeerObjectEntity]),
+    TypeOrmModule.forFeature([UserEntity, ChannelEntity, ChannelMemberEntity, PeerObjectEntity, ChannelTypeEntity]),
   ],
   providers: [PeerService, ChannelService, UserService, ChannelTypeService, ObjectService],
   controllers: [ChannelController, UserController, ChannelTypeController, ObjectController],
