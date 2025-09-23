@@ -24,9 +24,9 @@ export class ChannelTypeService {
 
   constructor(private readonly channelService: ChannelService) {}
 
-  list(channelId: string, requesterId?: string): ChannelType[] {
+  async list(channelId: string, requesterId?: string): Promise<ChannelType[]> {
     // ensure channel exists
-    const channel = this.channelService.getChannel(channelId);
+    const channel = await this.channelService.getChannel(channelId);
     const ids = Array.from(this.byChannel.get(channelId) || []);
     const all = ids.map(id => this.types.get(id)!).filter(Boolean) as ChannelType[];
     // owner can see all, others only enabled
@@ -34,18 +34,17 @@ export class ChannelTypeService {
     return all.filter(t => t.enabled);
   }
 
-  get(channelId: string, typeId: string, requesterId?: string): ChannelType {
-    const channel = this.channelService.getChannel(channelId);
+  async get(channelId: string, typeId: string, requesterId?: string): Promise<ChannelType> {
+    const channel = await this.channelService.getChannel(channelId);
     const type = this.types.get(typeId);
     if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
     if (!type.enabled && requesterId !== channel.createdBy) throw new ForbiddenException('Not visible');
     return type;
   }
 
-  create(channelId: string, name: string, description: string | undefined, createdBy: string): ChannelType {
-    const channel = this.channelService.getChannel(channelId);
-    if (channel.createdBy !== createdBy)
-    {
+  async create(channelId: string, name: string, description: string | undefined, createdBy: string): Promise<ChannelType> {
+    const channel = await this.channelService.getChannel(channelId);
+    if (channel.createdBy !== createdBy) {
       console.log('channel.createdBy', channel.createdBy, createdBy);
       throw new ForbiddenException('Only owner can create channel types');
     }
@@ -66,8 +65,13 @@ export class ChannelTypeService {
     return type;
   }
 
-  update(channelId: string, typeId: string, requesterId: string, patch: { name?: string; description?: string }): ChannelType {
-    const channel = this.channelService.getChannel(channelId);
+  async update(
+    channelId: string,
+    typeId: string,
+    requesterId: string,
+    patch: { name?: string; description?: string },
+  ): Promise<ChannelType> {
+    const channel = await this.channelService.getChannel(channelId);
     const type = this.types.get(typeId);
     if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
     if (channel.createdBy !== requesterId) throw new ForbiddenException('Only owner can update channel types');
@@ -77,8 +81,8 @@ export class ChannelTypeService {
     return type;
   }
 
-  setEnabled(channelId: string, typeId: string, requesterId: string, enabled: boolean): ChannelType {
-    const channel = this.channelService.getChannel(channelId);
+  async setEnabled(channelId: string, typeId: string, requesterId: string, enabled: boolean): Promise<ChannelType> {
+    const channel = await this.channelService.getChannel(channelId);
     const type = this.types.get(typeId);
     if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
     if (channel.createdBy !== requesterId) throw new ForbiddenException('Only owner can enable/disable channel types');
@@ -87,8 +91,8 @@ export class ChannelTypeService {
     return type;
   }
 
-  delete(channelId: string, typeId: string, requesterId: string): { success: boolean } {
-    const channel = this.channelService.getChannel(channelId);
+  async delete(channelId: string, typeId: string, requesterId: string): Promise<{ success: boolean }> {
+    const channel = await this.channelService.getChannel(channelId);
     const type = this.types.get(typeId);
     if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
     if (channel.createdBy !== requesterId) throw new ForbiddenException('Only owner can delete channel types');
@@ -99,8 +103,8 @@ export class ChannelTypeService {
   }
 
   // Lesson controls
-  startLesson(channelId: string, typeId: string, userId: string) {
-    const channel = this.channelService.getChannel(channelId);
+  async startLesson(channelId: string, typeId: string, userId: string): Promise<{ success: true }> {
+    const channel = await this.channelService.getChannel(channelId);
     const type = this.types.get(typeId);
     if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
     if (!type.enabled) throw new ForbiddenException('Channel type is disabled');
@@ -109,18 +113,18 @@ export class ChannelTypeService {
     if (!isMember) throw new ForbiddenException('User has no access to this channel');
     if (!this.activeLessons.has(typeId)) this.activeLessons.set(typeId, new Set());
     this.activeLessons.get(typeId)!.add(userId);
-    return { success: true };
+    return { success: true } as const;
   }
 
-  quitLesson(channelId: string, typeId: string, userId: string) {
-    const channel = this.channelService.getChannel(channelId);
+  async quitLesson(channelId: string, typeId: string, userId: string): Promise<{ success: true }> {
+    const channel = await this.channelService.getChannel(channelId);
     const type = this.types.get(typeId);
     if (!type || type.channelId !== channelId) throw new NotFoundException('Channel type not found');
     // quitting allowed regardless of enabled state, but must have access
     const isMember = channel.members.some(m => m.userId === userId);
     if (!isMember) throw new ForbiddenException('User has no access to this channel');
     this.activeLessons.get(typeId)?.delete(userId);
-    return { success: true };
+    return { success: true } as const;
   }
 
   getActiveUsers(typeId: string): string[] {

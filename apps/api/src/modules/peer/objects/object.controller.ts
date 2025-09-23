@@ -12,7 +12,7 @@ export class ObjectController {
   @ApiOperation({ summary: 'Create a new object via peer' })
   @ApiBody({ type: CreatePeerObjectDto })
   @ApiOkResponse({ type: PeerObjectDto })
-  create(@Body() body: CreatePeerObjectDto) {
+  async create(@Body() body: CreatePeerObjectDto) {
     return this.objectService.create(body);
     }
 
@@ -20,7 +20,7 @@ export class ObjectController {
   @ApiOperation({ summary: 'Upsert an object by userId, type, channelId, channelTypeId' })
   @ApiBody({ type: CreatePeerObjectDto })
   @ApiOkResponse({ type: PeerObjectDto })
-  upsert(@Body() body: CreatePeerObjectDto) {
+  async upsert(@Body() body: CreatePeerObjectDto) {
     return this.objectService.upsert(body);
   }
 
@@ -29,7 +29,7 @@ export class ObjectController {
   @ApiParam({ name: 'id', type: 'string' })
   @ApiBody({ type: UpdatePeerObjectDto })
   @ApiOkResponse({ type: PeerObjectDto })
-  update(@Param('id') id: string, @Body() body: UpdatePeerObjectDto) {
+  async update(@Param('id') id: string, @Body() body: UpdatePeerObjectDto) {
     return this.objectService.update(id, body);
   }
 

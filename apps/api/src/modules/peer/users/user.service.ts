@@ -1,6 +1,8 @@
 import { Injectable, Logger, ConflictException, NotFoundException } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
-import {OnEvent} from "@nestjs/event-emitter";
+import { OnEvent } from '@nestjs/event-emitter';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserEntity } from './user.entity';
 
 export interface User {
   id: string;
@@ -13,61 +15,60 @@ export interface User {
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
-  private users: Map<string, User> = new Map();
-  private usernameIndex: Map<string, string> = new Map(); // username -> userId
 
-  createUser(username: string, email?: string, displayName?: string): User {
-    // Check if username already exists
-    if (this.usernameIndex.has(username.toLowerCase())) {
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly userRepo: Repository<UserEntity>,
+  ) {}
+
+  async createUser(username: string, email?: string, displayName?: string): Promise<User> {
+    const uname = username.toLowerCase();
+    const existing = await this.userRepo.findOne({ where: { username: uname } });
+    if (existing) {
       throw new ConflictException(`Username ${username} is already taken`);
     }
 
-    const user: User = {
-      id: uuidv4(),
-      username: username.toLowerCase(),
+    const entity = this.userRepo.create({
+      username: uname,
       email,
       displayName: displayName || username,
-      createdAt: new Date()
-    };
+    });
+    const saved = await this.userRepo.save(entity);
 
-    this.users.set(user.id, user);
-    this.usernameIndex.set(user.username, user.id);
+    this.logger.log(`User created: ${saved.username} (${saved.id})`);
 
-    this.logger.log(`User created: ${user.username} (${user.id})`);
-
-    return user;
+    return saved as unknown as User;
   }
 
-  getAllUsers(): User[] {
-    return Array.from(this.users.values()).map(user => ({
+  async getAllUsers(): Promise<User[]> {
+    const users = await this.userRepo.find();
+    return users.map((user) => ({
       ...user,
-      email: undefined // Don't expose emails in list
-    }));
+      email: undefined, // Don't expose emails in list
+    } as unknown as User));
   }
 
-  getUser(userId: string): User {
-    const user = this.users.get(userId);
+  async getUser(userId: string): Promise<User> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
     }
-    return user;
+    return user as unknown as User;
   }
 
-  getUserByUsername(username: string): User | undefined {
-    const userId = this.usernameIndex.get(username.toLowerCase());
-    return userId ? this.users.get(userId) : undefined;
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const uname = username.toLowerCase();
+    const user = await this.userRepo.findOne({ where: { username: uname } });
+    return user as unknown as User | undefined;
   }
 
-  getUserChannels(userId: string) {
-    // Verify user exists
-    this.getUser(userId);
-
-    // Return empty array for now - this will be handled by the channel controller
+  async getUserChannels(userId: string) {
+    await this.getUser(userId); // Verify user exists
     return [];
   }
 
   @OnEvent('peer.disconnected')
-  protected onPeerDisconnected({ peerId}: { peerId: string }){
-
+  protected onPeerDisconnected({ peerId }: { peerId: string }) {
+    // no-op for now
   }
 }

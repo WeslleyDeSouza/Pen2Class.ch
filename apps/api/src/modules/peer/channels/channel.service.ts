@@ -1,6 +1,9 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
-import {OnEvent} from "@nestjs/event-emitter";
+import { OnEvent } from '@nestjs/event-emitter';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ChannelEntity } from './channel.entity';
+import { ChannelMemberEntity } from './channel-member.entity';
 
 export interface Channel {
   id: string;
@@ -22,31 +25,33 @@ export interface ChannelMember {
 @Injectable()
 export class ChannelService {
   private readonly logger = new Logger(ChannelService.name);
-  private channels: Map<string, Channel> = new Map();
 
-  createChannel(name: string, description?: string, createdBy?: string): Channel {
-    const code = this.generateUniqueCode();
-    const channel: Channel = {
-      id: uuidv4(),
+  constructor(
+    @InjectRepository(ChannelEntity)
+    private readonly channelRepo: Repository<ChannelEntity>,
+    @InjectRepository(ChannelMemberEntity)
+    private readonly memberRepo: Repository<ChannelMemberEntity>,
+  ) {}
+
+  async createChannel(name: string, description?: string, createdBy?: string): Promise<Channel> {
+    const code = await this.generateUniqueCode();
+    const entity = this.channelRepo.create({
       name,
       description,
       createdBy: createdBy || 'anonymous',
-      createdAt: new Date(),
-      members: [],
-      code
-    };
-
-    this.channels.set(channel.id, channel);
-    this.logger.log(`Channel created: ${channel.name} (${channel.id}) with code: ${code}`);
-
-    return channel;
+      code,
+    });
+    const saved = await this.channelRepo.save(entity);
+    this.logger.log(`Channel created: ${saved.name} (${saved.id}) with code: ${code}`);
+    return { ...saved, members: [] } as unknown as Channel;
   }
 
-  getAllChannels(): Channel[] {
-    return Array.from(this.channels.values()).map(channel => ({
-      ...channel,
-      members: channel.members.map(m => ({ ...m, peerId: undefined })) // Don't expose peerIds in list
-    }));
+  async getAllChannels(): Promise<Channel[]> {
+    const channels = await this.channelRepo.find({ relations: ['members'] });
+    return channels.map((c) => ({
+      ...c,
+      members: (c.members || []).map((m) => ({ ...m, peerId: undefined as any })),
+    } as unknown as Channel));
   }
 
   /**
@@ -55,125 +60,127 @@ export class ChannelService {
    * - User is a member of the channel (by userId)
    * Peer IDs are not exposed in the response, consistent with getAllChannels.
    */
-  getAllChannelsWithPermission(userId: string): Channel[] {
-    const list = Array.from(this.channels.values()).filter(channel =>
-      channel.createdBy === userId || channel.members.some(m => m.userId === userId)
+  async getAllChannelsWithPermission(userId: string): Promise<Channel[]> {
+    const channels = await this.channelRepo.find({ relations: ['members'] });
+    const list = channels.filter((channel) =>
+      channel.createdBy === userId || (channel.members || []).some((m) => m.userId === userId),
     );
-
-    return list.map(channel => ({
+    return list.map((channel) => ({
       ...channel,
-      members: channel.members.map(m => ({ ...m, peerId: undefined }))
-    }));
+      members: (channel.members || []).map((m) => ({ ...m, peerId: undefined as any })),
+    } as unknown as Channel));
   }
 
-  getChannel(channelId: string): Channel {
-    const channel = this.channels.get(channelId);
+  async getChannel(channelId: string): Promise<Channel> {
+    const channel = await this.channelRepo.findOne({ where: { id: channelId }, relations: ['members'] });
     if (!channel) {
       throw new NotFoundException(`Channel ${channelId} not found`);
     }
-    return channel;
+    return channel as unknown as Channel;
   }
 
-  joinChannel(channelId: string, userId: string, peerId: string, displayName?:string): { success: boolean; channel: Channel } {
-    const channel = this.getChannel(channelId);
+  async joinChannel(channelId: string, userId: string, peerId: string, displayName?: string): Promise<{ success: boolean; channel: Channel }> {
+    const channel = await this.channelRepo.findOne({ where: { id: channelId }, relations: ['members'] });
+    if (!channel) throw new NotFoundException(`Channel ${channelId} not found`);
 
     // Remove existing membership if any
-    channel.members = channel.members.filter(m => m.userId !== userId);
+    await this.memberRepo.delete({ channelId, userId });
 
-    // Add new membership
-    channel.members.push({
+    const member = this.memberRepo.create({
+      channelId,
       userId,
       peerId,
       displayName,
-      joinedAt: new Date()
+      channel: channel,
     });
+    await this.memberRepo.save(member);
+
+    const updated = await this.channelRepo.findOne({ where: { id: channelId }, relations: ['members'] });
 
     this.logger.log(`User ${userId}:${displayName} joined channel ${channel.name} with peer ${peerId}`);
 
-    return { success: true, channel };
+    return { success: true, channel: updated as unknown as Channel };
   }
 
-  leaveChannel(channelId: string, userId: string): { success: boolean; channel: Channel } {
-    const channel = this.getChannel(channelId);
-    const initialLength = channel.members.length;
+  async leaveChannel(channelId: string, userId: string): Promise<{ success: boolean; channel: Channel }> {
+    const channel = await this.channelRepo.findOne({ where: { id: channelId }, relations: ['members'] });
+    if (!channel) throw new NotFoundException(`Channel ${channelId} not found`);
 
-    channel.members = channel.members.filter(m => m.userId !== userId);
+    await this.memberRepo.delete({ channelId, userId });
 
-    if (channel.members.length < initialLength) {
-      this.logger.log(`User ${userId} left channel ${channel.name}`);
-    }
+    const updated = await this.channelRepo.findOne({ where: { id: channelId }, relations: ['members'] });
 
-    return { success: true, channel };
+    this.logger.log(`User ${userId} left channel ${channel.name}`);
+
+    return { success: true, channel: updated as unknown as Channel };
   }
 
-  getChannelMembers(channelId: string): ChannelMember[] {
-    const channel = this.getChannel(channelId);
-    return channel.members;
+  async getChannelMembers(channelId: string): Promise<ChannelMember[]> {
+    const members = await this.memberRepo.find({ where: { channelId } });
+    return members as unknown as ChannelMember[];
   }
 
-  deleteChannel(channelId: string): { success: boolean } {
-    const channel = this.channels.get(channelId);
+  async deleteChannel(channelId: string): Promise<{ success: boolean }> {
+    const channel = await this.channelRepo.findOne({ where: { id: channelId } });
     if (!channel) {
       throw new NotFoundException(`Channel ${channelId} not found`);
     }
 
-    this.channels.delete(channelId);
+    await this.channelRepo.delete(channelId);
     this.logger.log(`Channel deleted: ${channel.name} (${channelId})`);
 
     return { success: true };
   }
 
   // Helper method to get peer IDs for a channel (used by PeerService)
-  getChannelPeerIds(channelId: string): string[] {
-    const channel = this.channels.get(channelId);
-    return channel ? channel.members.map(m => m.peerId) : [];
+  async getChannelPeerIds(channelId: string): Promise<string[]> {
+    const members = await this.memberRepo.find({ where: { channelId } });
+    return members.map((m) => m.peerId);
   }
 
   // Helper method to find channels by peer ID
-  getChannelsByPeerId(peerId: string): Channel[] {
-    return Array.from(this.channels.values()).filter(channel =>
-      channel.members.some(member => member.peerId === peerId)
-    );
+  async getChannelsByPeerId(peerId: string): Promise<Channel[]> {
+    const members = await this.memberRepo.find({ where: { peerId } });
+    const channelIds = [...new Set(members.map((m) => m.channelId))];
+    if (channelIds.length === 0) return [];
+    const { In } = await import('typeorm');
+    const channels = await this.channelRepo.findBy({ id: In(channelIds) as any });
+    return channels as unknown as Channel[];
   }
 
   // Generate unique 6-digit numeric code
-  private generateUniqueCode(): string {
+  private async generateUniqueCode(): Promise<string> {
     let code: string;
     let attempts = 0;
     const maxAttempts = 100;
 
     do {
-      // Generate 6-digit code
       code = Math.floor(100000 + Math.random() * 900000).toString();
       attempts++;
 
+      const exists = await this.channelRepo.findOne({ where: { code } });
+      if (!exists) break;
+
       if (attempts >= maxAttempts) {
-        // Fallback: use timestamp-based code if too many collisions
         code = (Date.now() % 900000 + 100000).toString();
         break;
       }
-    } while (this.isCodeExists(code));
+    } while (true);
 
     return code;
   }
 
-  // Check if code already exists
-  private isCodeExists(code: string): boolean {
-    return Array.from(this.channels.values()).some(channel => channel.code === code);
-  }
-
   // Find channel by code
-  getChannelByCode(code: string): Channel | null {
-    return Array.from(this.channels.values()).find(channel => channel.code === code) || null;
+  async getChannelByCode(code: string): Promise<Channel | null> {
+    const channel = await this.channelRepo.findOne({ where: { code }, relations: ['members'] });
+    return (channel as unknown as Channel) || null;
   }
 
   @OnEvent('peer.disconnected')
-  protected onPeerDisconnected({ peerId}: { peerId: string }){
-    // Remove from all channels that this peer was connected to
-    const userChannels = this.getChannelsByPeerId(peerId);
-    userChannels.forEach(channel => {
-      // Find the member with this peerId and remove them
-      channel.members = channel.members.filter(member => member.peerId !== peerId);
-    });
+  protected async onPeerDisconnected({ peerId }: { peerId: string }) {
+    const members = await this.memberRepo.find({ where: { peerId } });
+    for (const m of members) {
+      await this.memberRepo.delete(m.id);
+    }
   }
 }
