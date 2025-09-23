@@ -6,6 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+
   const langRef = useRef<HTMLDivElement | null>(null);
   const { t, setLanguage, language } = useLanguage();
 
@@ -36,7 +37,9 @@ const Header: React.FC = () => {
   };
 
   const handleAuthClick = (action: string) => {
-    alert(`🚧 ${action}: This feature isn't implemented yet—but you can request it! 🚀`);
+    if (typeof window !== 'undefined') {
+      window.location.href = 'https://app.pen2class.ch/';
+    }
   };
 
   return (
@@ -66,6 +69,7 @@ const Header: React.FC = () => {
             <button onClick={() => scrollToSection('use-cases')} className="text-slate-600 hover:text-indigo-600 transition-colors px-4 py-2 rounded-md">
               {t('navUseCases')}
             </button>
+
             <button className="text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-md" onClick={() => handleAuthClick(t('navSignIn'))}>
               {t('navSignIn')}
             </button>
