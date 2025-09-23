@@ -1,13 +1,13 @@
 import {Component, computed, inject, OnInit, OnDestroy, AfterViewInit} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { EditorStoreService } from '../../services/editor-store.service';
 import { MonacoEditorService } from '../../services/monaco-editor.service';
+import {EditorComponent} from "@class2pen/monaco-editor";
 
 @Component({
   selector: 'app-html-editor',
   standalone: true,
-  imports: [FormsModule, MonacoEditorModule],
+  imports: [FormsModule, EditorComponent,],
   template: `
     <div class="flex flex-col h-full">
       <!-- Tab Header -->

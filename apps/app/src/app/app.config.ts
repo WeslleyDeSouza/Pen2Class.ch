@@ -6,7 +6,7 @@ import {
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { appRoutes } from './app.routes';
-import {provideMonacoEditor} from "ngx-monaco-editor-v2";
+import {provideMonacoEditor} from "@class2pen/monaco-editor";
 import {MonacoEditorService} from "../modules/class-room";
 
 export const appConfig: ApplicationConfig = {

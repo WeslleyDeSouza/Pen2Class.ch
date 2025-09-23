@@ -52,7 +52,6 @@
     "ng-openapi-gen": "^1.0.1",
     "ngrx-store-localstorage": "^20.0.0",
     "ngx-dropzone-wrapper": "^17.0.0",
-    "ngx-monaco-editor-v2": "^20.0.0",
     "ngx-quill": "^27.0.0",
     "peer": "^1.0.2",
     "pg": "^8.16.0",

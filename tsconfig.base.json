@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@class2pen/monaco-editor": ["libs/app/monaco-editor/src/index.ts"],
       "@ui-lib/apiClient": ["libs/app/generated/index.ts"]
     }
   },
