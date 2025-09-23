@@ -56,6 +56,44 @@ It enables students to code in **HTML, CSS, and JavaScript** with a live preview
 
 ---
 
+## 🛤️ StoryLine
+
+### Teacher Story Admin
+```mermaid
+journey
+  title (Teacher)
+  section ClassRooms
+    Create new classroom: 5: Teacher
+    Manage classroom settings: 4: Teacher
+    Generate access link & code: 5: Teacher
+  section Lessons
+    Create new lesson: 5: Teacher
+    Attach HTML/CSS/JS starter code: 4: Teacher
+    Publish lesson to classroom: 5: Teacher
+  section Monitoring
+    View signed-in students: 5: Teacher
+    Open individual student editors: 5: Teacher
+    Give real-time feedback: 5: Teacher
+
+````
+
+### Teacher Story Admin
+```mermaid
+journey
+  title (Student)
+  section Join & Setup
+    Join classroom via link/code: 5: Student
+    Choose display name: 4: Student
+  section Lessons
+    Access published lessons: 5: Student
+    Open own editor (HTML/CSS/JS): 5: Student
+  section Coding
+    Start coding with live preview: 5: Student
+    View error messages: 4: Student
+    Receive feedback from teacher: 5: Student
+````
+----
+
 ## 🛠 Technology Stack
 
 - **Frontend**: APP: Angular, Landing Page: React
