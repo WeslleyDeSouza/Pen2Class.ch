@@ -7,6 +7,7 @@ import { UserService } from '../../../common/services/user.service';
 import { ClassroomManagementFacade, ClassroomSummary } from './facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from './facades/lesson-management.facade';
 import {PeerUserStoreService} from "../../../common/services/peer.service";
+import {Router} from "@angular/router";
 
 interface CreateChannelForm {
   name: string;
@@ -337,65 +338,65 @@ interface CreateLessonForm {
                       } @else {
                         <div class="grid grid-cols-1 gap-3">
                           @for (lesson of getLessonsForClassroom(classroom.id); track lesson.id) {
-                            <div class="bg-white border border-green-200 rounded-lg p-4 hover:shadow-md transition-all duration-200">
-                              <div class="flex items-start justify-between">
-                                <div class="flex items-start space-x-3 flex-1">
-                                  <div class="w-8 h-8 rounded-lg flex items-center justify-center" [class]="lesson.enabled ? 'bg-green-100' : 'bg-gray-100'">
-                                    <svg class="w-4 h-4" [class]="lesson.enabled ? 'text-green-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                    </svg>
-                                  </div>
-                                  <div class="flex-1 min-w-0">
-                                    <h5 class="font-semibold text-gray-900 truncate">{{lesson.name}}</h5>
-                                    @if (lesson.description) {
-                                      <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{lesson.description}}</p>
-                                    }
-                                    <div class="flex items-center space-x-2 mt-2">
-                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" [class]="lesson.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
-                                              <div class="w-1.5 h-1.5 rounded-full mr-1" [class]="lesson.enabled ? 'bg-green-400' : 'bg-gray-400'"></div>
-                                              {{lesson.enabled ? 'Active' : 'Inactive'}}
-                                            </span>
-                                    </div>
-                                  </div>
+                            <div class="bg-white border border-green-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 relative">
+                              <div class="flex items-start space-x-3">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center" [class]="lesson.enabled ? 'bg-green-100' : 'bg-gray-100'">
+                                  <svg class="w-4 h-4" [class]="lesson.enabled ? 'text-green-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                  </svg>
                                 </div>
-                                <div class="flex flex-col gap-2 ml-4">
-                                  @if (lesson.enabled) {
-                                    <button
-                                      (click)="disableLesson(classroom.id, lesson.id)"
-                                      class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1">
-                                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                      </svg>
-                                      <span>Disable</span>
-                                    </button>
-                                  } @else {
-                                    <button
-                                      (click)="enableLesson(classroom.id, lesson.id)"
-                                      class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1">
-                                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                      </svg>
-                                      <span>Enable</span>
-                                    </button>
+                                <div class="flex-1 min-w-0">
+                                  <h5 class="font-semibold text-gray-900 truncate">{{lesson.name}}</h5>
+                                  @if (lesson.description) {
+                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{lesson.description}}</p>
                                   }
-                                  <button
-                                    (click)="startLesson(classroom.id, lesson.id)"
-                                    [disabled]="!lesson.enabled"
-                                    class="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    <span>Start</span>
-                                  </button>
-                                  <button
-                                    (click)="deleteLesson(classroom.id, lesson.id)"
-                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                    <span>Delete</span>
-                                  </button>
                                 </div>
+                              </div>
+
+                              <!-- Active/Inactive badge at top-right -->
+                              <span class="absolute top-3 right-3 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" [class]="lesson.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                                <div class="w-1.5 h-1.5 rounded-full mr-1" [class]="lesson.enabled ? 'bg-green-400' : 'bg-gray-400'"></div>
+                                {{lesson.enabled ? 'Active' : 'Inactive'}}
+                              </span>
+
+                              <!-- Action buttons stacked vertically under the title -->
+                              <div class="mt-4 flex flex-col gap-2">
+                                @if (lesson.enabled) {
+                                  <button
+                                    (click)="disableLesson(classroom.id, lesson.id)"
+                                    class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>Disable</span>
+                                  </button>
+                                } @else {
+                                  <button
+                                    (click)="enableLesson(classroom.id, lesson.id)"
+                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span>Enable</span>
+                                  </button>
+                                }
+                                <button
+                                  (click)="viewLesson(classroom.id, lesson.id)"
+                                  [disabled]="!lesson.enabled"
+                                  class="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1">
+                                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                  </svg>
+                                  <span>View</span>
+                                </button>
+                                <button
+                                  (click)="deleteLesson(classroom.id, lesson.id)"
+                                  class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1">
+                                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1 1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                  </svg>
+                                  <span>Delete</span>
+                                </button>
                               </div>
                             </div>
                           }
@@ -404,7 +405,7 @@ interface CreateLessonForm {
                     </div>
                   </div>
                   <!-- Classroom Actions -->
-                  <div class="flex items-center justify-end mt-4 pt-4 border-t border-gray-100">
+                  <div class="flex items-center justify-center mt-4 pt-4 border-t border-gray-100">
                     <button
                       (click)="deleteClassroom(classroom.id)"
                       class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2">
@@ -670,6 +671,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   constructor(
+    private router: Router,
     private userStore: PeerUserStoreService,
     private userService: UserService,
     public classroomFacade: ClassroomManagementFacade,
@@ -846,6 +848,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     if (this.logEntries.length > 100) {
       this.logEntries = this.logEntries.slice(0, 100);
     }
+  }
+
+  viewLesson(channelId: string, lessonId: string) {
+    this.router.navigate(['admin/classroom', channelId, 'lesson', lessonId,]);
   }
 
   clearLog() {

@@ -1,5 +1,5 @@
 import {
-  ApplicationConfig,
+  ApplicationConfig, inject, provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from '@angular/core';
@@ -8,6 +8,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { appRoutes } from './app.routes';
 import {provideMonacoEditor} from "@class2pen/monaco-editor";
 import {MonacoEditorService} from "../modules/class-room";
+import {PeerService} from "../common/services/peer.service";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,6 +20,10 @@ export const appConfig: ApplicationConfig = {
       baseUrl: '/assets/monaco/min/vs',
       defaultOptions: MonacoEditorService.defaultOptions,
       requireConfig: { preferScriptTags: true },
+    }),
+    provideAppInitializer(() => {
+      const peer = inject(PeerService);
+      peer.connectToPeerServer()
     })
   ],
 };

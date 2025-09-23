@@ -6,6 +6,8 @@ import { JsEditorComponent } from './components/js-editor/js-editor.component';
 import { PreviewComponent } from './components/preview/preview.component';
 import {PeerUserStoreService} from "../../../common/services/peer.service";
 import {EditorService} from "./services/editor-facade.service";
+import { ActivatedRoute } from '@angular/router';
+import {RouteConstants} from "../../../app/route.constants";
 
 @Component({
   selector: 'app-editor',
@@ -140,6 +142,7 @@ export class EditorComponent implements OnInit, OnDestroy {
   protected readonly userStore = inject(PeerUserStoreService);
   protected readonly editorStore = inject(EditorStoreService);
   protected readonly editorApi = inject(EditorService);
+  private readonly route = inject(ActivatedRoute);
 
   private saveTimeout: any = null;
 
@@ -157,35 +160,58 @@ export class EditorComponent implements OnInit, OnDestroy {
 
   loaded = signal(false);
 
+  // should have value from this.router.snapshot.paramMap.get('userId')
+  viewModeUserId = signal<string | undefined>(undefined)
+
+  skipFirstChange = 0
   constructor() {
-    effect(() => {
-      const editorState = this.editorStore.editorState();
+      // Initialize view mode userId from route params if present
+      const userIdParam = this.route.snapshot.paramMap.get(RouteConstants.Params.userId);
+      this.viewModeUserId.set(userIdParam ?? undefined);
 
-      // Clear existing timeout
-      if (this.saveTimeout) {
-        clearTimeout(this.saveTimeout);
-      }
+      effect(() => {
+        const editorState = this.editorStore.editorState();
 
-      // Debounce the save call by 500ms
-      this.saveTimeout = setTimeout(() => {
-        this.editorApi.saveEditorState({}, this.id);
-      }, 800);
-    });
+        if (!this.userStore.selectedLessonId()) return;
 
-    effect(() => {
-      const selectedLessonId = this.userStore.selectedLessonId();
-      if(selectedLessonId) this.getByKey()
-    });
+        // Clear existing timeout
+        if (this.saveTimeout) {
+          clearTimeout(this.saveTimeout);
+        }
 
+        if(this.skipFirstChange === 0){
+          this.skipFirstChange++
+          return;
+        }
 
-  }
+        // Debounce the save call by 800ms
+        this.saveTimeout = setTimeout(() => {
+          this.editorApi.saveEditorState(this.objectKey, this.id);
+        }, 800);
+      });
+
+      effect(() => {
+        const selectedLessonId = this.userStore.selectedLessonId() || this.route.snapshot.paramMap.get(RouteConstants.Params.userId);
+        if (selectedLessonId ) this.getByKey();
+      });
+    }
 
   get id(){
     return ''
   }
 
+  get objectKey(){
+    return (
+      {
+        userId: this.viewModeUserId() as string,
+        channelTypeId: this.userStore.selectedLessonId() as string || this.route.snapshot.paramMap.get(RouteConstants.Params.lessonId) as string,
+        channelId: this.userStore.selectedClassId() as string || this.route.snapshot.paramMap.get(RouteConstants.Params.classRoomId) as string,
+      }
+    )
+  }
+
   getByKey(){
-    this.editorApi.getByKey().then(data => {
+    this.editorApi.getByKey(this.objectKey).then(data => {
       if (data?.data) {
         const editorData = data.data as any;
 

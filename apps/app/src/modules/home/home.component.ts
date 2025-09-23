@@ -8,6 +8,7 @@ import { ChannelService } from '../../common/services/channel.service';
 import { UserService, UserType } from '../../common/services/user.service';
 import { PeerUserStoreService } from '../../common/services/peer.service';
 import {ChannelDto, UserDto} from "@ui-lib/apiClient";
+import {RouteConstants} from "../../app/route.constants";
 
 declare var Peer: any;
 
@@ -448,7 +449,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     return this.classroomCode.length === 6 && /^\d+$/.test(this.classroomCode);
   }
 
-  joinClassroom() {
+  async joinClassroom() {
     if (!this.isValidCode()) {
       this.showError('Please enter a valid 6-digit classroom code');
       return;
@@ -457,8 +458,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.clearError();
 
-    this.channelService.getChannelByCode(this.classroomCode).then((channel) => {
-      this.currentChannel = channel;
+
+    await this.channelService.joinByCode(
+      this.classroomCode,
+      this.userService.getUserFromStore()?.id as string,
+      this.userService.getUserPeerIdFromStore() as string
+    ).then((res) => {
+      this.currentChannel = res.channel;
       this.joinStep = 3;
       this.isLoading = false;
 
@@ -539,10 +545,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   goToAdmin() {
-    this.router.navigate(['/admin']);
+    this.router.navigate(['/admin/dashboard']);
   }
   goToHome() {
-    this.router.navigate(['/class-room']);
+    this.router.navigate(['/classroom']);
   }
 
   hasExistingUser(): boolean {
@@ -568,7 +574,14 @@ export class HomeComponent implements OnInit, OnDestroy {
       // User still exists, update stored data and continue
       this.userStore.user.set(user);
       this.userStore.persist();
-      this.router.navigate(['/admin']);
+      this.router.navigate([
+        RouteConstants.Paths.admin,
+        RouteConstants.Paths.dashboard,
+      ]);
+      console.log([
+        RouteConstants.Paths.admin,
+        RouteConstants.Paths.dashboard,
+      ])
       this.isLoading = false;
     }).catch((error) => {
       // User no longer exists, remove from storage

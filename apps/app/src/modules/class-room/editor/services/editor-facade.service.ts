@@ -7,6 +7,7 @@ import { LessonObjectsService, PeerObjectDto } from '@ui-lib/apiClient';
 interface SaveOptions {
   objectId?: string;
   channelId?: string;
+  userId?: string;
   channelTypeId?: string;
   type?: string; // defaults to 'editor-state'
 }
@@ -28,10 +29,10 @@ export class EditorService {
   private get currentUserId(): string | undefined {
     return this.peerUserStoreService.getCurrentUser()?.id as any;
   }
-  getByKey(){
-    const userId = this.peerUserStoreService.getCurrentUser()?.id as string;
-    const channelId = this.peerUserStoreService.selectedClassId() || '';
-    const channelTypeId = this.peerUserStoreService.selectedLessonId() || '';
+  getByKey(params?:{userId?:string,channelId?:string, channelTypeId?:string}){
+    const userId = params?.userId || this.peerUserStoreService.getCurrentUser()?.id as string;
+    const channelId =  params?.channelId ||this.peerUserStoreService.selectedClassId() || '';
+    const channelTypeId =  params?.channelTypeId ||this.peerUserStoreService.selectedLessonId() || '';
 
     if (!userId) {
       throw new Error('userId is required to get object by key');
@@ -71,7 +72,7 @@ export class EditorService {
       throw new Error('channelId is required to create an object');
     }
 
-    const userId = this.currentUserId || '';
+    const userId = opts?.userId || this.currentUserId || '';
     if (!userId) {
       throw new Error('userId is required to create an object');
     }

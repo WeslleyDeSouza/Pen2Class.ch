@@ -1,7 +1,6 @@
 import {computed, inject, Injectable, signal} from '@angular/core';
 import { environment } from '../../environments/environment';
-
-declare var Peer: any;
+import { Peer } from 'peerjs';
 
 @Injectable({ providedIn: 'root' })
 export class PeerUserStoreService {
@@ -46,7 +45,6 @@ export class PeerService {
   peerId = computed(()=> this.storeUser.userPeerId());
   isConnected = signal(false);
 
-
   private peer: any = null;
   private connections: Map<string, any> = new Map();
 
@@ -66,6 +64,9 @@ export class PeerService {
         });
 
         this.peer.on('open', (id: string) => {
+
+          console.log(`Connected to PeerJS server with ID: ${id}`);
+
           this.storeUser.userPeerId.set(id);
           this.isConnected.set(true);
 

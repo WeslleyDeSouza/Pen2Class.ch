@@ -30,6 +30,7 @@ interface JoinClassroomForm {
               placeholder="Enter classroom code"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               [disabled]="isJoining"
+              (keyup.enter)="joinClassroom()"
             />
             <button
               (click)="joinClassroom()"
@@ -300,7 +301,8 @@ export class ClassRoomLayout implements OnInit, OnDestroy {
 
   initLessonMainPage(){
     const lesson = this.selectedLesson();
-    this.router.navigate(['/class-room', 'lesson', lesson?.id, 'editor']);
+    const classRoom = this.selectedClassroom()
+    this.router.navigate(['/classroom',classRoom?.id,  'lesson', lesson?.id, 'editor']);
   }
 
   getLessonsForClassroom(classroomId: string): LessonSummary[] {

@@ -55,4 +55,12 @@ export class UserService {
   getUserChannels(userId: string): Promise<UserChannelDto[]> {
     return (this.userApiService.userGetUserChannels({ userId }))
   }
+
+  //
+  getUserFromStore() {
+    return (this.userStore.getCurrentUser())
+  }
+  getUserPeerIdFromStore() {
+    return (this.userStore.userPeerId())
+  }
 }
