@@ -211,8 +211,8 @@ interface CreateLessonForm {
                           <div class="flex items-center justify-between">
                             <span class="text-blue-100 text-sm font-medium">Access Code</span>
                             <div class="flex items-center space-x-2">
-                              <code class="text-white font-mono text-lg font-bold tracking-widest">{{classroom.code}}</code>
-                              <button class="text-blue-200 hover:text-white transition-colors">
+                              <code id="class-code" #code class="text-white font-mono text-lg font-bold tracking-widest">{{classroom.code}}</code>
+                              <button (click)="copyToClipBoard(classroom.code)" class="text-blue-200 hover:text-white transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                 </svg>
@@ -839,6 +839,40 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       }
     } catch (error: any) {
       this.log(`Failed to delete lesson: ${error.error?.message || error.message}`);
+    }
+  }
+
+  copyToClipBoard(code: string) {
+    if (!code) {
+      this.log('No access code to copy');
+      return;
+    }
+    // Prefer modern clipboard API when available
+    const nav: any = navigator as any;
+    if (nav && nav.clipboard && typeof nav.clipboard.writeText === 'function') {
+      nav.clipboard.writeText(code)
+        .then(() => this.log('Access code copied to clipboard'))
+        .catch(() => this.fallbackCopy(code));
+      return;
+    }
+    this.fallbackCopy(code);
+  }
+
+  private fallbackCopy(text: string) {
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      this.log('Access code copied to clipboard');
+    } catch (e) {
+      this.log('Failed to copy access code');
     }
   }
 
