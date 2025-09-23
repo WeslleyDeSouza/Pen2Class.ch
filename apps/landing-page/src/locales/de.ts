@@ -6,7 +6,7 @@ const de = {
   navUseCases: "Anwendungsfälle",
   navSignIn: "Anmelden",
   navStart: "Jetzt starten",
-  heroTitle1: "Der geteilte Code-Editor für den",
+  heroTitle1: "Der geteilte HTML Code-Editor für den",
   heroTitle2: "modernen Unterricht",
   heroSubtitle:
     "Pen2Class ist ein kostenloser Online-Editor, mit dem Lehrer den Code ihrer Schüler in Echtzeit sehen und bearbeiten können. Perfekt, um Programmieren zu lernen und direktes Feedback zu geben.",

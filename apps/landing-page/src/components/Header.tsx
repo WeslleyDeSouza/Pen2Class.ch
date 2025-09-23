@@ -70,9 +70,7 @@ const Header: React.FC = () => {
               {t('navUseCases')}
             </button>
 
-            <button className="text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-md" onClick={() => handleAuthClick(t('navSignIn'))}>
-              {t('navSignIn')}
-            </button>
+
             <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md" onClick={() => handleAuthClick(t('navStart'))}>
               {t('navStart')}
             </button>
