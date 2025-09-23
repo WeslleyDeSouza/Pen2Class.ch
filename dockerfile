@@ -45,8 +45,11 @@ COPY ./dist/apps/landing-page ./dist/public/
 COPY ./config ./config/
 COPY ./ecosystem.config.js ./
 
+
 # Setze korrekten Besitzer und Berechtigungen
+RUN mkdir /usr/src/app/storage
 RUN chown -R node:node /usr/src/app
+RUN chown -R node:node /usr/src/app/storage
 
 USER node
 
