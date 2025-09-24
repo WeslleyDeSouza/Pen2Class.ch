@@ -360,7 +360,7 @@ interface CreateLessonForm {
                               </span>
 
                               <!-- Action buttons stacked vertically under the title -->
-                              <div class="mt-4 flex flex-col gap-2">
+                              <div class="mt-4 flex flex-row gap-2">
                                 @if (lesson.enabled) {
                                   <button
                                     (click)="disableLesson(classroom.id, lesson.id)"
