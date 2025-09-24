@@ -81,10 +81,10 @@ import { LeaveEvent, JoinEvent, ObjectEvent } from '@ui-lib/apiClient';;
             @for (m of members; track m.userId) {
               <li (click)="onMemberSelect(m)"  class="py-3 flex items-center">
                 <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center mr-3">
-                  <span class="text-xs font-medium">{{ ((m.user?.displayName || m.userId || 'U') +'') | slice:0:2 | uppercase }}</span>
+                  <span class="text-xs font-medium">{{ ((m?.displayName || m.userId || 'U') +'') | slice:0:2 | uppercase }}</span>
                 </div>
                 <div class="min-w-0">
-                  <div class="text-sm font-medium text-gray-900 truncate">{{ m.user?.displayName || m.userId }}</div>
+                  <div class="text-sm font-medium text-gray-900 truncate">{{ m?.displayName || m.userId }}</div>
                   <div class="text-xs text-gray-500 truncate">{{ m.role || 'member' }}</div>
                 </div>
               </li>
