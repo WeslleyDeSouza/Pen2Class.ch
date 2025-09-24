@@ -143,6 +143,61 @@ interface CreateLessonForm {
             </div>
           </div>
 
+          <!-- Getting Started Guide for New Teachers -->
+          @if (lessonFacade.totalLessonCount() === 0) {
+            <div class="mb-8 bg-gradient-to-r from-indigo-50 to-blue-50 border-l-4 border-indigo-400 rounded-2xl p-6 shadow-lg">
+              <div class="flex items-start space-x-4">
+                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-lg font-semibold text-indigo-900 mb-2">Welcome to pen2class! 👋</h3>
+                  <p class="text-indigo-800 mb-4">Get started with your first HTML coding classroom in just a few simple steps:</p>
+                  <div class="space-y-3">
+                    <div class="flex items-center space-x-3 text-indigo-700">
+                      <div class="w-8 h-8 rounded-full flex items-center justify-center text-indigo-800 font-bold text-sm" [class]="classroomFacade.classrooms().length > 0 ? 'bg-green-500 text-white' : 'bg-indigo-200'">
+                        @if (classroomFacade.classrooms().length > 0) {
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                          </svg>
+                        } @else {
+                          <span>1</span>
+                        }
+                      </div>
+                      <span class="font-medium">Create Classroom</span>
+                      <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                      </svg>
+                    </div>
+                    <div class="flex items-center space-x-3 text-indigo-700" title="To create a lesson, view the classroom card and press the 'Add Lesson' button">
+                      <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-800 font-bold text-sm">2</div>
+                      <span class="font-medium">Add Lesson</span>
+                      <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                      </svg>
+                    </div>
+                    <div class="flex items-center space-x-3 text-indigo-700">
+                      <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-800 font-bold text-sm">3</div>
+                      <span class="font-medium">View and track student code</span>
+                    </div>
+                  </div>
+                  <div [hidden]="true" class="mt-4 pt-4 border-t border-indigo-200">
+                    <button
+                      (click)="showCreateClassroom = true"
+                      class="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                      </svg>
+                      <span>Create Your First Classroom Now</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
           <!-- Classrooms Section -->
           <div class="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/50 shadow-lg overflow-hidden">
             <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 border-b border-blue-300/20">

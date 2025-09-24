@@ -96,7 +96,7 @@ journey
 ## 🛠 Technology Stack
 
 - **Frontend**: APP: Angular, Landing Page: React
-- **Backend**: API: NestJS, DB: 
+- **Backend**: API: NestJS, DB: SQLLite
 - **Editor**: Powered by [Monaco Editor](https://microsoft.github.io/monaco-editor/)
 - **Realtime**: WebRTC/PeerJS for peer-to-peer connections (teacher ↔ students)
 
