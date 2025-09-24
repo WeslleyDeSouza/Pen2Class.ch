@@ -169,7 +169,7 @@ interface JoinClassroomForm {
         }
 
         <!-- Router Outlet -->
-        <div class="flex-1 overflow-auto p-6">
+        <div class="flex-1 overflow-auto p-1">
           @if (!selectedClassroom()) {
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-lg p-8 h-full flex items-center justify-center">
               <div class="text-center">
