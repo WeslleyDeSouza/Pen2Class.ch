@@ -103,6 +103,7 @@ interface JoinClassroomForm {
                               <div
                                 class="p-2 border border-white/50 rounded-lg cursor-pointer hover:bg-white/90 transition-colors text-sm backdrop-blur-sm shadow-sm"
                                 [ngClass]="selectedLesson()?.id === lesson.id ? 'bg-white/95' : 'bg-white/80'"
+                                [class.active]="selectedLesson()?.id === lesson.id"
                                 (click)="selectLesson(classroom, lesson)"
                               >
                                 <div class="flex justify-between items-center">
@@ -193,6 +194,11 @@ interface JoinClassroomForm {
     :host {
       display: block;
       height: 100vh;
+    }
+    .active{
+      border: solid #1a85ff00 1px!important;
+      border-radius: 0;
+      background: #1a85ff1c!important;
     }
   `]
 })
