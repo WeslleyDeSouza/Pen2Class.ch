@@ -30,26 +30,28 @@ import {RouteConstants} from "../../../app/route.constants";
             </div>
             <div class="text-gray-400 text-sm">Classroom Editor - {{lessonName}}</div>
           </div>
-          <div class="flex space-x-2">
-            <button
-              (click)="saveCode()"
-              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm transition-colors"
-            >
-              Save
-            </button>
-            <button
-              (click)="shareCode()"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition-colors"
-            >
-              Share
-            </button>
-            <button
-              (click)="resetCode()"
-              class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm transition-colors"
-              title="Reset to default code"
-            >
-              Reset
-            </button>
+          <div [hidden]="true">
+            <div class="flex space-x-2">
+              <button
+                (click)="saveCode()"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm transition-colors"
+              >
+                Save
+              </button>
+              <button
+                (click)="shareCode()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition-colors"
+              >
+                Share
+              </button>
+              <button
+                (click)="resetCode()"
+                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm transition-colors"
+                title="Reset to default code"
+              >
+                Reset
+              </button>
+            </div>
           </div>
         </div>
       </div>

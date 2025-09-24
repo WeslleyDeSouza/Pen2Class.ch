@@ -338,8 +338,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-
-
   // Navigation methods
   switchToJoinByCode() {
     this.resetForm();
@@ -407,6 +405,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.userService.signup(this.username.trim(), undefined, this.username.trim(), UserType.STUDENT).then((user) => {
       this.joinStep = 2;
       this.isLoading = false;
+      this.userStore.persist();
+      this.peerService.emitUserInfo()
     }).catch((error) => {
       this.showError(error.error?.message || 'Failed to create user');
       this.isLoading = false;
@@ -438,14 +438,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     await this.channelService.joinByCode(
       this.classroomCode,
       this.userService.getUserFromStore()?.id as string,
-      this.userService.getUserPeerIdFromStore() as string,
       this.userService.getUserFromStore()?.displayName as string,
     ).then((res) => {
       this.currentChannel = res.channel;
       this.joinStep = 3;
       this.isLoading = false;
 
-      setTimeout(()=> this.goToHome(),1000);
+      setTimeout(()=> this.goToClassRoom(),1000);
     }).catch((error) => {
       let errorMessage = 'Failed to join classroom';
       if (error.status === 404) {
@@ -524,7 +523,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   goToAdmin() {
     this.router.navigate(['/', RouteConstants.Paths.admin, RouteConstants.Paths.dashboard]);
   }
-  goToHome() {
+  goToClassRoom() {
     this.router.navigate(['/', RouteConstants.Paths.classroom]);
   }
 
@@ -551,7 +550,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       // User still exists, update stored data and continue
       this.userStore.user.set(user);
       this.userStore.persist();
-      if(user)this.goToAdmin(); // todo verify type 1 or 2
+      this.peerService.emitUserInfo()
+
+      if(user.type == 2)this.goToAdmin();
+      else this.goToClassRoom();
+
       this.isLoading = false;
     }).catch((error) => {
       // User no longer exists, remove from storage

@@ -18,24 +18,24 @@ interface JoinClassroomForm {
   standalone: true,
   imports: [RouterOutlet, FormsModule, CommonModule],
   template: `
-    <div class="flex h-screen bg-gray-100">
+    <div class="flex h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <!-- Sidebar -->
-      <div class="w-80 bg-white shadow-lg flex flex-col">
+      <div class="w-80 bg-white/80 backdrop-blur-sm shadow-lg flex flex-col border-r border-white/50">
         <!-- Top section - Join Classroom -->
-        <div class="p-4 border-b border-gray-200">
+        <div class="p-4 border-b border-white/40">
           <h2 class="text-lg font-semibold mb-3 text-gray-800">Join Classroom</h2>
           <div class="space-y-2">
             <input
               [(ngModel)]="joinForm.code"
               placeholder="Enter classroom code"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-2 bg-white/90 border border-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 backdrop-blur-sm"
               [disabled]="isJoining"
               (keyup.enter)="joinClassroom()"
             />
             <button
               (click)="joinClassroom()"
               [disabled]="isJoining || !joinForm.code.trim()"
-              class="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-2 px-4 rounded-md transition-colors text-sm font-medium"
+              class="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-2 px-4 rounded-xl transition-colors text-sm font-medium shadow-sm"
             >
               {{ isJoining ? 'Joining...' : 'Join Classroom' }}
             </button>
@@ -60,11 +60,10 @@ interface JoinClassroomForm {
             } @else {
               <div class="space-y-2">
                 @for (classroom of classroomFacade.classrooms(); track classroom.id) {
-                  <div class="border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="border border-white/40 rounded-xl hover:bg-white/60 transition-colors backdrop-blur-sm bg-white/30">
                     <div
                       class="p-3 cursor-pointer"
-                      [class.bg-blue-50]="selectedClassroom()?.id === classroom.id"
-                      [class.border-blue-300]="selectedClassroom()?.id === classroom.id"
+                      [ngClass]="selectedClassroom()?.id === classroom.id ? 'bg-white/70 border-blue-400' : ''"
                       (click)="toggleClassroom(classroom)"
                     >
                       <div class="flex justify-between items-center">
@@ -97,13 +96,13 @@ interface JoinClassroomForm {
 
                     <!-- Lessons -->
                     @if (expandedClassrooms.has(classroom.id)) {
-                      <div class="border-t border-gray-200 bg-gray-50">
+                      <div class="border-t border-white/40 bg-white/50 backdrop-blur-sm">
                         @if (getLessonsForClassroom(classroom.id).length > 0) {
                           <div class="p-3 space-y-1">
                             @for (lesson of getLessonsForClassroom(classroom.id); track lesson.id) {
                               <div
-                                class="p-2 bg-white border border-gray-200 rounded cursor-pointer hover:bg-blue-50 transition-colors text-sm"
-                                [class.bg-blue-100]="selectedLesson()?.id === lesson.id"
+                                class="p-2 border border-white/50 rounded-lg cursor-pointer hover:bg-white/90 transition-colors text-sm backdrop-blur-sm shadow-sm"
+                                [ngClass]="selectedLesson()?.id === lesson.id ? 'bg-white/95' : 'bg-white/80'"
                                 (click)="selectLesson(classroom, lesson)"
                               >
                                 <div class="flex justify-between items-center">
@@ -147,11 +146,11 @@ interface JoinClassroomForm {
             <div class="flex items-center justify-between">
               <div>
                 @if (selectedLesson(); as lesson) {
-                  <h1 class="text-xl font-semibold text-gray-900">{{ lesson.name }}</h1>
+                  <h1 class="text-xl font-semibold text-gray-900">{{ lesson?.name }}</h1>
                   <p class="text-sm text-gray-600">{{ selectedClassroom()?.name }}</p>
                 }
                 @if (!selectedLesson()?.id && selectedClassroom(); as classroom) {
-                  <h1 class="text-xl font-semibold text-gray-900">{{ classroom.name }}</h1>
+                  <h1 class="text-xl font-semibold text-gray-900">{{ classroom?.name }}</h1>
                   <p class="text-sm text-gray-600">Select a lesson to get started</p>
                 }
               </div>
@@ -170,22 +169,21 @@ interface JoinClassroomForm {
         }
 
         <!-- Router Outlet -->
-        <div class="flex-1 overflow-auto">
+        <div class="flex-1 overflow-auto p-6">
           @if (!selectedClassroom()) {
-            <div class="flex items-center justify-center h-full">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-lg p-8 h-full flex items-center justify-center">
               <div class="text-center">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h2M9 7h6m-6 4h6m-2 4h2M7 7h2v2H7V7zm0 4h2v2H7v-4zm0 4h2v2H7v-2z"/>
                 </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">No classroom selected</h3>
-                <p class="mt-1 text-sm text-gray-500">Select a classroom from the sidebar to get started</p>
+                <h3 class="mt-4 text-lg font-medium text-gray-900">No classroom selected</h3>
+                <p class="mt-2 text-sm text-gray-500">Select a classroom from the sidebar to get started</p>
               </div>
             </div>
           } @else {
-
-            <div [hidden]="!selectedLesson()?.id">
-              <router-outlet  /></div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-lg min-h-full" [hidden]="!selectedLesson()?.id">
+              <router-outlet /></div>
           }
         </div>
       </div>
@@ -254,7 +252,6 @@ export class ClassRoomLayout implements OnInit, OnDestroy {
       await this.channelService.joinByCode(
         this.joinForm.code.trim(),
         currentUser.id as string,
-        'web-client',
         currentUser.displayName as string,
 
       );

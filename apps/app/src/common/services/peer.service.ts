@@ -1,6 +1,7 @@
 import {computed, inject, Injectable, signal} from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Peer } from 'peerjs';
+import { PeerBusService } from './peer-bus.service';
 
 @Injectable({ providedIn: 'root' })
 export class PeerUserStoreService {
@@ -46,13 +47,13 @@ export class PeerService {
   isConnected = signal(false);
 
   private peer: any = null;
-  private connections: Map<string, any> = new Map();
 
   private readonly rootHost = environment.apiHost;
   private readonly rootPort = environment.apiPort;
   private readonly rootPeerPath = environment.apiPeerPath;
 
   protected storeUser = inject(PeerUserStoreService);
+  protected eventBus = inject(PeerBusService);
 
   connectToPeerServer(): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -65,27 +66,21 @@ export class PeerService {
 
         this.peer.on('open', (id: string) => {
 
-          console.log(`Connected to PeerJS server with ID: ${id}`);
+          console.log(`Connected to Peer server with ID: ${id}`);
 
           this.storeUser.userPeerId.set(id);
           this.isConnected.set(true);
 
           // Send user metadata if logged in
           const currentUser = this.storeUser.user() as any;
-          if (currentUser) {
-            this.peer.metadata = { userId: currentUser?.id };
-          }
+          if (currentUser) this.peer.metadata = { userId: currentUser?.id };
 
           resolve(id);
         });
 
-        this.peer.on('connection', (conn: any) => {
-          console.log(`Incoming connection from: ${conn.peer}`);
-          this.setupConnection(conn);
-        });
-
         this.peer.on('error', (error: any) => {
-          console.error(`PeerJS Error: ${error.message}`);
+          console.log(error)
+          console.error(`PeerJS Error: ${error?.message}`);
           this.isConnected.set(false);
           reject(error);
         });
@@ -94,6 +89,12 @@ export class PeerService {
           console.log('Disconnected from PeerJS server');
           this.isConnected.set(false);
           this.storeUser.userPeerId.set(undefined);
+        });
+
+        this.peer.on('data', (data: any) => {
+          console.log(`Received from Peer:`, data);
+          // Handle different message types
+          //this.handleIncomingMessage(data, conn);
         });
 
       } catch (error) {
@@ -157,34 +158,18 @@ export class PeerService {
     });
   }
 
-  private setupConnection(conn: any) {
-    this.connections.set(conn.peer, conn);
+  async emitUserInfo(){
+    if(this.storeUser.getCurrentUser()) {
 
-    conn.on('open', () => {
-      console.log(`Connection established with: ${conn.peer}`);
-    });
-
-    conn.on('data', (data: any) => {
-      console.log(`Received from ${conn.peer}:`, data);
-      // Handle different message types
-      this.handleIncomingMessage(data, conn);
-    });
-
-    conn.on('close', () => {
-      console.log(`Connection closed with: ${conn.peer}`);
-      this.connections.delete(conn.peer);
-    });
-
-    conn.on('error', (error: any) => {
-      console.error(`Connection error with ${conn.peer}:`, error);
-    });
+    }
   }
 
+
   private handleIncomingMessage(data: any, conn: any) {
+    console.log('Received message:', data);
     if (data.type === 'channel_message') {
-      // Emit event for UI to handle
-      const event = new CustomEvent('channelMessage', { detail: data });
-      window.dispatchEvent(event);
+      // Emit event for UI to handle via global EventBusService
+      this.eventBus.emit('channelMessage', data);
     }
   }
 
@@ -193,7 +178,6 @@ export class PeerService {
       this.peer.destroy();
       this.peer = null;
     }
-    this.connections.clear();
     this.isConnected.set(false);
     this.storeUser.userPeerId.set(undefined);
   }

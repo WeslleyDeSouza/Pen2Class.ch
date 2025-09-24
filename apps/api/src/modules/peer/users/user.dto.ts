@@ -23,10 +23,9 @@ export class SignupUserDto {
   displayName?: string;
 
   @ApiProperty()
-  @IsOptional()
   @IsNumber()
   @Expose()
-  type?: number;
+  type: number;
 }
 
 // Response DTOs

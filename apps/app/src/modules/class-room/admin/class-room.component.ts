@@ -5,8 +5,10 @@ import { Subscription } from 'rxjs';
 import { ClassroomManagementFacade, ClassroomSummary } from './facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from './facades/lesson-management.facade';
 import {ChannelService} from "../../../common";
-import {PeerUserStoreService} from "../../../common/services/peer.service";
+import {PeerUserStoreService, PeerService} from "../../../common/services/peer.service";
 import { RouteConstants} from "../../../app/route.constants";
+import { PeerBusService } from "../../../common/services/peer-bus.service";
+import { LeaveEvent, JoinEvent, ObjectEvent } from '@ui-lib/apiClient';;
 
 @Component({
   selector: 'app-admin-class-room-lesson',
@@ -32,26 +34,42 @@ import { RouteConstants} from "../../../app/route.constants";
             </div>
           </div>
         </div>
-        @if (lesson) { <div class="text-sm text-gray-500">Updated {{ lesson?.updatedAt | date:'short' }}</div> }
+        <div class="flex items-center space-x-3">
+          <button
+            (click)="toggleFullscreen()"
+            class="inline-flex items-center px-3 py-2 rounded-xl bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm transition-colors"
+            [title]="isFullscreen() ? 'Exit Fullscreen' : 'Enter Fullscreen'"
+          >
+            @if (isFullscreen()) {
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9V4.5M9 9H4.5M9 9L3.5 3.5M15 9h4.5M15 9V4.5M15 9l5.5-5.5M9 15v4.5M9 15H4.5M9 15l-5.5 5.5M15 15h4.5M15 15v4.5m0-4.5l5.5 5.5"></path>
+              </svg>
+            } @else {
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+              </svg>
+            }
+          </button>
+          @if (lesson) { <div class="text-sm text-gray-500">Updated {{ lesson?.updatedAt | date:'short' }}</div> }
+        </div>
       </div>
     </div>
 
     <!-- Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div
+      class="mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 gap-6 transition-all duration-300"
+      [ngClass]="isFullscreen() ? 'max-w-full lg:grid-cols-1' : 'max-w-7xl lg:grid-cols-12'"
+    >
       <!-- Sidebar: Members -->
-      <aside class="lg:col-span-3">
-        <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow p-4">
+      <aside
+        class="transition-all duration-300"
+        [ngClass]="isFullscreen() ? 'hidden' : 'lg:col-span-3'"
+      >
+        <div (click)="onMemberSelect({userId:currentUser?.id})" class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow p-4">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-gray-800">Me</h3>
+            <h3 class="text-sm font-semibold text-gray-800">{{((currentUser?.displayName  || 'Self')) }}</h3>
+            <small>Open your own Editor > </small>
           </div>
-          <ul class="divide-y divide-gray-100">
-              <li (click)="onMemberSelect({userId:currentUser?.id})"  class="py-3 flex items-center">
-                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center mr-3">
-                  <span class="text-xs font-medium">{{ ((currentUser?.displayName  || 'Self') +'') | slice:0:2 | uppercase }}</span>
-                </div>
-              </li>
-
-          </ul>
         </div>
 
         <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow mt-2 p-4">
@@ -78,25 +96,31 @@ import { RouteConstants} from "../../../app/route.constants";
       </aside>
 
       <!-- Main area -->
-      <main class="lg:col-span-9">
-        <div class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow p-4 min-h-[400px]">
+      <main
+        class="transition-all duration-300"
+        [ngClass]="isFullscreen() ? 'col-span-1' : 'lg:col-span-9'"
+      >
+        <div
+          id="admin-class-room-content"
+          class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow p-4 transition-all duration-300"
+          [ngClass]="isFullscreen() ? 'min-h-screen' : 'min-h-[400px]'"
+        >
           <router-outlet></router-outlet>
           @if (!hasChildContent) {
             <div class="text-center py-12 text-gray-500">
-              Select a Member to begin.
+              Select a Member to begin or your own Editor to start writing.
             </div>
           }
         </div>
       </main>
-    </div>
-
-  `
+    </div>`
 })
 export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
   classroom: ClassroomSummary | null = null;
   lesson: LessonSummary | null = null;
   members: any[] = [];
   hasChildContent = false;
+  isFullscreen = signal(false);
 
   private subscriptions: Subscription[] = [];
 
@@ -107,6 +131,7 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
     private lessonFacade: LessonManagementFacade,
     private channelService: ChannelService,
     private userStore: PeerUserStoreService,
+    private eventBus: PeerBusService,
   ) {}
 
   get currentUser(){
@@ -122,10 +147,58 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
     this.subscriptions.push(sub);
 
     await this.loadContext();
+
+    // Setup realtime listeners for channel membership changes
+    this.setupRealtimeListeners();
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach(s => s.unsubscribe());
+  }
+
+  private setupRealtimeListeners() {
+    const sub = this.eventBus.on<any>('channelMessage')
+      .subscribe((detail) => {
+      try {
+        // Expect structure like { type: 'channel_message', channelId, payload: { event: 'member_joined', ... } }
+        const isChannelMsg = detail?.type === 'channel_message';
+        const channelId = detail?.channelId || detail?.payload?.channelId;
+        const eventName = detail?.payload?.event || detail?.action || detail?.event;
+        if (!isChannelMsg || !channelId) {
+          return;
+        }
+        // Only react if message belongs to this classroom
+        const currentClassId = this.classroom?.id || this.userStore.selectedClassId();
+        if (!currentClassId || channelId !== currentClassId) {
+          return;
+        }
+
+        /**
+         * LeaveEvent, JoinEvent, ObjectEvent
+         **/
+
+        // React to member join or leave events
+        const joinLike = ['member_joined', 'member-joined', 'user_joined', 'joined'];
+        const leaveLike = ['member_left', 'member-left', 'user_left', 'left'];
+        if (eventName && (joinLike.includes(eventName) || leaveLike.includes(eventName))) {
+          this.reloadMembers();
+        }
+      } catch (err) {
+        console.warn('Failed to handle channelMessage event', err);
+      }
+    });
+    this.subscriptions.push(sub);
+  }
+
+  private async reloadMembers() {
+    const classId = this.classroom?.id || this.userStore.selectedClassId();
+    if (!classId) return;
+    try {
+      const updated = await this.channelService.getChannelMembers(classId);
+      this.members = updated as any[];
+    } catch (e) {
+      console.error('Failed to reload members', e);
+    }
   }
 
   async loadContext() {
@@ -153,7 +226,7 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
     if (!classId || !lessonId) {
       // Still missing context; keep UI minimal or navigate back if desired
         console.log("Missing context");
-       this.router.navigate(['/admin/dashboard']);
+       this.router.navigate(['/', RouteConstants.Paths.admin, RouteConstants.Paths.dashboard]);
       return;
     }
 
@@ -172,10 +245,14 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
 
   onMemberSelect(member: any) {
     // navigate to member profile
-    this.router.navigate(['/admin/classroom', this.classroom?.id, 'lesson', this.lesson?.id, RouteConstants.Paths.user, member.userId]);
+    this.router.navigate(['/', RouteConstants.Paths.admin, RouteConstants.Paths.classroom, this.classroom?.id, RouteConstants.Paths.lesson, this.lesson?.id, RouteConstants.Paths.user, member.userId]);
+  }
+
+  toggleFullscreen() {
+    this.isFullscreen.set(!this.isFullscreen());
   }
 
   goBack() {
-    this.router.navigate(['/admin']);
+    this.router.navigate(['/admin/dashboard']);
   }
 }

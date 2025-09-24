@@ -21,17 +21,21 @@ export class UserService {
     private readonly userRepo: Repository<UserEntity>,
   ) {}
 
-  async createUser(username: string, email?: string, displayName?: string): Promise<User> {
+  async createUser(username: string, email?: string, displayName?: string, type?: number): Promise<User> {
     const uname = username.toLowerCase();
-    const existing = await this.userRepo.findOne({ where: { username: uname } });
-    if (existing) {
-      throw new ConflictException(`Username ${username} is already taken`);
+
+    if (!type) {
+      throw new ConflictException(`User Type is required for user ${username} `);
     }
+
+    const existing = await this.userRepo.findOne({ where: { username: uname } });
+    if (existing) throw new ConflictException(`Username ${username} is already taken`);
 
     const entity = this.userRepo.create({
       username: uname,
       email,
       displayName: displayName || username,
+      type
     });
     const saved = await this.userRepo.save(entity);
 

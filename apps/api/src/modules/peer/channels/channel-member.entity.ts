@@ -9,9 +9,6 @@ export class ChannelMemberEntity {
   @Column({ type: 'varchar', length: 100 })
   userId!: string;
 
-  @Column({ type: 'varchar', length: 100 })
-  peerId!: string;
-
   @Column({ type: 'varchar', length: 255, nullable: true })
   displayName?: string | null;
 

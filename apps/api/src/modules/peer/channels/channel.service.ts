@@ -1,9 +1,10 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChannelEntity } from './channel.entity';
 import { ChannelMemberEntity } from './channel-member.entity';
+import { JoinEvent, LeaveEvent } from '../../../schemas/event-schemas';
 
 export interface Channel {
   id: string;
@@ -31,6 +32,7 @@ export class ChannelService {
     private readonly channelRepo: Repository<ChannelEntity>,
     @InjectRepository(ChannelMemberEntity)
     private readonly memberRepo: Repository<ChannelMemberEntity>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async createChannel(name: string, description?: string, createdBy?: string): Promise<Channel> {
@@ -79,7 +81,7 @@ export class ChannelService {
     return channel as unknown as Channel;
   }
 
-  async joinChannel(channelId: string, userId: string, peerId: string, displayName?: string): Promise<{ success: boolean; channel: Channel }> {
+  async joinChannel(channelId: string, userId: string, displayName?: string): Promise<{ success: boolean; channel: Channel }> {
     const channel = await this.channelRepo.findOne({ where: { id: channelId }, relations: ['members'] });
     if (!channel) throw new NotFoundException(`Channel ${channelId} not found`);
 
@@ -89,7 +91,6 @@ export class ChannelService {
     const member = this.memberRepo.create({
       channelId,
       userId,
-      peerId,
       displayName,
       channel: channel,
     });
@@ -97,7 +98,19 @@ export class ChannelService {
 
     const updated = await this.channelRepo.findOne({ where: { id: channelId }, relations: ['members'] });
 
-    this.logger.log(`User ${userId}:${displayName} joined channel ${channel.name} with peer ${peerId}`);
+    this.logger.log(`User ${userId}:${displayName} joined channel ${channel.name} `);
+
+    // Emit backend event for join (to be forwarded by a transport in future)
+    this.eventEmitter.emit('peer.channel.message', {
+      type: 'channel_message',
+      channelId,
+      payload: {
+        event: JoinEvent.MEMBER_JOINED,
+        channelId,
+        userId,
+        displayName,
+      },
+    });
 
     return { success: true, channel: updated as unknown as Channel };
   }
@@ -111,6 +124,17 @@ export class ChannelService {
     const updated = await this.channelRepo.findOne({ where: { id: channelId }, relations: ['members'] });
 
     this.logger.log(`User ${userId} left channel ${channel.name}`);
+
+    // Emit backend event for leave
+    this.eventEmitter.emit('peer.channel.message', {
+      type: 'channel_message',
+      channelId,
+      payload: {
+        event: LeaveEvent.MEMBER_LEFT,
+        channelId,
+        userId,
+      },
+    });
 
     return { success: true, channel: updated as unknown as Channel };
   }
@@ -130,22 +154,6 @@ export class ChannelService {
     this.logger.log(`Channel deleted: ${channel.name} (${channelId})`);
 
     return { success: true };
-  }
-
-  // Helper method to get peer IDs for a channel (used by PeerService)
-  async getChannelPeerIds(channelId: string): Promise<string[]> {
-    const members = await this.memberRepo.find({ where: { channelId } });
-    return members.map((m) => m.peerId);
-  }
-
-  // Helper method to find channels by peer ID
-  async getChannelsByPeerId(peerId: string): Promise<Channel[]> {
-    const members = await this.memberRepo.find({ where: { peerId } });
-    const channelIds = [...new Set(members.map((m) => m.channelId))];
-    if (channelIds.length === 0) return [];
-    const { In } = await import('typeorm');
-    const channels = await this.channelRepo.findBy({ id: In(channelIds) as any });
-    return channels as unknown as Channel[];
   }
 
   // Generate unique 6-digit numeric code
@@ -178,9 +186,6 @@ export class ChannelService {
 
   @OnEvent('peer.disconnected')
   protected async onPeerDisconnected({ peerId }: { peerId: string }) {
-    const members = await this.memberRepo.find({ where: { peerId } });
-    for (const m of members) {
-      await this.memberRepo.delete(m.id);
-    }
+
   }
 }

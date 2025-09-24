@@ -38,10 +38,10 @@ export class ChannelService {
     return (promise);
   }
 
-  joinChannel(channelId: string, userId: string, peerId: string, displayName:string): Promise<JoinLeaveResponseDto> {
+  joinChannel(channelId: string, userId: string,  displayName:string): Promise<JoinLeaveResponseDto> {
     const promise = this.channelApiService.channelJoinChannel({
       channelId,
-      body: { userId, peerId ,displayName}
+      body: { userId, displayName}
     })
     return (promise);
   }
@@ -64,9 +64,9 @@ export class ChannelService {
     return (promise);
   }
 
-  joinByCode(code: string, userId: string, peerId: string,displayName:string): Promise<JoinLeaveResponseDto> {
+  joinByCode(code: string, userId: string,displayName:string): Promise<JoinLeaveResponseDto> {
     return  this.channelApiService.channelJoinChannelByCode({
-      body: { code, userId, peerId ,displayName}
+      body: { code, userId, displayName}
     })
   }
 

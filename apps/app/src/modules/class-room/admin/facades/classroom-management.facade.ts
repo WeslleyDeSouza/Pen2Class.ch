@@ -3,6 +3,8 @@ import { Channel } from '../../../../common';
 import { ChannelService } from '../../../../common/services/channel.service';
 import { UserService } from '../../../../common/services/user.service';
 import {PeerUserStoreService} from "../../../../common/services/peer.service";
+import { PeerBusService } from '../../../../common/services/peer-bus.service';
+import { JoinEvent, LeaveEvent } from '@ui-lib/apiClient';
 
 export interface ClassroomCreateRequest {
   name: string;
@@ -40,6 +42,7 @@ export class ClassroomManagementFacade {
   constructor(
     private channelService: ChannelService,
     private userStore: PeerUserStoreService,
+    private eventBus: PeerBusService,
   ) {
   }
 
@@ -124,7 +127,8 @@ export class ClassroomManagementFacade {
    */
   async addUserToClassroom(classroomId: string, userId: string,displayName:string): Promise<void> {
     try {
-      await this.channelService.joinChannel(classroomId, userId, 'web-admin',displayName);
+      await this.channelService.joinChannel(classroomId, userId, displayName);
+
       await this.loadClassrooms(); // Refresh to update member count
     } catch (error) {
       console.error('Failed to add user to classroom:', error);
@@ -138,6 +142,7 @@ export class ClassroomManagementFacade {
   async removeUserFromClassroom(classroomId: string, userId: string): Promise<void> {
     try {
       await this.channelService.leaveChannel(classroomId, userId);
+
       await this.loadClassrooms(); // Refresh to update member count
     } catch (error) {
       console.error('Failed to remove user from classroom:', error);

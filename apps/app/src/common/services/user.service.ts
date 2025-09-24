@@ -28,10 +28,10 @@ export class UserService {
     userApiService.rootUrl = this.rootUrl;
   }
 
-  signup(username: string, email?: string, displayName?: string, type?:number): Promise<UserDto> {
+  signup(username: string, email: string | undefined, displayName: string, type:UserType): Promise<UserDto> {
     return (
       this.userApiService.userSignup({
-        body: { username, email, displayName, type:type ?? UserType.STUDENT }
+        body: { username, email, displayName, type:type   }
       }).then(res => {
         this.userStore.user.set(res);
         this.userStore.persist();

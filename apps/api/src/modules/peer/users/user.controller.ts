@@ -17,7 +17,7 @@ export class UserController {
   @ApiBody({ description: 'Signup payload', type: SignupUserDto })
   @ApiOkResponse({ description: 'User created successfully', type: UserDto })
   async signup(@Body() body: SignupUserDto) {
-    return this.userService.createUser(body.username, body.email, body.displayName);
+    return this.userService.createUser(body.username, body.email, body.displayName, body.type);
   }
 
   @Get()

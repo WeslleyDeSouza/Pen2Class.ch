@@ -31,10 +31,7 @@ export class JoinChannelDto {
   @IsOptional()
   @Expose()
   displayName!: string;
-  @ApiProperty({ example: 'peer-connection-id' })
-  @IsString()
-  @Expose()
-  peerId!: string;
+
 }
 
 export class LeaveChannelDto {
@@ -59,11 +56,6 @@ export class JoinByCodeDto {
   @IsString()
   @Expose()
   userId!: string;
-
-  @ApiProperty({ example: 'peer-connection-id' })
-  @IsString()
-  @Expose()
-  peerId!: string;
 }
 
 // Response DTOs (for Swagger types)
@@ -75,10 +67,6 @@ export class ChannelMemberDto {
   @ApiProperty({ example: 'user_DisplayName' })
   @Expose()
   displayName!: string;
-
-  @ApiProperty({ example: 'peer-connection-id' })
-  @Expose()
-  peerId!: string;
 
   @ApiProperty({ example: '2025-01-01T12:00:00.000Z', type: String })
   @Expose()
