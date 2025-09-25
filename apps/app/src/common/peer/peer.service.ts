@@ -32,7 +32,7 @@ export class PeerService {
 
           console.log(`Connected to Peer server with ID: ${id}`);
 
-          this.storeUser.userPeerId.set(id);
+          //this.storeUser.userPeerId.set(id);
           this.isConnected.set(true);
 
           // Send user metadata if logged in

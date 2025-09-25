@@ -1,17 +1,19 @@
 import {Route, Router} from '@angular/router';
 import {inject} from "@angular/core";
-import {PeerUserStoreService} from "../common/peer/peer.service";
 import { RouteConstants as RC } from './route.constants';
+import {UserStoreService} from "../common/store";
 
 const canActivate = () => {
   const router = inject(Router)
-  const store = inject(PeerUserStoreService)
-  if(!store.getCurrentUser() || !store.userPeerId()) {
+  const store = inject(UserStoreService)
+
+  if(!store.getCurrentUser() ) {
+    sessionStorage.setItem('redirectUrl', router.url)
     router.navigate(['/'])
     return false;
   }
-  return true;
 
+  return true;
 }
 
 export const appRoutes: Route[] = [
@@ -43,8 +45,7 @@ export const appRoutes: Route[] = [
             ]
           }
         ]
-
-      } ,
+      },
       {
         path: RC.Paths.dashboard,
         loadComponent: () => import('../modules/class-room/admin').then(m => m.AdminDashboardComponent),
