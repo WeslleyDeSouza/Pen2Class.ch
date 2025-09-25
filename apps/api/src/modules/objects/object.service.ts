@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePeerObjectDto, UpdatePeerObjectDto, PeerObjectDto } from './object.dto';
-import { PeerObjectEntity } from './peerObject.entity';
+import { ObjectEntity } from './object.entity';
 
 export interface PeerObject extends Omit<PeerObjectDto, 'createdAt' | 'updatedAt'> {
   createdAt: Date;
@@ -16,11 +16,11 @@ export class ObjectService {
 
   constructor(
     private readonly eventEmitter: EventEmitter2,
-    @InjectRepository(PeerObjectEntity)
-    private readonly objectRepo: Repository<PeerObjectEntity>,
+    @InjectRepository(ObjectEntity)
+    private readonly objectRepo: Repository<ObjectEntity>,
   ) {}
 
-  private toDto(obj: PeerObjectEntity): PeerObjectDto {
+  private toDto(obj: ObjectEntity): PeerObjectDto {
     return {
       id: obj.id,
       type: obj.type,

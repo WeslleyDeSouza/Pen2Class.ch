@@ -2,7 +2,7 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
 
 @Entity('peer_objects')
 @Index('IDX_object_composite', ['userId', 'type', 'channelId', 'channelTypeId'], { unique: true })
-export class PeerObjectEntity {
+export class ObjectEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

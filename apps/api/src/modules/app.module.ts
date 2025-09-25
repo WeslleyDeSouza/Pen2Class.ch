@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
-import { PeerModule } from './peer/peer.module';
 import { CoreStaticFileLandingPageModule, CoreStaticFileModule } from '../core/static-file';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ChannelsModule } from './channels/channels.module';
+import { UsersModule } from './users/users.module';
+import { ChannelTypesModule } from './channel-types/channel-types.module';
+import { ObjectsModule } from './objects/objects.module';
 
 @Module({
   imports: [
@@ -13,7 +16,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       autoLoadEntities: true,
       synchronize: true, // process.env['APP_ENV'] !== 'production'
     }),
-    PeerModule,
+    ChannelsModule,
+    UsersModule,
+    ChannelTypesModule,
+    ObjectsModule,
     CoreStaticFileModule,
   ],
   controllers: [],

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChannelEntity } from './channel.entity';
 import { ChannelMemberEntity } from './channel-member.entity';
-import { JoinEvent, LeaveEvent } from '../../../schemas/event-schemas';
+import { JoinEvent, LeaveEvent } from '../../schemas/event-schemas';
 
 export interface Channel {
   id: string;
