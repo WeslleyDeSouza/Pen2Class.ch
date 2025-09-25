@@ -1,6 +1,5 @@
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as fs from 'fs';
-import {JoinEventSchema, LeaveEventSchema, ObjectEventSchema} from './schemas/event-schemas';
 
 export const swagger = (app) => {
   const config = new DocumentBuilder()
@@ -22,9 +21,6 @@ export const swagger = (app) => {
   // Expose custom enum schemas in Swagger components
   (document.components = document.components || {}).schemas = (document.components.schemas || {});
 
-  document.components.schemas[JoinEventSchema.title] = JoinEventSchema as any;
-  document.components.schemas[LeaveEventSchema.title] = LeaveEventSchema as any;
-  document.components.schemas[ObjectEventSchema.title] = ObjectEventSchema as any;
 
   SwaggerModule.setup('/docs', app, document, {
     swaggerOptions: {

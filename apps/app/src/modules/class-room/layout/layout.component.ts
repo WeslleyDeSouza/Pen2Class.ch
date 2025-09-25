@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ClassroomManagementFacade, ClassroomSummary } from '../admin/facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from '../admin/facades/lesson-management.facade';
-import { PeerUserStoreService } from '../../../common/services/peer.service';
+import { PeerUserStoreService } from '../../../common/peer/peer.service';
 import { ChannelService } from '../../../common';
 
 interface JoinClassroomForm {

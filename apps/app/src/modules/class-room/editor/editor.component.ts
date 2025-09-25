@@ -4,7 +4,7 @@ import { HtmlEditorComponent } from './components/html-editor/html-editor.compon
 import { CssEditorComponent } from './components/css-editor/css-editor.component';
 import { JsEditorComponent } from './components/js-editor/js-editor.component';
 import { PreviewComponent } from './components/preview/preview.component';
-import {PeerUserStoreService} from "../../../common/services/peer.service";
+import {PeerUserStoreService} from "../../../common/peer/peer.service";
 import {EditorService} from "./services/editor-facade.service";
 import { ActivatedRoute } from '@angular/router';
 import {RouteConstants} from "../../../app/route.constants";

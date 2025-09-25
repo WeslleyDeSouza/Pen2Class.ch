@@ -1,8 +1,8 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Index } from 'typeorm';
-import { ChannelEntity } from './channel.entity';
+import { ClassroomEntity } from './classroom.entity';
 
 @Entity('channel_members')
-export class ChannelMemberEntity {
+export class ClassroomMemberEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -15,10 +15,10 @@ export class ChannelMemberEntity {
   @CreateDateColumn({ type: 'datetime' })
   joinedAt!: Date;
 
-  @ManyToOne(() => ChannelEntity, (channel) => channel.members, { onDelete: 'CASCADE' })
-  channel!: ChannelEntity;
+  @ManyToOne(() => ClassroomEntity, (classroom) => classroom.members, { onDelete: 'CASCADE' })
+  classroom!: ClassroomEntity;
 
   @Index()
-  @Column({ type: 'uuid' })
-  channelId!: string;
+  @Column({ type: 'uuid',  })
+  classroomId!: string;
 }

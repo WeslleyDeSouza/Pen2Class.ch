@@ -8,19 +8,19 @@ import {swagger} from "./main.swagger";
 import process from "node:process";
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    bufferLogs: true,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
 
   app.setGlobalPrefix('api');
   app.enableCors();
 
   // Enable global validation + transformation for DTOs
-  app.useGlobalPipes(new ValidationPipe({
+  app.useGlobalPipes(
+    new ValidationPipe({
     whitelist: true,
     transform: true,
     transformOptions: { enableImplicitConversion: true },
-  }));
+  })
+  );
   app.useGlobalPipes(
     new ValidationPipe({
       forbidUnknownValues: false,

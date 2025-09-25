@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
-import { PeerUserStoreService } from '../../../../common/services/peer.service';
+import { PeerUserStoreService } from '../../../../common/peer/peer.service';
 import { EditorStoreService, EditorState } from './editor-store.service';
 import { LessonObjectsService, PeerObjectDto } from '@ui-lib/apiClient';
 

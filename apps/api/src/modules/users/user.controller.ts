@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ChannelService } from '../channels/channel.service';
+import { ClassroomService } from '../classrooms/classroom.service';
 import {ApiTags, ApiOperation, ApiOkResponse, ApiParam, ApiBody} from "@nestjs/swagger";
 import {SignupUserDto, UserChannelDto, UserDto} from './user.dto';
 
@@ -9,7 +9,7 @@ import {SignupUserDto, UserChannelDto, UserDto} from './user.dto';
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly channelService: ChannelService
+    private readonly classroomService: ClassroomService
   ) {}
 
   @Post('signup')
@@ -44,16 +44,16 @@ export class UserController {
     return this.userService.getUser(userId);
   }
 
-  @Get(':userId/channels')
-  @ApiOperation({ summary: 'List channels that a user has joined' })
+  @Get(':userId/classrooms')
+  @ApiOperation({ summary: 'List classrooms that a user has joined' })
   @ApiParam({ name: 'userId', type: 'string', description: 'User ID' })
-  @ApiOkResponse({ description: 'List of channels for the user returned successfully', type: [UserChannelDto] })
+  @ApiOkResponse({ description: 'List of classrooms for the user returned successfully', type: [UserChannelDto] })
   async getUserChannels(@Param('userId') userId: string) {
     // Verify user exists
     await this.userService.getUser(userId);
 
     // Get all channels and filter by membership
-    const allChannels = await this.channelService.getAllChannels();
+    const allChannels = await this.classroomService.getAllClassrooms();
     return allChannels.filter(channel =>
       channel.members.some(member => member.userId === userId)
     );

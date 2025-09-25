@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { ChannelTypesService, ChannelType } from '../../../../common/services/channel-types.service';
-import {PeerUserStoreService} from "../../../../common/services/peer.service";
+import {PeerUserStoreService} from "../../../../common/peer/peer.service";
 
 export interface LessonCreateRequest {
   createdBy: string;

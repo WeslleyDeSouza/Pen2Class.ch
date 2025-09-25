@@ -1,0 +1,160 @@
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ClassroomEntity } from './classroom.entity';
+import { ClassroomMemberEntity } from './classroom-member.entity';
+
+export interface Classroom {
+  id: string;
+  name: string;
+  description?: string;
+  createdBy: string;
+  createdAt: Date;
+  members: ClassroomMember[];
+  code: string;
+}
+
+export interface ClassroomMember {
+  userId: string;
+  peerId: string;
+  displayName?: string;
+  joinedAt: Date;
+}
+
+@Injectable()
+export class ClassroomService {
+  private readonly logger = new Logger(ClassroomService.name);
+
+  constructor(
+    @InjectRepository(ClassroomEntity)
+    private readonly classroomRepo: Repository<ClassroomEntity>,
+    @InjectRepository(ClassroomMemberEntity)
+    private readonly memberRepo: Repository<ClassroomMemberEntity>,
+  ) {}
+
+  async createClassroom(name: string, description?: string, createdBy?: string): Promise<Classroom> {
+    const code = await this.generateUniqueCode();
+    const entity = this.classroomRepo.create({
+      name,
+      description,
+      createdBy: createdBy || 'anonymous',
+      code,
+    });
+    const saved = await this.classroomRepo.save(entity);
+    this.logger.log(`Channel created: ${saved.name} (${saved.id}) with code: ${code}`);
+    return { ...saved, members: [] } as unknown as Classroom;
+  }
+
+  async getAllClassrooms(): Promise<Classroom[]> {
+    const channels = await this.classroomRepo.find({ relations: ['members'] });
+    return channels.map((c) => ({
+      ...c,
+      members: (c.members || []).map((m) => ({ ...m, peerId: undefined as any })),
+    } as unknown as Classroom));
+  }
+
+  /**
+   * Returns channels where the given user has permission to access:
+   * - User created the channel (createdBy === userId)
+   * - User is a member of the channel (by userId)
+   * Peer IDs are not exposed in the response, consistent with getAllChannels.
+   */
+  async getAllClassroomsWithPermission(userId: string): Promise<Classroom[]> {
+    const channels = await this.classroomRepo.find({ relations: ['members'] });
+    const list = channels.filter((channel) =>
+      channel.createdBy === userId || (channel.members || []).some((m) => m.userId === userId),
+    );
+    return list.map((channel) => ({
+      ...channel,
+      members: (channel.members || []).map((m) => ({ ...m, peerId: undefined as any })),
+    } as unknown as Classroom));
+  }
+
+  async getClassroom(classroomId: string): Promise<Classroom> {
+    const channel = await this.classroomRepo.findOne({ where: { id: classroomId }, relations: ['members'] });
+    if (!channel) {
+      throw new NotFoundException(`Channel ${classroomId} not found`);
+    }
+    return channel as unknown as Classroom;
+  }
+
+  async joinClassroom(classroomId: string, userId: string, displayName?: string): Promise<{ success: boolean; classroom: Classroom }> {
+    const channel = await this.classroomRepo.findOne({ where: { id: classroomId }, relations: ['members'] });
+    if (!channel) throw new NotFoundException(`Channel ${classroomId} not found`);
+
+    // Remove existing membership if any
+    await this.memberRepo.delete({ classroomId: classroomId, userId });
+
+    const member = this.memberRepo.create({
+      classroomId: classroomId,
+      userId,
+      displayName,
+      classroom: channel,
+    });
+    await this.memberRepo.save(member);
+
+    const updated = await this.classroomRepo.findOne({ where: { id: classroomId }, relations: ['members'] });
+
+    this.logger.log(`User ${userId}:${displayName} joined channel ${channel.name} `);
+
+    return { success: true, classroom: updated as unknown as Classroom };
+  }
+
+  async leaveClassroom(classroomId: string, userId: string): Promise<{ success: boolean; classroom: Classroom }> {
+    const channel = await this.classroomRepo.findOne({ where: { id: classroomId }, relations: ['members'] });
+    if (!channel) throw new NotFoundException(`Channel ${classroomId} not found`);
+
+    await this.memberRepo.delete({ classroomId: classroomId, userId });
+
+    const updated = await this.classroomRepo.findOne({ where: { id: classroomId }, relations: ['members'] });
+
+    this.logger.log(`User ${userId} left channel ${channel.name}`);
+
+    return { success: true, classroom: updated as unknown as Classroom };
+  }
+
+  async getClassroomMembers(classroomId: string): Promise<ClassroomMember[]> {
+    const members = await this.memberRepo.find({ where: { classroomId: classroomId } });
+    return members as unknown as ClassroomMember[];
+  }
+
+  async deleteClassroom(classroomId: string): Promise<{ success: boolean }> {
+    const channel = await this.classroomRepo.findOne({ where: { id: classroomId } });
+    if (!channel) {
+      throw new NotFoundException(`Channel ${classroomId} not found`);
+    }
+
+    await this.classroomRepo.delete(classroomId);
+    this.logger.log(`Channel deleted: ${channel.name} (${classroomId})`);
+
+    return { success: true };
+  }
+
+  // Generate unique 6-digit numeric code
+  private async generateUniqueCode(): Promise<string> {
+    let code: string;
+    let attempts = 0;
+    const maxAttempts = 100;
+
+    do {
+      code = Math.floor(100000 + Math.random() * 900000).toString();
+      attempts++;
+
+      const exists = await this.classroomRepo.findOne({ where: { code } });
+      if (!exists) break;
+
+      if (attempts >= maxAttempts) {
+        code = (Date.now() % 900000 + 100000).toString();
+        break;
+      }
+    } while (true);
+
+    return code;
+  }
+
+  // Find classroom by code
+  async getClassroomByCode(code: string): Promise<Classroom | null> {
+    const channel = await this.classroomRepo.findOne({ where: { code }, relations: ['members'] });
+    return (channel as unknown as Classroom) || null;
+  }
+}

@@ -1,14 +1,15 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsString, IsOptional, IsObject, IsArray, IsUUID } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsOptional, IsObject, IsArray, IsEnum } from 'class-validator';
+import { ResourceType } from './resource.entity';
 
-export class PeerObjectDto {
+export class ResourceDto {
   @ApiProperty({ description: 'Unique identifier of the object' })
   @IsString()
   id!: string;
 
-  @ApiProperty({ description: 'Type discriminator for the object' })
-  @IsString()
-  type!: string;
+  @ApiProperty({ description: 'Resource type', enum: ResourceType, enumName: 'ResourceType' })
+  @IsEnum(ResourceType)
+  type!: ResourceType;
 
   @ApiProperty({ description: 'Arbitrary JSON payload' })
   @IsObject()
@@ -18,14 +19,14 @@ export class PeerObjectDto {
   @IsString()
   userId!: string;
 
-  @ApiProperty({ description: 'Channel Type ID', required: false })
+  @ApiProperty({ description: 'Lesson ID', required: false })
   @IsOptional()
   @IsString()
-  channelTypeId?: string;
+  lessonId?: string;
 
-  @ApiProperty({ description: 'Channel ID to which this object belongs' })
+  @ApiProperty({ description: 'Classroom ID to which this object belongs' })
   @IsString()
-  channelId!: string;
+  classroomId!: string;
 
   @ApiProperty({ description: 'Updated at timestamp' })
   updatedAt!: string;
@@ -39,10 +40,10 @@ export class PeerObjectDto {
   comments?: any[];
 }
 
-export class CreatePeerObjectDto {
-  @ApiProperty({ description: 'Type discriminator for the object' })
-  @IsString()
-  type!: string;
+export class CreateResourceDto {
+  @ApiProperty({ description: 'Resource type', enum: ResourceType, enumName: 'ResourceType' })
+  @IsEnum(ResourceType)
+  type!: ResourceType;
 
   @ApiProperty({ description: 'Arbitrary JSON payload' })
   @IsObject()
@@ -52,14 +53,14 @@ export class CreatePeerObjectDto {
   @IsString()
   userId!: string;
 
-  @ApiProperty({ description: 'Channel Type ID', required: false })
+  @ApiProperty({ description: 'Lesson ID', required: false })
   @IsOptional()
   @IsString()
-  channelTypeId?: string;
+  lessonId?: string;
 
-  @ApiProperty({ description: 'Channel ID to which this object belongs' })
+  @ApiProperty({ description: 'Classroom ID to which this object belongs' })
   @IsString()
-  channelId!: string;
+  classroomId!: string;
 
   @ApiProperty({ description: 'Comments', type: [Object], required: false, default: [] })
   @IsArray()
@@ -67,11 +68,11 @@ export class CreatePeerObjectDto {
   comments?: any[];
 }
 
-export class UpdatePeerObjectDto {
-  @ApiProperty({ description: 'Type discriminator for the object', required: false })
+export class UpdateResourceDto {
+  @ApiProperty({ description: 'Resource type', enum: ResourceType, enumName: 'ResourceType', required: false })
   @IsOptional()
-  @IsString()
-  type?: string;
+  @IsEnum(ResourceType)
+  type?: ResourceType;
 
   @ApiProperty({ description: 'Arbitrary JSON payload', required: false })
   @IsOptional()

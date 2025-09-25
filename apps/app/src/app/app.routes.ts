@@ -1,6 +1,6 @@
 import {Route, Router} from '@angular/router';
 import {inject} from "@angular/core";
-import {PeerUserStoreService} from "../common/services/peer.service";
+import {PeerUserStoreService} from "../common/peer/peer.service";
 import { RouteConstants as RC } from './route.constants';
 
 const canActivate = () => {

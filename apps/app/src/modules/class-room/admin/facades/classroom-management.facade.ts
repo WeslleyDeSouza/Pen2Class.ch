@@ -2,8 +2,8 @@ import { Injectable, signal, computed } from '@angular/core';
 import { Channel } from '../../../../common';
 import { ChannelService } from '../../../../common/services/channel.service';
 import { UserService } from '../../../../common/services/user.service';
-import {PeerUserStoreService} from "../../../../common/services/peer.service";
-import { PeerBusService } from '../../../../common/services/peer-bus.service';
+import {PeerUserStoreService} from "../../../../common/peer/peer.service";
+import { PeerBusService } from '../../../../common/peer/peer-bus.service';
 import { JoinEvent, LeaveEvent } from '@ui-lib/apiClient';
 
 export interface ClassroomCreateRequest {

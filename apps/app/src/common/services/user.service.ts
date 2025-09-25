@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {UserService as UserApiService, UserDto, SignupUserDto,UserChannelDto} from '@ui-lib/apiClient';
 import { environment } from '../../environments/environment';
-import {PeerUserStoreService} from "./peer.service";
+import {PeerUserStoreService} from "../peer/peer.service";
 
 export enum UserType {
   STUDENT = 1,

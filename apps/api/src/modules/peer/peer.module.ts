@@ -1,24 +1,24 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PeerService } from './peer.service';
-import { ChannelService } from '../channels/channel.service';
+import { ClassroomService } from '../classrooms/classroom.service';
 import { UserService } from '../users/user.service';
-import { ChannelController } from '../channels/channel.controller';
+import { DeprecatedChannelController } from '../classrooms/deprecated-channel.controller';
 import { UserController } from '../users/user.controller';
-import { ChannelTypeService } from '../channel-types/channel-type.service';
-import { ChannelTypeController } from '../channel-types/channel-type.controller';
-import { ObjectService } from '../objects/object.service';
-import { ObjectController } from '../objects/object.controller';
+import { LessonService } from '../lessons/lesson.service';
+import { LessonController } from '../lessons/lesson.controller';
+import { ResourceService } from '../resources/resource.service';
+import { ResourceController } from '../resources/resource.controller';
 import { UserEntity } from '../users/user.entity';
-import { ChannelEntity } from '../channels/channel.entity';
-import { ChannelMemberEntity } from '../channels/channel-member.entity';
-import { ObjectEntity } from '../objects/object.entity';
-import { ChannelTypeEntity } from '../channel-types/channel-type.entity';
-import { ChannelTypeLessonEntity } from '../channel-types/channel-type-lesson.entity';
+import { ClassroomEntity } from '../classrooms/classroom.entity';
+import { ClassroomMemberEntity } from '../classrooms/classroom-member.entity';
+import { ResourceEntity } from '../resources/resource.entity';
+import { LessonEntity } from '../lessons/lesson.entity';
+import { LessonTemplateEntity } from '../lessons/lesson-template.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, ChannelEntity, ChannelMemberEntity, ObjectEntity, ChannelTypeEntity, ChannelTypeLessonEntity]),
+    TypeOrmModule.forFeature([UserEntity, ClassroomEntity, ClassroomMemberEntity, ResourceEntity, LessonEntity, LessonTemplateEntity]),
   ],
   exports: [PeerService]
 })

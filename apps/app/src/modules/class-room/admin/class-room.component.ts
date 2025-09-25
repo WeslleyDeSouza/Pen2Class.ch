@@ -5,9 +5,9 @@ import { Subscription } from 'rxjs';
 import { ClassroomManagementFacade, ClassroomSummary } from './facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from './facades/lesson-management.facade';
 import {ChannelService} from "../../../common";
-import {PeerUserStoreService, PeerService} from "../../../common/services/peer.service";
+import {PeerUserStoreService, PeerService} from "../../../common/peer/peer.service";
 import { RouteConstants} from "../../../app/route.constants";
-import { PeerBusService } from "../../../common/services/peer-bus.service";
+import { PeerBusService } from "../../../common/peer/peer-bus.service";
 import { LeaveEvent, JoinEvent, ObjectEvent } from '@ui-lib/apiClient';;
 
 @Component({

@@ -6,7 +6,7 @@ import { User } from '../../../common';
 import { UserService } from '../../../common/services/user.service';
 import { ClassroomManagementFacade, ClassroomSummary } from './facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from './facades/lesson-management.facade';
-import {PeerUserStoreService} from "../../../common/services/peer.service";
+import {PeerUserStoreService} from "../../../common/peer/peer.service";
 import {Router} from "@angular/router";
 
 interface CreateChannelForm {

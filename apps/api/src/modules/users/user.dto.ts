@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {IsOptional, IsString, IsEmail, IsNumber} from 'class-validator';
 import {Expose, Type} from 'class-transformer';
-import {ChannelMemberDto} from "../channels/channel.dto";
+import {ClassroomMemberDto} from "../classrooms/classroom.dto";
 
 // Request DTOs
 export class SignupUserDto {
@@ -78,10 +78,10 @@ export class UserChannelDto {
   @Expose()
   createdAt!: Date;
 
-  @ApiProperty({ type: () => [ChannelMemberDto] })
-  @Type(() => ChannelMemberDto)
+  @ApiProperty({ type: () => [ClassroomMemberDto] })
+  @Type(() => ClassroomMemberDto)
   @Expose()
-  members!: ChannelMemberDto[];
+  members!: ClassroomMemberDto[];
 
   @ApiProperty({ example: '123456' })
   @Expose()

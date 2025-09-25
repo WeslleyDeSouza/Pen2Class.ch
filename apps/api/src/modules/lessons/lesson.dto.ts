@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
-export class CreateChannelTypeDto {
+export class CreateLessonDto {
   @ApiProperty({ example: 'Lecture' })
   @IsString()
   @Expose()
@@ -20,7 +20,7 @@ export class CreateChannelTypeDto {
   createdBy!: string; // channel owner creating this
 }
 
-export class UpdateChannelTypeDto {
+export class UpdateLessonDto {
   @ApiProperty({ example: 'Workshop', required: false })
   @IsOptional()
   @IsString()
@@ -34,7 +34,7 @@ export class UpdateChannelTypeDto {
   description?: string;
 }
 
-export class ToggleChannelTypeDto {
+export class ToggleLessonDto {
   @ApiProperty({ example: true })
   @IsBoolean()
   @Expose()
@@ -53,7 +53,7 @@ export class StartQuitLessonDto {
   userId!: string;
 }
 
-export class ChannelTypeDto {
+export class LessonDto {
   @ApiProperty({ example: 'f82b0a0d-0d6a-4b63-8b15-1a6e4f1e6f8f' })
   @Expose()
   id!: string;
@@ -84,7 +84,7 @@ export class ChannelTypeDto {
 
   @ApiProperty({ example: '8f14e45f-ea9a-4b0a-9b7d-1234567890ab' })
   @Expose()
-  channelId!: string;
+  classroomId!: string;
 }
 
 export class SuccessDto {

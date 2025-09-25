@@ -1,8 +1,7 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { ChannelEntity } from '../channels/channel.entity';
 
 @Entity('channel_types')
-export class ChannelTypeEntity {
+export class LessonEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -24,9 +23,9 @@ export class ChannelTypeEntity {
   @UpdateDateColumn({ type: 'datetime' })
   updatedAt!: Date;
 
-  @Column({ type: 'varchar', length: 36 })
-  channelId!: string;
+  @Column({ type: 'varchar', length: 36,   })
+  classroomId!: string;
 
-  @ManyToOne(() => ChannelEntity, (channel) => channel.id, { onDelete: 'CASCADE' })
-  channel?: ChannelEntity;
+  @ManyToOne('ClassroomEntity', 'id', { onDelete: 'CASCADE' })
+  classroom?: any;
 }

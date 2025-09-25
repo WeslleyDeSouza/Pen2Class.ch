@@ -3,7 +3,7 @@ import { IsOptional, IsString } from 'class-validator';
 import { Expose, Type } from 'class-transformer';
 
 // Request DTOs
-export class CreateChannelDto {
+export class CreateClassroomDto {
   @ApiProperty({ example: 'Math 101' })
   @IsString()
   @Expose()
@@ -21,7 +21,7 @@ export class CreateChannelDto {
   createdBy!: string;
 }
 
-export class JoinChannelDto {
+export class JoinClassroomDto {
   @ApiProperty({ example: 'user_123' })
   @IsString()
   @Expose()
@@ -34,7 +34,7 @@ export class JoinChannelDto {
 
 }
 
-export class LeaveChannelDto {
+export class LeaveClassroomDto {
   @ApiProperty({ example: 'user_123' })
   @IsString()
   @Expose()
@@ -59,7 +59,7 @@ export class JoinByCodeDto {
 }
 
 // Response DTOs (for Swagger types)
-export class ChannelMemberDto {
+export class ClassroomMemberDto {
   @ApiProperty({ example: 'user_123' })
   @Expose()
   userId!: string;
@@ -73,7 +73,7 @@ export class ChannelMemberDto {
   joinedAt!: Date;
 }
 
-export class ChannelDto {
+export class ClassroomDto {
   @ApiProperty({ example: '8f14e45f-ea9a-4b0a-9b7d-1234567890ab' })
   @Expose()
   id!: string;
@@ -94,10 +94,10 @@ export class ChannelDto {
   @Expose()
   createdAt!: Date;
 
-  @ApiProperty({ type: () => [ChannelMemberDto] })
-  @Type(() => ChannelMemberDto)
+  @ApiProperty({ type: () => [ClassroomMemberDto] })
+  @Type(() => ClassroomMemberDto)
   @Expose()
-  members!: ChannelMemberDto[];
+  members!: ClassroomMemberDto[];
 
   @ApiProperty({ example: '123456' })
   @Expose()
@@ -115,8 +115,8 @@ export class JoinLeaveResponseDto {
   @Expose()
   success!: boolean;
 
-  @ApiProperty({ type: () => ChannelDto })
-  @Type(() => ChannelDto)
+  @ApiProperty({ type: () => ClassroomDto })
+  @Type(() => ClassroomDto)
   @Expose()
-  channel!: ChannelDto;
+  classroom!: ClassroomDto;
 }

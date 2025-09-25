@@ -1,8 +1,8 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Index } from 'typeorm';
-import { ChannelMemberEntity } from './channel-member.entity';
+import { ClassroomMemberEntity } from './classroom-member.entity';
 
 @Entity('channels')
-export class ChannelEntity {
+export class ClassroomEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -22,6 +22,6 @@ export class ChannelEntity {
   @Column({ type: 'varchar', length: 32 })
   code!: string;
 
-  @OneToMany(() => ChannelMemberEntity, (member) => member.channel, { cascade: true })
-  members!: ChannelMemberEntity[];
+  @OneToMany(() => ClassroomMemberEntity, (member) => member.classroom, { cascade: true })
+  members!: ClassroomMemberEntity[];
 }

@@ -6,9 +6,13 @@ import { Channel, User } from '../../common';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 import { ChannelService } from '../../common/services/channel.service';
 import { UserService, UserType } from '../../common/services/user.service';
-import {PeerService, PeerUserStoreService} from '../../common/services/peer.service';
+import {PeerService, PeerUserStoreService} from '../../common/peer/peer.service';
 import {ChannelDto, UserDto} from "@ui-lib/apiClient";
 import {RouteConstants} from "../../app/route.constants";
+import { StepJoinComponent } from './components/step.join.component';
+import { StepCreateComponent } from './components/step.create.component';
+import { StepContinueComponent } from './components/step.continue.component';
+import { HomeHeaderComponent } from './components/home.header.component';
 
 
 type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
@@ -16,20 +20,12 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [FormsModule, ],
+  imports: [FormsModule, StepJoinComponent, StepCreateComponent, StepContinueComponent, HomeHeaderComponent ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
         <!-- Header -->
-        <div class="text-center mb-8">
-          <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-            </svg>
-          </div>
-          <h1 class="text-2xl font-bold text-gray-900">Pen2Class</h1>
-          <p class="text-gray-600 mt-2">Join or create a classroom</p>
-        </div>
+        <app-home-header></app-home-header>
 
         @switch (currentView) {
           @case ('initial') {
@@ -55,189 +51,27 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
               </button>
 
               <!-- Continue with existing user Button -->
-              @if (hasExistingUser()) {
-                <button
-                  (click)="continueWithExistingUser()"
-                  class="w-full bg-purple-500 hover:bg-purple-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                  </svg>
-                  <span>Continue with {{ getExistingUserName() }}</span>
-                </button>
+              @if(hasExistingUser()){
+                <app-continue-existing-user
+                  [existingUserName]="getExistingUserName()"
+                  (continueClicked)="continueWithExistingUser()"
+                ></app-continue-existing-user>
               }
+
             </div>
           }
 
           @case ('joinByCode') {
-            <div class="space-y-6 animate-fade-in">
-              <!-- Progress Steps -->
-              <div class="flex items-center justify-center mb-6">
-                <div class="flex items-center space-x-2">
-                  <div [class]="joinStep >= 1 ? 'w-4 h-4 bg-green-500 rounded-full' : 'w-4 h-4 bg-gray-300 rounded-full'"></div>
-                  <div [class]="joinStep >= 2 ? 'w-8 h-1 bg-green-500' : 'w-8 h-1 bg-gray-300'"></div>
-                  <div [class]="joinStep >= 2 ? 'w-4 h-4 bg-green-500 rounded-full' : 'w-4 h-4 bg-gray-300 rounded-full'"></div>
-                  <div [class]="joinStep >= 3 ? 'w-8 h-1 bg-green-500' : 'w-8 h-1 bg-gray-300'"></div>
-                  <div [class]="joinStep >= 3 ? 'w-4 h-4 bg-green-500 rounded-full' : 'w-4 h-4 bg-gray-300 rounded-full'"></div>
-                </div>
-              </div>
-
-              @if (joinStep === 1) {
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Enter your name</label>
-                    <input
-                      [(ngModel)]="username"
-                      placeholder="Your display name"
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                      (keyup.enter)="nextJoinStep()">
-                  </div>
-                  <button
-                    (click)="nextJoinStep()"
-                    [disabled]="!username.trim() || isLoading"
-                    class="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 px-4 rounded-lg font-medium transition-colors">
-                    {{ isLoading ? 'Creating user...' : 'Continue' }}
-                  </button>
-                </div>
-              }
-
-              @if (joinStep === 2) {
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Enter classroom code</label>
-                    <input
-                      [(ngModel)]="classroomCode"
-                      placeholder="Enter 6-digit code"
-                      maxlength="6"
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-center text-2xl tracking-widest"
-                      (keyup.enter)="joinClassroom()"
-                      (input)="onCodeInput($event)">
-                  </div>
-                  <button
-                    (click)="joinClassroom()"
-                    [disabled]="!isValidCode() || isLoading"
-                    class="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 px-4 rounded-lg font-medium transition-colors">
-                    {{ isLoading ? 'Joining...' : 'Join Classroom' }}
-                  </button>
-                </div>
-              }
-
-              @if (joinStep === 3 && currentChannel) {
-                <div class="space-y-4">
-                  <div class="text-center p-6 bg-green-50 rounded-lg border border-green-200">
-                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                      </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-green-800 mb-1">Successfully joined!</h3>
-                    <p class="text-sm text-green-600">{{currentChannel.name}}</p>
-                  </div>
-                </div>
-              }
-
-              <div class="flex space-x-3">
-                @if (joinStep > 1) {
-                  <button
-                    (click)="previousJoinStep()"
-                    class="flex-1 text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors border border-gray-200 hover:border-gray-300 rounded-lg">
-                    Back
-                  </button>
-                }
-                <button
-                  (click)="goToInitial()"
-                  class="flex-1 text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors">
-                  Cancel
-                </button>
-              </div>
-            </div>
+            <app-join-steps
+              (back)="goToInitial()"
+            />
           }
 
           @case ('createClass') {
-            <div class="space-y-6 animate-fade-in">
-              <!-- Progress Steps -->
-              <div class="flex items-center justify-center mb-6">
-                <div class="flex items-center space-x-2">
-                  <div [class]="createStep >= 1 ? 'w-4 h-4 bg-blue-500 rounded-full' : 'w-4 h-4 bg-gray-300 rounded-full'"></div>
-                  <div [class]="createStep >= 2 ? 'w-8 h-1 bg-blue-500' : 'w-8 h-1 bg-gray-300'"></div>
-                  <div [class]="createStep >= 2 ? 'w-4 h-4 bg-blue-500 rounded-full' : 'w-4 h-4 bg-gray-300 rounded-full'"></div>
-                  <div [class]="createStep >= 3 ? 'w-8 h-1 bg-blue-500' : 'w-8 h-1 bg-gray-300'"></div>
-                  <div [class]="createStep >= 3 ? 'w-4 h-4 bg-blue-500 rounded-full' : 'w-4 h-4 bg-gray-300 rounded-full'"></div>
-                </div>
-              </div>
-
-              @if (createStep === 1) {
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Your name</label>
-                    <input
-                      [(ngModel)]="teacherName"
-                      placeholder="Your display name"
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      (keyup.enter)="nextCreateStep()">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Classroom name</label>
-                    <input
-                      [(ngModel)]="classroomName"
-                      placeholder="Enter classroom name"
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      (keyup.enter)="nextCreateStep()">
-                  </div>
-                  <button
-                    (click)="nextCreateStep()"
-                    [disabled]="!teacherName.trim() || !classroomName.trim() || isLoading"
-                    class="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 px-4 rounded-lg font-medium transition-colors">
-                    {{ isLoading ? 'Creating...' : 'Create Classroom' }}
-                  </button>
-                </div>
-              }
-
-              @if (createStep === 2 && currentChannel) {
-                <div class="space-y-4">
-                  <div class="text-center p-6 bg-blue-50 rounded-lg border border-blue-200">
-                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                      </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-blue-800 mb-1">Classroom Created!</h3>
-                    <p class="text-sm text-blue-600">{{currentChannel.name}}</p>
-                  </div>
-
-                  <!-- Classroom Info -->
-                  <div class="bg-gray-50 rounded-lg p-4">
-                    <h4 class="font-medium text-gray-900 mb-2">Classroom Details</h4>
-                    <div class="space-y-2 text-sm text-gray-600">
-                      <div class="flex justify-between">
-                        <span>Share this code with students:</span>
-                      </div>
-                      <div class="text-center">
-                        <code class="bg-white px-4 py-3 rounded border text-2xl font-mono tracking-widest">{{currentChannel.code}}</code>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              }
-
-              <div class="flex space-x-3">
-                @if (createStep > 1) {
-                  <button
-                    (click)="previousCreateStep()"
-                    class="flex-1 text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors border border-gray-200 hover:border-gray-300 rounded-lg">
-                    Back
-                  </button>
-                }
-                @if(currentChannel?.name){
-                  <button
-
-                    (click)="goToAdmin()"
-                    class="flex-1 text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors">
-                    Go to Admin
-                  </button>
-                }
-
-              </div>
-            </div>
+            <app-create-steps
+              (back)="goToInitial()"
+              (goToAdmin)="goToAdmin()"
+            />
           }
 
           @case ('hasError') {
@@ -247,14 +81,19 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                 </svg>
               </div>
-              <h3 class="text-lg font-semibold text-red-800">Server Not Available</h3>
-              <p class="text-sm text-red-600">Unable to connect to the peer server. Please try again later.</p>
-              <button
-                (click)="retryConnection()"
+
+              <h3 class="text-lg font-semibold text-red-800">
+               Error Message</h3>
+              <p class="text-sm text-red-600">
+
+              </p>
+
+              <!--
+               <button
                 [disabled]="isLoading"
                 class="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white py-3 px-4 rounded-lg font-medium transition-colors">
-                {{ isLoading ? 'Retrying...' : 'Retry Connection' }}
               </button>
+              -->
               <button
                 (click)="goToInitial()"
                 class="w-full text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors">
@@ -262,18 +101,6 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
               </button>
             </div>
           }
-        }
-
-        <!-- Connection Status -->
-        @if (currentView !== 'initial' && currentView !== 'hasError') {
-          <div class="mt-6 p-3 rounded-lg border" [class]="isConnectedToPeer ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
-            <div class="flex items-center space-x-2">
-              <div class="w-2 h-2 rounded-full" [class]="isConnectedToPeer ? 'bg-green-500' : 'bg-red-500'"></div>
-              <span class="text-sm font-medium" [class]="isConnectedToPeer ? 'text-green-800' : 'text-red-800'">
-                {{ isConnectedToPeer ? 'Connected to peer network' : 'Disconnected' }}
-              </span>
-            </div>
-          </div>
         }
 
         <!-- Error Messages -->
@@ -319,19 +146,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private channelService: ChannelService,
     private userService: UserService,
-    private peerService: PeerService,
     private userStore: PeerUserStoreService,
     private router: Router,
     private route: ActivatedRoute,
   ) {}
 
   ngOnInit() {
-    this.peerService.checkPeerServerConnection().then((ok) => {
-      this.isConnectedToPeer = ok;
-      if (!ok && this.currentView !== 'initial') {
-        this.currentView = 'hasError';
-      }
-    });
+
   }
 
   ngOnDestroy() {
@@ -342,23 +163,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   switchToJoinByCode() {
     this.resetForm();
     this.currentView = 'joinByCode';
-    this.peerService.checkPeerServerConnection().then((ok) => {
-      this.isConnectedToPeer = ok;
-      if (!ok && this.currentView !== 'initial') {
-        this.currentView = 'hasError';
-      }
-    });
-  }
+   }
 
   switchToCreateClass() {
     this.resetForm();
     this.currentView = 'createClass';
-    this.peerService.checkPeerServerConnection().then((ok) => {
-      this.isConnectedToPeer = ok;
-      if (!ok && this.currentView !== 'initial') {
-        this.currentView = 'hasError';
-      }
-    });
+
   }
 
   goToInitial() {
@@ -366,18 +176,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.currentView = 'initial';
   }
 
-  retryConnection() {
-    this.isLoading = true;
-    this.peerService.checkPeerServerConnection().then((ok) => {
-      this.isConnectedToPeer = ok;
-    });
-    setTimeout(() => {
-      this.isLoading = false;
-      if (this.isConnectedToPeer) {
-        this.currentView = 'initial';
-      }
-    }, 3000);
-  }
 
   // Join by code flow
   nextJoinStep() {
@@ -393,7 +191,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  private createUser() {
+  createUser() {
     if (!this.username.trim()) {
       this.showError('Please enter your name');
       return;
@@ -406,7 +204,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.joinStep = 2;
       this.isLoading = false;
       this.userStore.persist();
-      this.peerService.emitUserInfo()
     }).catch((error) => {
       this.showError(error.error?.message || 'Failed to create user');
       this.isLoading = false;
@@ -550,7 +347,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       // User still exists, update stored data and continue
       this.userStore.user.set(user);
       this.userStore.persist();
-      this.peerService.emitUserInfo()
 
       if(user.type == 2)this.goToAdmin();
       else this.goToClassRoom();

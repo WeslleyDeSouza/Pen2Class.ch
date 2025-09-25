@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { CoreStaticFileLandingPageModule, CoreStaticFileModule } from '../core/static-file';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ChannelsModule } from './channels/channels.module';
+import { ClassroomsModule } from './classrooms/classrooms.module';
 import { UsersModule } from './users/users.module';
-import { ChannelTypesModule } from './channel-types/channel-types.module';
-import { ObjectsModule } from './objects/objects.module';
+import { LessonsModule } from './lessons/lessons.module';
+import { ResourcesModule } from './resources/resources.module';
 
 @Module({
   imports: [
@@ -16,10 +16,10 @@ import { ObjectsModule } from './objects/objects.module';
       autoLoadEntities: true,
       synchronize: true, // process.env['APP_ENV'] !== 'production'
     }),
-    ChannelsModule,
+    ClassroomsModule,
     UsersModule,
-    ChannelTypesModule,
-    ObjectsModule,
+    LessonsModule,
+    ResourcesModule,
     CoreStaticFileModule,
   ],
   controllers: [],
