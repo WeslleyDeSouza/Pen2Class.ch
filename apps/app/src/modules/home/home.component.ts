@@ -1,18 +1,17 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { AsyncPipe } from '@angular/common';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import { Subscription } from 'rxjs';
-import { ClassroomService } from '../../common/services/classroom.service';
-import { UserService } from '../../common/services/user.service';
-import { StepJoinComponent } from './components/step.join.component';
-import { StepCreateComponent } from './components/step.create.component';
-import { StepContinueComponent } from './components/step.continue.component';
-import { HomeHeaderComponent } from './components/home.header.component';
-import { RouteConstants } from "../../app/route.constants";
+import {Subscription} from 'rxjs';
+import {ClassroomService} from '../../common/services/classroom.service';
+import {UserService} from '../../common/services/user.service';
+import {StepJoinComponent} from './components/step.join.component';
+import {StepCreateComponent} from './components/step.create.component';
+import {StepContinueComponent} from './components/step.continue.component';
+import {HomeHeaderComponent} from './components/home.header.component';
+import {RouteConstants} from "../../app/route.constants";
 
 import {UserStoreService} from "../../common/store";
-import { Classroom as Channel } from '../../common';
+import {Classroom as Channel} from '../../common';
 
 type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
 
@@ -30,31 +29,37 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
           @case ('initial') {
             <div class="space-y-4 animate-fade-in">
               <!-- Join by Code Button -->
-              <button
-                (click)="switchToJoinByCode()"
-                class="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                </svg>
-                <span>Join by Code</span>
-              </button>
+              <div>
+                <button
+                  (click)="switchToJoinByCode()"
+                  class="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                  </svg>
+                  <span>Join by Code</span>
+                </button>
+              </div>
 
               <!-- Create Classroom Button -->
-              <button
-                (click)="switchToCreateClass()"
-                class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                <span>Create Classroom</span>
-              </button>
+              <div>
+                <button
+                  (click)="switchToCreateClass()"
+                  class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                  <span>Create Classroom</span>
+                </button>
+              </div>
 
               <!-- Continue with existing user Button -->
               @if(hasExistingUser()){
-                <app-continue-existing-user
-                  [existingUserName]="getExistingUserName()"
-                  (continueClicked)="continueWithExistingUser()"
-                ></app-continue-existing-user>
+               <div>
+                 <app-continue-existing-user
+                   [existingUserName]="getExistingUserName()"
+                   (continueClicked)="continueWithExistingUser()"
+                 />
+               </div>
               }
 
             </div>
@@ -121,18 +126,13 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
         to { opacity: 1; transform: translateY(0); }
       }
     </style>
-  `
+  `,
+  changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent implements OnInit, OnDestroy {
   currentView: ViewMode = 'initial';
   joinStep = 1;
   createStep = 1;
-
-  // Form data
-  username = '';
-  classroomCode = '';
-  teacherName = '';
-  classroomName = '';
 
   // State
   errorMessage = '';
@@ -159,27 +159,23 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Navigation methods
   switchToJoinByCode() {
-    this.resetForm();
+    this.resetStepsState();
     this.currentView = 'joinByCode';
    }
 
   switchToCreateClass() {
-    this.resetForm();
+    this.resetStepsState();
     this.currentView = 'createClass';
 
   }
 
   goToInitial() {
-    this.resetForm();
+    this.resetStepsState();
     this.currentView = 'initial';
   }
 
   // Helper methods
-  private resetForm() {
-    this.username = '';
-    this.classroomCode = '';
-    this.teacherName = '';
-    this.classroomName = '';
+  private resetStepsState() {
     this.joinStep = 1;
     this.createStep = 1;
     this.currentChannel = null;
