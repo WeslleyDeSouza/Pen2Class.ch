@@ -1,6 +1,5 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import {RouterOutlet} from "@angular/router";
-
 
 @Component({
   selector: 'app-admin-layout',
@@ -14,5 +13,4 @@ import {RouterOutlet} from "@angular/router";
     </div>
   `
 })
-export class AdminLayoutComponent {
-}
+export class AdminLayoutComponent {}

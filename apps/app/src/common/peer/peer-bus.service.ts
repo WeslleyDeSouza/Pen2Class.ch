@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { LeaveEvent, JoinEvent, ObjectEvent } from '@ui-lib/apiClient';;
 
 // Lightweight global event bus to decouple components/services from window event APIs
 // Usage:

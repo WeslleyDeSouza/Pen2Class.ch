@@ -6,8 +6,8 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ClassroomManagementFacade, ClassroomSummary } from '../admin/facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from '../admin/facades/lesson-management.facade';
-import { PeerUserStoreService } from '../../../common/peer/peer.service';
-import { ChannelService } from '../../../common';
+import { ClassroomService } from '../../../common';
+import {UserStoreService} from "../../../common/store";
 
 interface JoinClassroomForm {
   code: string;
@@ -151,7 +151,7 @@ interface JoinClassroomForm {
                   <p class="text-sm text-gray-600">{{ selectedClassroom()?.name }}</p>
                 }
                 @if (!selectedLesson()?.id && selectedClassroom(); as classroom) {
-                  <h1 class="text-xl font-semibold text-gray-900">{{ classroom?.name }}</h1>
+                  <h1 class="text-xl font-semibold text-gray-900">{{ $any(classroom)?.name }}</h1>
                   <p class="text-sm text-gray-600">Select a lesson to get started</p>
                 }
               </div>
@@ -217,8 +217,8 @@ export class ClassRoomLayout implements OnInit, OnDestroy {
   constructor(
     protected classroomFacade: ClassroomManagementFacade,
     private lessonFacade: LessonManagementFacade,
-    private userStore: PeerUserStoreService,
-    private channelService: ChannelService,
+    private userStore: UserStoreService,
+    private channelService: ClassroomService,
     private router: Router
   ) {}
 
@@ -255,7 +255,7 @@ export class ClassRoomLayout implements OnInit, OnDestroy {
         throw new Error('User must be logged in');
       }
 
-      await this.channelService.joinByCode(
+      await this.channelService.joinClassroomByCode(
         this.joinForm.code.trim(),
         currentUser.id as string,
         currentUser.displayName as string,

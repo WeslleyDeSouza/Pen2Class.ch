@@ -1,8 +1,8 @@
 import {Component, EventEmitter, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {Channel} from '../../../common';
-import {ChannelService} from '../../../common/services/channel.service';
+import {Classroom as Channel} from '../../../common';
+import {ClassroomService} from '../../../common/services/classroom.service';
 import {UserService, UserType} from '../../../common/services/user.service';
 
 @Component({
@@ -103,7 +103,7 @@ export class StepCreateComponent {
   @Output() goToAdmin = new EventEmitter<void>();
 
   constructor(
-    private channelService: ChannelService,
+    private channelService: ClassroomService,
     private userService: UserService,
   ) {}
 
@@ -133,7 +133,7 @@ export class StepCreateComponent {
         UserType.TEACHER,
       );
 
-      const channel = await this.channelService.createChannel(
+      const channel = await this.channelService.createClassroom(
         this.classroomName.trim(),
         '',
         user?.id,

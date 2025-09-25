@@ -6,43 +6,43 @@ import { CreateResourceDto, ResourceDto, UpdateResourceDto } from './resource.dt
 @ApiTags('Resources')
 @Controller('resources')
 export class ResourceController {
-  constructor(private readonly objectService: ResourceService) {}
+  constructor(private readonly resourceService: ResourceService) {}
 
   @Put()
-  @ApiOperation({ summary: 'Create a new object' })
+  @ApiOperation({ summary: 'Create a new resource' })
   @ApiBody({ type: CreateResourceDto })
   @ApiOkResponse({ type: ResourceDto })
   async create(@Body() body: CreateResourceDto) {
-    return this.objectService.create(body);
+    return this.resourceService.create(body);
     }
 
   @Put('upsert')
-  @ApiOperation({ summary: 'Upsert an object by Ids '})
+  @ApiOperation({ summary: 'Upsert an resource by Ids '})
   @ApiBody({ type: CreateResourceDto })
   @ApiOkResponse({ type: ResourceDto })
   async upsert(@Body() body: CreateResourceDto) {
-    return this.objectService.upsert(body);
+    return this.resourceService.upsert(body);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update an existing object' })
+  @ApiOperation({ summary: 'Update an existing resource' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiBody({ type: UpdateResourceDto })
   @ApiOkResponse({ type: ResourceDto })
   async update(@Param('id') id: string, @Body() body: UpdateResourceDto) {
-    return this.objectService.update(id, body);
+    return this.resourceService.update(id, body);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete an object' })
+  @ApiOperation({ summary: 'Delete an resource' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiOkResponse({ schema: { example: { id: 'uuid', success: true } } })
   delete(@Param('id') id: string) {
-    return this.objectService.delete(id);
+    return this.resourceService.delete(id);
   }
 
   @Get(':userId/:type/:classroomId/:lessonId')
-  @ApiOperation({ summary: 'Get an object by composite key (userId, type, classroomId, lessonId)' })
+  @ApiOperation({ summary: 'Get an resource by composite key (userId, type, classroomId, lessonId)' })
   @ApiParam({ name: 'userId', type: 'string' })
   @ApiParam({ name: 'type', type: 'string' })
   @ApiParam({ name: 'classroomId', type: 'string' })
@@ -54,7 +54,7 @@ export class ResourceController {
     @Param('classroomId') classroomId: string,
     @Param('lessonId') lessonId: string,
   ) {
-    return this.objectService.getByKey({
+    return this.resourceService.getByKey({
       userId: userId,
       type: type,
       classroomId: classroomId,
@@ -63,18 +63,18 @@ export class ResourceController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get an object by ID' })
+  @ApiOperation({ summary: 'Get an resource by ID' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiOkResponse({ type: ResourceDto })
   getById(@Param('id') id: string) {
-    return this.objectService.getById(id);
+    return this.resourceService.getById(id);
   }
 
   @Get('by-classroom/:classroomId')
-  @ApiOperation({ summary: 'List objects by classroom' })
+  @ApiOperation({ summary: 'List resources by classroom' })
   @ApiParam({ name: 'classroomId', type: 'string' })
   @ApiOkResponse({ type: [ResourceDto] })
   getByClassroom(@Param('classroomId') classroomId: string) {
-    return this.objectService.getByClassroom(classroomId);
+    return this.resourceService.getByClassroom(classroomId);
   }
 }

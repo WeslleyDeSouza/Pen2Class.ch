@@ -1,3 +1,3 @@
 
-export * from './channel.service'
+export * from './classroom.service'
 export * from './user.service'

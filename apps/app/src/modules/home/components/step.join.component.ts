@@ -1,12 +1,12 @@
 import {Component, EventEmitter, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {Channel} from '../../../common';
-import {ChannelService} from '../../../common/services/channel.service';
+import {Classroom } from '../../../common';
+import {ClassroomService} from '../../../common/services/classroom.service';
 import {UserService, UserType} from '../../../common/services/user.service';
-import {PeerUserStoreService} from '../../../common/peer/peer.service';
 import {Router} from '@angular/router';
 import {RouteConstants} from '../../../app/route.constants';
+import {UserStoreService} from "../../../common/store";
 
 @Component({
   selector: 'app-join-steps',
@@ -69,7 +69,7 @@ import {RouteConstants} from '../../../app/route.constants';
         </div>
       }
 
-      @if (joinStep === 3 && currentChannel) {
+      @if (joinStep === 3 && currentClassroom) {
         <div class="space-y-4">
           <div class="text-center p-6 bg-green-50 rounded-lg border border-green-200">
             <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -78,7 +78,7 @@ import {RouteConstants} from '../../../app/route.constants';
               </svg>
             </div>
             <h3 class="text-lg font-semibold text-green-800 mb-1">Successfully joined!</h3>
-            <p class="text-sm text-green-600">{{currentChannel?.name}}</p>
+            <p class="text-sm text-green-600">{{ currentClassroom?.name }}</p>
           </div>
         </div>
       }
@@ -106,15 +106,15 @@ export class StepJoinComponent {
   username = '';
   classroomCode = '';
   isLoading = false;
-  currentChannel: Channel | null = null;
+  currentClassroom: Classroom | null = null;
   errorMessage = '';
 
   @Output() back = new EventEmitter<void>();
 
   constructor(
-    private channelService: ChannelService,
+    private channelService: ClassroomService,
     private userService: UserService,
-    private userStore: PeerUserStoreService,
+    private userStore: UserStoreService,
     private router: Router,
   ) {}
 
@@ -171,13 +171,13 @@ export class StepJoinComponent {
     this.clearError();
 
     this.channelService
-      .joinByCode(
+      .joinClassroomByCode(
         this.classroomCode,
         this.userService.getUserFromStore()?.id as string,
         this.userService.getUserFromStore()?.displayName as string,
       )
       .then((res) => {
-        this.currentChannel = res.channel;
+        this.currentClassroom = res.classroom;
         this.joinStep = 3;
         this.isLoading = false;
         setTimeout(() => this.router.navigate(['/', RouteConstants.Paths.classroom]), 1000);

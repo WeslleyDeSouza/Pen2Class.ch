@@ -38,6 +38,20 @@ export class ResourceDto {
   @IsArray()
   @IsOptional()
   comments?: any[];
+
+  static convert(obj){
+    return Object.assign(new ResourceDto(),{
+      id: obj.id,
+      type: obj.type,
+      data: obj.data,
+      userId: obj.userId,
+      lessonId: obj.lessonId ?? undefined,
+      classroomId: obj.classroomId,
+      createdAt: obj.createdAt.toISOString(),
+      updatedAt: obj.updatedAt.toISOString(),
+      comments: obj.comments || [],
+    })
+  }
 }
 
 export class CreateResourceDto {

@@ -2,18 +2,17 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AsyncPipe } from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
-import { Channel, User } from '../../common';
-import { Observable, BehaviorSubject, Subscription } from 'rxjs';
-import { ChannelService } from '../../common/services/channel.service';
-import { UserService, UserType } from '../../common/services/user.service';
-import {PeerService, PeerUserStoreService} from '../../common/peer/peer.service';
-import {ChannelDto, UserDto} from "@ui-lib/apiClient";
-import {RouteConstants} from "../../app/route.constants";
+import { Subscription } from 'rxjs';
+import { ClassroomService } from '../../common/services/classroom.service';
+import { UserService } from '../../common/services/user.service';
 import { StepJoinComponent } from './components/step.join.component';
 import { StepCreateComponent } from './components/step.create.component';
 import { StepContinueComponent } from './components/step.continue.component';
 import { HomeHeaderComponent } from './components/home.header.component';
+import { RouteConstants } from "../../app/route.constants";
 
+import {UserStoreService} from "../../common/store";
+import { Classroom as Channel } from '../../common';
 
 type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
 
@@ -138,15 +137,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   // State
   errorMessage = '';
   isLoading = false;
-  isConnectedToPeer = false;
   currentChannel: Channel | null = null;
 
   private subscriptions: Subscription[] = [];
 
   constructor(
-    private channelService: ChannelService,
+    private channelService: ClassroomService,
     private userService: UserService,
-    private userStore: PeerUserStoreService,
+    private userStore: UserStoreService,
     private router: Router,
     private route: ActivatedRoute,
   ) {}
@@ -174,124 +172,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   goToInitial() {
     this.resetForm();
     this.currentView = 'initial';
-  }
-
-
-  // Join by code flow
-  nextJoinStep() {
-    if (this.joinStep === 1) {
-      this.createUser();
-    }
-  }
-
-  previousJoinStep() {
-    if (this.joinStep === 2) {
-      this.joinStep = 1;
-      this.clearError();
-    }
-  }
-
-  createUser() {
-    if (!this.username.trim()) {
-      this.showError('Please enter your name');
-      return;
-    }
-
-    this.isLoading = true;
-    this.clearError();
-
-    this.userService.signup(this.username.trim(), undefined, this.username.trim(), UserType.STUDENT).then((user) => {
-      this.joinStep = 2;
-      this.isLoading = false;
-      this.userStore.persist();
-    }).catch((error) => {
-      this.showError(error.error?.message || 'Failed to create user');
-      this.isLoading = false;
-    });
-  }
-
-  onCodeInput(event: any) {
-    let value = event.target.value.replace(/[^0-9]/g, '');
-    if (value.length > 6) {
-      value = value.substring(0, 6);
-    }
-    this.classroomCode = value;
-    event.target.value = value;
-  }
-
-  isValidCode(): boolean {
-    return this.classroomCode.length === 6 && /^\d+$/.test(this.classroomCode);
-  }
-
-  async joinClassroom() {
-    if (!this.isValidCode()) {
-      this.showError('Please enter a valid 6-digit classroom code');
-      return;
-    }
-
-    this.isLoading = true;
-    this.clearError();
-
-    await this.channelService.joinByCode(
-      this.classroomCode,
-      this.userService.getUserFromStore()?.id as string,
-      this.userService.getUserFromStore()?.displayName as string,
-    ).then((res) => {
-      this.currentChannel = res.channel;
-      this.joinStep = 3;
-      this.isLoading = false;
-
-      setTimeout(()=> this.goToClassRoom(),1000);
-    }).catch((error) => {
-      let errorMessage = 'Failed to join classroom';
-      if (error.status === 404) {
-        errorMessage = 'Classroom not found. Please check the code and try again.';
-      } else if (error.error?.message) {
-        errorMessage = error.error.message;
-      }
-      this.showError(errorMessage);
-      this.isLoading = false;
-    });
-  }
-
-  // Create classroom flow
-  nextCreateStep() {
-    if (this.createStep === 1) {
-      this.createClassroom();
-    }
-  }
-
-  previousCreateStep() {
-    if (this.createStep === 2) {
-      this.createStep = 1;
-      this.clearError();
-    }
-  }
-
-  private async createClassroom() {
-    if (!this.teacherName.trim() || !this.classroomName.trim()) {
-      this.showError('Please fill in all fields');
-      return;
-    }
-
-    this.isLoading = true;
-    this.clearError();
-
-    try {
-      // First create the teacher user
-      const user = await this.userService.signup(this.teacherName.trim(), undefined, this.teacherName.trim(), UserType.TEACHER);
-
-      // Then create the channel
-      const channel = await this.channelService.createChannel(
-        this.classroomName.trim(), '',user?.id);
-
-      this.currentChannel = channel;
-      this.createStep = 2;
-      this.isLoading = false;
-    } catch (error: any) {
-      this.showError(error.error?.message || 'Failed to create classroom or teacher account');
-      this.isLoading = false;
-    }
   }
 
   // Helper methods

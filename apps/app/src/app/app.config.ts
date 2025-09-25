@@ -8,7 +8,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { appRoutes } from './app.routes';
 import {provideMonacoEditor} from "@class2pen/monaco-editor";
 import {MonacoEditorService} from "../modules/class-room";
-import {PeerService} from "../common/peer/peer.service";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,8 +21,7 @@ export const appConfig: ApplicationConfig = {
       requireConfig: { preferScriptTags: true },
     }),
     provideAppInitializer(() => {
-      const peer = inject(PeerService);
-      peer.connectToPeerServer()
+      //
     })
   ],
 };

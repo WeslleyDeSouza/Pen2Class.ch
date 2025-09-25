@@ -4,11 +4,9 @@ import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ClassroomManagementFacade, ClassroomSummary } from './facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from './facades/lesson-management.facade';
-import {ChannelService} from "../../../common";
-import {PeerUserStoreService, PeerService} from "../../../common/peer/peer.service";
+import {ClassroomService} from "../../../common";
 import { RouteConstants} from "../../../app/route.constants";
-import { PeerBusService } from "../../../common/peer/peer-bus.service";
-import { LeaveEvent, JoinEvent, ObjectEvent } from '@ui-lib/apiClient';;
+import {UserStoreService} from "../../../common/store";
 
 @Component({
   selector: 'app-admin-class-room-lesson',
@@ -129,9 +127,8 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private classroomFacade: ClassroomManagementFacade,
     private lessonFacade: LessonManagementFacade,
-    private channelService: ChannelService,
-    private userStore: PeerUserStoreService,
-    private eventBus: PeerBusService,
+    private classroomService: ClassroomService,
+    private userStore: UserStoreService,
   ) {}
 
   get currentUser(){
@@ -148,53 +145,18 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
 
     await this.loadContext();
 
-    // Setup realtime listeners for channel membership changes
-    this.setupRealtimeListeners();
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach(s => s.unsubscribe());
   }
 
-  private setupRealtimeListeners() {
-    const sub = this.eventBus.on<any>('channelMessage')
-      .subscribe((detail) => {
-      try {
-        // Expect structure like { type: 'channel_message', channelId, payload: { event: 'member_joined', ... } }
-        const isChannelMsg = detail?.type === 'channel_message';
-        const channelId = detail?.channelId || detail?.payload?.channelId;
-        const eventName = detail?.payload?.event || detail?.action || detail?.event;
-        if (!isChannelMsg || !channelId) {
-          return;
-        }
-        // Only react if message belongs to this classroom
-        const currentClassId = this.classroom?.id || this.userStore.selectedClassId();
-        if (!currentClassId || channelId !== currentClassId) {
-          return;
-        }
-
-        /**
-         * LeaveEvent, JoinEvent, ObjectEvent
-         **/
-
-        // React to member join or leave events
-        const joinLike = ['member_joined', 'member-joined', 'user_joined', 'joined'];
-        const leaveLike = ['member_left', 'member-left', 'user_left', 'left'];
-        if (eventName && (joinLike.includes(eventName) || leaveLike.includes(eventName))) {
-          this.reloadMembers();
-        }
-      } catch (err) {
-        console.warn('Failed to handle channelMessage event', err);
-      }
-    });
-    this.subscriptions.push(sub);
-  }
 
   private async reloadMembers() {
     const classId = this.classroom?.id || this.userStore.selectedClassId();
     if (!classId) return;
     try {
-      const updated = await this.channelService.getChannelMembers(classId);
+      const updated = await this.classroomService.getClassroomMembers(classId);
       this.members = updated as any[];
     } catch (e) {
       console.error('Failed to reload members', e);
@@ -236,7 +198,7 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
 
     // Load members of the classroom
     try {
-      this.members = await this.channelService.getChannelMembers(classId) as any[];
+      this.members = await this.classroomService.getClassroomMembers(classId) as any[];
     } catch (e) {
       console.error('Failed to load members', e);
       this.members = [];

@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { ChannelTypesService, ChannelType } from '../../../../common/services/channel-types.service';
-import {PeerUserStoreService} from "../../../../common/peer/peer.service";
+import { LessonService, LessonType } from '../../../../common/services/lesson.service';
+import {UserStoreService} from "../../../../common/store";
 
 export interface LessonCreateRequest {
   createdBy: string;
@@ -37,8 +37,10 @@ export class LessonManagementFacade {
   totalLessonCount = computed(() => this.allLessons().length);
   activeLessonCount = computed(() => this.allLessons().filter(lesson => lesson.enabled).length);
 
-  constructor(private channelTypesService: ChannelTypesService,
-  protected userStore:PeerUserStoreService ) {}
+  constructor(
+    private lessonService: LessonService,
+    protected userStore:UserStoreService
+  ) {}
 
   /**
    * Create a new lesson in a classroom
@@ -47,13 +49,13 @@ export class LessonManagementFacade {
     this.isLoadingSignal.set(true);
 
     try {
-      const channelType = await this.channelTypesService.create(classroomId, {
+      const lesson = await this.lessonService.create(classroomId, {
         createdBy: request.createdBy,
         name: request.name,
         description: request.description,
       });
 
-      const lessonSummary = this.mapChannelTypeToSummary(channelType, classroomId);
+      const lessonSummary = this.mapChannelTypeToSummary(lesson, classroomId);
 
       // Refresh lessons for this classroom
       await this.loadLessonsForClassroom(classroomId);
@@ -71,8 +73,8 @@ export class LessonManagementFacade {
     this.isLoadingSignal.set(true);
 
     try {
-      const channelTypes = await this.channelTypesService.list(classroomId);
-      const lessons = channelTypes.map(ct => this.mapChannelTypeToSummary(ct, classroomId));
+      const _lessons = await this.lessonService.list(classroomId);
+      const lessons = _lessons.map(ct => this.mapChannelTypeToSummary(ct, classroomId));
 
       // Update the lessons map
       const currentLessons = this.lessonsSignal();
@@ -102,7 +104,7 @@ export class LessonManagementFacade {
 
       const promises = classroomIds.map(async (classroomId) => {
         try {
-          const channelTypes = await this.channelTypesService.list(classroomId);
+          const channelTypes = await this.lessonService.list(classroomId);
           const lessons = channelTypes.map(ct => this.mapChannelTypeToSummary(ct, classroomId));
           updatedLessons[classroomId] = lessons;
         } catch (error) {
@@ -125,8 +127,8 @@ export class LessonManagementFacade {
    */
   async getLesson(classroomId: string, lessonId: string): Promise<LessonSummary | null> {
     try {
-      const channelType = await this.channelTypesService.get(classroomId, lessonId);
-      return this.mapChannelTypeToSummary(channelType, classroomId);
+      const lesson = await this.lessonService.get(classroomId, lessonId);
+      return this.mapChannelTypeToSummary(lesson, classroomId);
     } catch (error) {
       console.error('Failed to get lesson:', error);
       return null;
@@ -144,8 +146,8 @@ export class LessonManagementFacade {
     this.isLoadingSignal.set(true);
 
     try {
-      const channelType = await this.channelTypesService.update(classroomId, lessonId, updates);
-      const lessonSummary = this.mapChannelTypeToSummary(channelType, classroomId);
+      const lesson = await this.lessonService.update(classroomId, lessonId, updates);
+      const lessonSummary = this.mapChannelTypeToSummary(lesson, classroomId);
 
       // Refresh lessons for this classroom
       await this.loadLessonsForClassroom(classroomId);
@@ -164,7 +166,7 @@ export class LessonManagementFacade {
    */
   async enableLesson(classroomId: string, lessonId: string): Promise<boolean> {
     try {
-      await this.channelTypesService.enable(classroomId, lessonId);
+      await this.lessonService.enable(classroomId, lessonId);
       await this.loadLessonsForClassroom(classroomId);
       return true;
     } catch (error) {
@@ -178,7 +180,7 @@ export class LessonManagementFacade {
    */
   async disableLesson(classroomId: string, lessonId: string): Promise<boolean> {
     try {
-      await this.channelTypesService.disable(classroomId, lessonId);
+      await this.lessonService.disable(classroomId, lessonId);
       await this.loadLessonsForClassroom(classroomId);
       return true;
     } catch (error) {
@@ -192,7 +194,7 @@ export class LessonManagementFacade {
    */
   async   startLesson(classroomId: string, lessonId: string): Promise<boolean> {
     try {
-      await this.channelTypesService.startLesson(classroomId, lessonId, this.userStore.getCurrentUser()?.id as string);
+      await this.lessonService.startLesson(classroomId, lessonId, this.userStore.getCurrentUser()?.id as string);
       return true;
     } catch (error) {
       console.error('Failed to start lesson:', error);
@@ -205,7 +207,7 @@ export class LessonManagementFacade {
    */
   async stopLesson(classroomId: string, lessonId: string): Promise<boolean> {
     try {
-      await this.channelTypesService.quitLesson(classroomId, lessonId, this.userStore.getCurrentUser()?.id as string);
+      await this.lessonService.quitLesson(classroomId, lessonId, this.userStore.getCurrentUser()?.id as string);
       return true;
     } catch (error) {
       console.error('Failed to stop lesson:', error);
@@ -220,7 +222,7 @@ export class LessonManagementFacade {
     this.isLoadingSignal.set(true);
 
     try {
-      await this.channelTypesService.delete(classroomId, lessonId, userId);
+      await this.lessonService.delete(classroomId, lessonId, userId);
       await this.loadLessonsForClassroom(classroomId);
       return true;
     } catch (error) {
@@ -269,7 +271,7 @@ export class LessonManagementFacade {
     this.lessonsSignal.set(updatedLessons);
   }
 
-  private mapChannelTypeToSummary(channelType: ChannelType, classroomId: string): LessonSummary {
+  private mapChannelTypeToSummary(channelType: LessonType, classroomId: string): LessonSummary {
     return {
       id: channelType.id,
       name: channelType.name,

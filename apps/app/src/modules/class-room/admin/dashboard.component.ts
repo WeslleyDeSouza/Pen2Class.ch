@@ -2,12 +2,12 @@ import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { User } from '../../../common';
-import { UserService } from '../../../common/services/user.service';
 import { ClassroomManagementFacade, ClassroomSummary } from './facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from './facades/lesson-management.facade';
-import {PeerUserStoreService} from "../../../common/peer/peer.service";
 import {Router} from "@angular/router";
+import { RouteConstants } from '../../../app/route.constants';
+import {UserStoreService} from "../../../common/store";
+import {UserDto} from "@ui-lib/apiClient";
 
 interface CreateChannelForm {
   name: string;
@@ -707,10 +707,10 @@ interface CreateLessonForm {
         </div>
       }
     </div>
-  `
+    </div>`
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
-  currentUser = signal<User | null>(null);
+  currentUser = signal<UserDto | null>(null);
 
   createChannelForm: CreateChannelForm = { name: '', description: '' };
   createLessonForm: CreateLessonForm = { name: '', description: '', channelId: '' };
@@ -727,8 +727,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private userStore: PeerUserStoreService,
-    private userService: UserService,
+    private userStore: UserStoreService,
     public classroomFacade: ClassroomManagementFacade,
     public lessonFacade: LessonManagementFacade
   ) {}
@@ -941,7 +940,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   viewLesson(channelId: string, lessonId: string) {
-    this.router.navigate(['admin/classroom', channelId, 'lesson', lessonId,]);
+    this.router.navigate([
+      RouteConstants.Paths.admin,
+      RouteConstants.Paths.classroom,
+      channelId,
+      RouteConstants.Paths.lesson,
+      lessonId,
+    ]);
   }
 
   clearLog() {

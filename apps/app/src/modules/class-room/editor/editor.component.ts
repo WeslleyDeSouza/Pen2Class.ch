@@ -4,10 +4,10 @@ import { HtmlEditorComponent } from './components/html-editor/html-editor.compon
 import { CssEditorComponent } from './components/css-editor/css-editor.component';
 import { JsEditorComponent } from './components/js-editor/js-editor.component';
 import { PreviewComponent } from './components/preview/preview.component';
-import {PeerUserStoreService} from "../../../common/peer/peer.service";
 import {EditorService} from "./services/editor-facade.service";
 import { ActivatedRoute } from '@angular/router';
 import {RouteConstants} from "../../../app/route.constants";
+import {UserStoreService} from "../../../common/store";
 
 @Component({
   selector: 'app-editor',
@@ -141,7 +141,7 @@ export class EditorComponent implements OnInit, OnDestroy {
 
   lessonName!:string
 
-  protected readonly userStore = inject(PeerUserStoreService);
+  protected readonly userStore = inject(UserStoreService);
   protected readonly editorStore = inject(EditorStoreService);
   protected readonly editorApi = inject(EditorService);
   private readonly route = inject(ActivatedRoute);
@@ -206,8 +206,8 @@ export class EditorComponent implements OnInit, OnDestroy {
     return (
       {
         userId: this.viewModeUserId() as string,
-        channelTypeId: this.userStore.selectedLessonId() as string || this.route.snapshot.paramMap.get(RouteConstants.Params.lessonId) as string,
-        channelId: this.userStore.selectedClassId() as string || this.route.snapshot.paramMap.get(RouteConstants.Params.classRoomId) as string,
+        lessionId: this.userStore.selectedLessonId() as string || this.route.snapshot.paramMap.get(RouteConstants.Params.lessonId) as string,
+        classroomId: this.userStore.selectedClassId() as string || this.route.snapshot.paramMap.get(RouteConstants.Params.classRoomId) as string,
       }
     )
   }

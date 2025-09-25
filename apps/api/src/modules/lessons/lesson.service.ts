@@ -28,14 +28,14 @@ export class LessonService {
 
   async list(classroomId: string, requesterId?: string): Promise<Lesson[]> {
     // ensure classroom exists
-    const classroom = await this.classroomService.getChannel(classroomId);
+    const classroom = await this.classroomService.getClassroom(classroomId);
     const all = await this.typeRepo.find({ where: { classroomId } });
     if (requesterId && requesterId === classroom.createdBy) return all as unknown as Lesson[];
     return (all as unknown as Lesson[]).filter(t => t.enabled);
   }
 
   async get(classroomId: string, lessonId: string, requesterId?: string): Promise<Lesson> {
-    const classroom = await this.classroomService.getChannel(classroomId);
+    const classroom = await this.classroomService.getClassroom(classroomId);
     const lesson = await this.typeRepo.findOne({ where: { id: lessonId, classroomId } });
     if (!lesson) throw new NotFoundException('Lesson not found');
     if (!lesson.enabled && requesterId !== classroom.createdBy) throw new ForbiddenException('Not visible');
@@ -43,7 +43,7 @@ export class LessonService {
   }
 
   async create(classroomId: string, name: string, description: string | undefined, createdBy: string): Promise<Lesson> {
-    const classroom = await this.classroomService.getChannel(classroomId);
+    const classroom = await this.classroomService.getClassroom(classroomId);
     if (classroom.createdBy !== createdBy) {
       throw new ForbiddenException('Only owner can create lessons');
     }
@@ -64,7 +64,7 @@ export class LessonService {
     requesterId: string,
     patch: { name?: string; description?: string },
   ): Promise<Lesson> {
-    const classroom = await this.classroomService.getChannel(classroomId);
+    const classroom = await this.classroomService.getClassroom(classroomId);
     const lesson = await this.typeRepo.findOne({ where: { id: lessonId, classroomId } });
     if (!lesson) throw new NotFoundException('Lesson not found');
     if (classroom.createdBy !== requesterId) throw new ForbiddenException('Only owner can update lessons');
@@ -75,7 +75,7 @@ export class LessonService {
   }
 
   async setEnabled(classroomId: string, lessonId: string, requesterId: string, enabled: boolean): Promise<Lesson> {
-    const classroom = await this.classroomService.getChannel(classroomId);
+    const classroom = await this.classroomService.getClassroom(classroomId);
     const lesson = await this.typeRepo.findOne({ where: { id: lessonId, classroomId } });
     if (!lesson) throw new NotFoundException('Lesson not found');
     if (classroom.createdBy !== requesterId) throw new ForbiddenException('Only owner can enable/disable lessons');
@@ -85,7 +85,7 @@ export class LessonService {
   }
 
   async delete(classroomId: string, lessonId: string, requesterId: string): Promise<{ success: boolean }> {
-    const classroom = await this.classroomService.getChannel(classroomId);
+    const classroom = await this.classroomService.getClassroom(classroomId);
     const lesson = await this.typeRepo.findOne({ where: { id: lessonId, classroomId } });
     if (!lesson) throw new NotFoundException('Lesson not found');
     if (classroom.createdBy !== requesterId) throw new ForbiddenException('Only owner can delete lessons');
@@ -97,7 +97,7 @@ export class LessonService {
 
   // Lesson controls
   async startLesson(classroomId: string, lessonId: string, userId: string): Promise<{ success: true }> {
-    const classroom = await this.classroomService.getChannel(classroomId);
+    const classroom = await this.classroomService.getClassroom(classroomId);
     const lesson = await this.typeRepo.findOne({ where: { id: lessonId, classroomId } });
     if (!lesson) throw new NotFoundException('Lesson not found');
     if (!lesson.enabled) throw new ForbiddenException('Lesson is disabled');
@@ -116,7 +116,7 @@ export class LessonService {
   }
 
   async quitLesson(classroomId: string, lessonId: string, userId: string): Promise<{ success: true }> {
-    const classroom = await this.classroomService.getChannel(classroomId);
+    const classroom = await this.classroomService.getClassroom(classroomId);
     const lesson = await this.typeRepo.findOne({ where: { id: lessonId, classroomId } });
     if (!lesson) throw new NotFoundException('Lesson not found');
     // quitting allowed regardless of enabled state, but must have access

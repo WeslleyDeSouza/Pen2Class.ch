@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PeerService } from './peer.service';
 import { ClassroomService } from '../classrooms/classroom.service';
 import { UserService } from '../users/user.service';
-import { DeprecatedChannelController } from '../classrooms/deprecated-channel.controller';
+import { ClassroomController } from '../classrooms/classroom.controller';
 import { UserController } from '../users/user.controller';
 import { LessonService } from '../lessons/lesson.service';
 import { LessonController } from '../lessons/lesson.controller';

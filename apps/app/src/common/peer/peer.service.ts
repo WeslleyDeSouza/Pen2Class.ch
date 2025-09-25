@@ -2,48 +2,12 @@ import {computed, inject, Injectable, signal} from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Peer } from 'peerjs';
 import { PeerBusService } from './peer-bus.service';
+import {UserStoreService} from "../store";
 
-@Injectable({ providedIn: 'root' })
-export class PeerUserStoreService {
-  user = signal<{id?:string,displayName?:string} | undefined>(undefined);
-  userPeerId = signal<string | undefined>(undefined);
-  selectedClassId = signal<string | null>(null);
-  selectedLessonId = signal<string | null>(null);
-
-  constructor() {
-    this.loadFromStorage();
-  }
-
-  getCurrentUser(){
-    return this.user();
-  }
-
-  persist(){
-    const userData = this.user();
-    if (userData) {
-      localStorage.setItem('pen2class_user', JSON.stringify(userData));
-    } else {
-      localStorage.removeItem('pen2class_user');
-    }
-  }
-
-  private loadFromStorage() {
-    const storedUser = localStorage.getItem('pen2class_user');
-    if (storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        this.user.set(userData);
-      } catch (error) {
-        console.error('Failed to parse stored user data:', error);
-        localStorage.removeItem('pen2class_user');
-      }
-    }
-  }
-}
 
 @Injectable({ providedIn: 'root' })
 export class PeerService {
-  peerId = computed(()=> this.storeUser.userPeerId());
+  //peerId = computed(()=> this.storeUser.userPeerId());
   isConnected = signal(false);
 
   private peer: any = null;
@@ -52,7 +16,7 @@ export class PeerService {
   private readonly rootPort = environment.apiPort;
   private readonly rootPeerPath = environment.apiPeerPath;
 
-  protected storeUser = inject(PeerUserStoreService);
+  protected storeUser = inject(UserStoreService);
   protected eventBus = inject(PeerBusService);
 
   connectToPeerServer(): Promise<string> {
@@ -88,7 +52,7 @@ export class PeerService {
         this.peer.on('disconnected', () => {
           console.log('Disconnected from PeerJS server');
           this.isConnected.set(false);
-          this.storeUser.userPeerId.set(undefined);
+          //this.storeUser.userPeerId.set(undefined);
         });
 
         this.peer.on('data', (data: any) => {
@@ -179,6 +143,6 @@ export class PeerService {
       this.peer = null;
     }
     this.isConnected.set(false);
-    this.storeUser.userPeerId.set(undefined);
+    //this.storeUser.userPeerId.set(undefined);
   }
 }

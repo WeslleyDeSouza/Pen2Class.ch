@@ -15,13 +15,12 @@ export class ResourceService {
   private readonly logger = new Logger(ResourceService.name);
 
   constructor(
-    private readonly eventEmitter: EventEmitter2,
     @InjectRepository(ResourceEntity)
     private readonly objectRepo: Repository<ResourceEntity>,
   ) {}
 
   private toDto(obj: ResourceEntity): ResourceDto {
-    return {
+    return ResourceDto.convert({
       id: obj.id,
       type: obj.type,
       data: obj.data,
@@ -31,7 +30,7 @@ export class ResourceService {
       createdAt: obj.createdAt.toISOString(),
       updatedAt: obj.updatedAt.toISOString(),
       comments: obj.comments || [],
-    };
+    });
   }
 
   async create(dto: CreateResourceDto): Promise<ResourceDto> {
@@ -47,7 +46,6 @@ export class ResourceService {
     try {
       const saved = await this.objectRepo.save(entity);
       const payload = this.toDto(saved);
-      this.eventEmitter.emit('peer.object.created', payload);
       this.logger.log(`Object created ${saved.id} in classroom ${saved.classroomId}`);
       return payload;
     } catch (e: any) {
@@ -72,7 +70,6 @@ export class ResourceService {
       if (dto.comments !== undefined) existing.comments = dto.comments;
       const saved = await this.objectRepo.save(existing);
       const payload = this.toDto(saved);
-      this.eventEmitter.emit('peer.object.updated', payload);
       this.logger.log(`Object upsert (updated) ${saved.id}`);
       return payload;
     }
@@ -90,7 +87,6 @@ export class ResourceService {
 
     const saved = await this.objectRepo.save(existing);
     const payload = this.toDto(saved);
-    this.eventEmitter.emit('peer.object.updated', payload);
     this.logger.log(`Object updated ${id}`);
     return payload;
   }
@@ -101,7 +97,6 @@ export class ResourceService {
 
     await this.objectRepo.delete(id);
 
-    this.eventEmitter.emit('peer.object.deleted', { id, classroomId: existing.classroomId });
     this.logger.log(`Object deleted ${id}`);
     return { id, success: true } as const;
   }

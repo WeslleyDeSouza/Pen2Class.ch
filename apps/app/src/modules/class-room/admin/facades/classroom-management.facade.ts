@@ -1,10 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Channel } from '../../../../common';
-import { ChannelService } from '../../../../common/services/channel.service';
-import { UserService } from '../../../../common/services/user.service';
-import {PeerUserStoreService} from "../../../../common/peer/peer.service";
-import { PeerBusService } from '../../../../common/peer/peer-bus.service';
-import { JoinEvent, LeaveEvent } from '@ui-lib/apiClient';
+import { ClassroomService } from '../../../../common/services/classroom.service';
+import {UserStoreService} from "../../../../common/store";
+import {ClassroomDto} from "@ui-lib/apiClient";
 
 export interface ClassroomCreateRequest {
   name: string;
@@ -40,9 +37,8 @@ export class ClassroomManagementFacade {
   });
 
   constructor(
-    private channelService: ChannelService,
-    private userStore: PeerUserStoreService,
-    private eventBus: PeerBusService,
+    private classroomService: ClassroomService,
+    private userStore: UserStoreService,
   ) {
   }
 
@@ -58,13 +54,13 @@ export class ClassroomManagementFacade {
         throw new Error('User must be logged in to create a classroom');
       }
 
-      const channel = await this.channelService.createChannel(
+      const classroom = await this.classroomService.createClassroom(
         request.name,
         request.description,
         currentUser.id as string
       );
 
-      const classroomSummary = this.mapChannelToSummary(channel);
+      const classroomSummary = this.mapClassroomToSummary(classroom);
 
       // Refresh the list
       await this.loadClassrooms();
@@ -82,10 +78,10 @@ export class ClassroomManagementFacade {
     this.isLoadingSignal.set(true);
 
     try {
-      const channels = await this.channelService.getChannelsFromUser(
+      const channels = await this.classroomService.getClassroomsFromUser(
         this.userStore.getCurrentUser()?.id as string,
       );
-      const classrooms = channels.map(channel => this.mapChannelToSummary(channel));
+      const classrooms = channels.map(classroom => this.mapClassroomToSummary(classroom));
       this.classroomsSignal.set(classrooms);
       return classrooms;
     } catch (error) {
@@ -101,8 +97,8 @@ export class ClassroomManagementFacade {
    */
   async getClassroom(classroomId: string): Promise<ClassroomSummary | null> {
     try {
-      const channel = await this.channelService.getChannel(classroomId);
-      return this.mapChannelToSummary(channel);
+      const classroom = await this.classroomService.getClassroom(classroomId);
+      return this.mapClassroomToSummary(classroom);
     } catch (error) {
       console.error('Failed to get classroom:', error);
       return null;
@@ -114,8 +110,8 @@ export class ClassroomManagementFacade {
    */
   async getClassroomByCode(code: string): Promise<ClassroomSummary | null> {
     try {
-      const channel = await this.channelService.getChannelByCode(code);
-      return this.mapChannelToSummary(channel);
+      const classroom = await this.classroomService.getClassroomByCode(code);
+      return this.mapClassroomToSummary(classroom);
     } catch (error) {
       console.error('Failed to get classroom by code:', error);
       return null;
@@ -127,7 +123,7 @@ export class ClassroomManagementFacade {
    */
   async addUserToClassroom(classroomId: string, userId: string,displayName:string): Promise<void> {
     try {
-      await this.channelService.joinChannel(classroomId, userId, displayName);
+      await this.classroomService.joinClassroom(classroomId, userId, displayName);
 
       await this.loadClassrooms(); // Refresh to update member count
     } catch (error) {
@@ -141,7 +137,7 @@ export class ClassroomManagementFacade {
    */
   async removeUserFromClassroom(classroomId: string, userId: string): Promise<void> {
     try {
-      await this.channelService.leaveChannel(classroomId, userId);
+      await this.classroomService.leaveClassroom(classroomId, userId);
 
       await this.loadClassrooms(); // Refresh to update member count
     } catch (error) {
@@ -157,7 +153,7 @@ export class ClassroomManagementFacade {
     this.isLoadingSignal.set(true);
 
     try {
-      await this.channelService.deleteChannel(classroomId);
+      await this.classroomService.deleteClassroom(classroomId);
       await this.loadClassrooms(); // Refresh the list
       return true;
     } catch (error) {
@@ -175,15 +171,15 @@ export class ClassroomManagementFacade {
     await this.loadClassrooms();
   }
 
-  private mapChannelToSummary(channel: Channel): ClassroomSummary {
+  private mapClassroomToSummary(c: ClassroomDto): ClassroomSummary {
     return {
-      id: channel.id,
-      name: channel.name,
-      description: channel.description as string,
-      code: channel.code,
-      memberCount: channel.members.length,
-      createdAt: channel.createdAt as any,
-      ownerId: channel.createdBy
+      id: c.id,
+      name: c.name,
+      description: c.description as string,
+      code: c.code,
+      memberCount: c.members.length,
+      createdAt: c.createdAt as any,
+      ownerId: c.createdBy
     };
   }
 }

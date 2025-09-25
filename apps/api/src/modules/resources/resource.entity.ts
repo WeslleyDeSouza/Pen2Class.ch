@@ -6,7 +6,7 @@ export enum ResourceType {
 }
 
 @Entity('res_resources')
-@Index('IDX_object_composite', ['userId', 'type', 'classroomId', 'lessonId'], { unique: true })
+@Index('IDX_resource_composite', ['userId', 'type', 'classroomId', 'lessonId'], { unique: true })
 export class ResourceEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

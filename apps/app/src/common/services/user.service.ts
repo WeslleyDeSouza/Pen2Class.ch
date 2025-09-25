@@ -1,20 +1,11 @@
 import { Injectable } from '@angular/core';
-import {UserService as UserApiService, UserDto, SignupUserDto,UserChannelDto} from '@ui-lib/apiClient';
+import {UserService as UserApiService, UserDto, UserChannelDto} from '@ui-lib/apiClient';
 import { environment } from '../../environments/environment';
-import {PeerUserStoreService} from "../peer/peer.service";
+import {UserStoreService} from "../store";
 
 export enum UserType {
   STUDENT = 1,
   TEACHER = 2
-}
-
-// @ts-ignore
-export interface User extends UserDto {
-  id: string;
-  username: string;
-  email?: string;
-  displayName: string;
-  createdAt: string | Date;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -23,7 +14,7 @@ export class UserService {
 
   constructor(
     private userApiService: UserApiService,
-    private userStore: PeerUserStoreService,
+    private userStore: UserStoreService,
   ) {
     userApiService.rootUrl = this.rootUrl;
   }
@@ -59,8 +50,5 @@ export class UserService {
   //
   getUserFromStore() {
     return (this.userStore.getCurrentUser())
-  }
-  getUserPeerIdFromStore() {
-    return (this.userStore.userPeerId())
   }
 }
