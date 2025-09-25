@@ -29,9 +29,6 @@ async function bootstrap() {
     })
   );
 
-  const peerService = app.get(PeerService);
-  peerService.enablePeerServer(app);
-
   swagger(app);
 
   const port =  process.env.PORT || 3000;

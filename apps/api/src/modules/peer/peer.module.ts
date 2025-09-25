@@ -20,8 +20,6 @@ import { ChannelTypeLessonEntity } from '../channel-types/channel-type-lesson.en
   imports: [
     TypeOrmModule.forFeature([UserEntity, ChannelEntity, ChannelMemberEntity, ObjectEntity, ChannelTypeEntity, ChannelTypeLessonEntity]),
   ],
-  providers: [PeerService, ChannelService, UserService, ChannelTypeService, ObjectService],
-  controllers: [ChannelController, UserController, ChannelTypeController, ObjectController],
-  exports: [PeerService, ChannelService, UserService, ChannelTypeService, ObjectService],
+  exports: [PeerService]
 })
 export class PeerModule {}
