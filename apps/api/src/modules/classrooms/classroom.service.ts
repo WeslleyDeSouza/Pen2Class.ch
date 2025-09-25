@@ -59,7 +59,7 @@ export class ClassroomService {
    * - User is a member of the channel (by userId)
    * Peer IDs are not exposed in the response, consistent with getAllChannels.
    */
-  async getAllClassroomsWithPermission(userId: string): Promise<Classroom[]> {
+  async getAllClassroomsByUser(userId: string): Promise<Classroom[]> {
     const channels = await this.classroomRepo.find({ relations: ['members'] });
     const list = channels.filter((channel) =>
       channel.createdBy === userId || (channel.members || []).some((m) => m.userId === userId),
@@ -156,5 +156,23 @@ export class ClassroomService {
   async getClassroomByCode(code: string): Promise<Classroom | null> {
     const channel = await this.classroomRepo.findOne({ where: { code }, relations: ['members'] });
     return (channel as unknown as Classroom) || null;
+  }
+
+  async updateClassroom(
+    id: string,
+    name?: string,
+    description?: string,
+    configuration?: Record<string, any>,
+  ): Promise<Classroom> {
+    const entity = await this.classroomRepo.findOne({ where: { id }, relations: ['members'] });
+    if (!entity) throw new NotFoundException(`Channel ${id} not found`);
+
+    if (typeof name === 'string' && name.length > 0) entity.name = name;
+    if (typeof description !== 'undefined') entity.description = description;
+    if (typeof configuration !== 'undefined') entity.configuration = configuration as any;
+
+    const saved = await this.classroomRepo.save(entity);
+    this.logger.log(`Channel updated: ${saved.name} (${saved.id})`);
+    return saved as unknown as Classroom;
   }
 }

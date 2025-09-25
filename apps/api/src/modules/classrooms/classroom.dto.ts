@@ -21,6 +21,29 @@ export class CreateClassroomDto {
   createdBy!: string;
 }
 
+export class UpdateClassroomDto {
+  @ApiProperty({ example: 'Math 101' })
+  @IsString()
+  @Expose()
+  id!: string;
+
+  @ApiProperty({ example: 'Math 101' })
+  @IsString()
+  @Expose()
+  name!: string;
+
+  @ApiProperty({ example: 'Algebra basics', required: false, nullable: true })
+  @IsOptional()
+  @IsString()
+  @Expose()
+  description?: string;
+
+  @ApiProperty({ example: 'Configuration of Classroom', required: false, nullable: true })
+  @IsOptional()
+  @Expose()
+  configuration!: Record<string, any>;
+}
+
 export class JoinClassroomDto {
   @ApiProperty({ example: 'user_123' })
   @IsString()
@@ -85,6 +108,11 @@ export class ClassroomDto {
   @ApiProperty({ example: 'Algebra basics', required: false, nullable: true })
   @Expose()
   description?: string;
+
+  @ApiProperty({ example: 'Configuration of Classroom', required: false, nullable: true })
+  @Expose()
+  configuration!: Record<string, any>;
+
 
   @ApiProperty({ example: 'user_123' })
   @Expose()

@@ -22,6 +22,9 @@ export class ClassroomEntity {
   @Column({ type: 'varchar', length: 32 })
   code!: string;
 
+  @Column({ type: 'simple-json' , nullable: true})
+  configuration!: Record<string, any>;
+
   @OneToMany(() => ClassroomMemberEntity, (member) => member.classroom, { cascade: true })
   members!: ClassroomMemberEntity[];
 }
