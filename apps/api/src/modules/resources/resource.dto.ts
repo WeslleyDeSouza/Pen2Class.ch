@@ -45,11 +45,11 @@ export class ResourceDto {
       type: obj.type,
       data: obj.data,
       userId: obj.userId,
-      lessonId: obj.lessonId ?? undefined,
+      lessonId: obj.lessonId,
       classroomId: obj.classroomId,
-      createdAt: obj.createdAt.toISOString(),
-      updatedAt: obj.updatedAt.toISOString(),
       comments: obj.comments || [],
+      createdAt: obj.createdAt instanceof Date ?  obj.createdAt.toISOString() : obj.createdAt,
+      updatedAt: obj.updatedAt instanceof Date ?  obj.updatedAt.toISOString() : obj.updatedAt,
     })
   }
 }

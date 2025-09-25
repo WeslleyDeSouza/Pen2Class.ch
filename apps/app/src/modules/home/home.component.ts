@@ -1,8 +1,6 @@
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Subscription} from 'rxjs';
-import {ClassroomService} from '../../common/services/classroom.service';
+import { Router} from '@angular/router';
 import {UserService} from '../../common/services/user.service';
 import {StepJoinComponent} from './components/step.join.component';
 import {StepCreateComponent} from './components/step.create.component';
@@ -31,10 +29,11 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
               <!-- Join by Code Button -->
               <div>
                 <button
-                  (click)="switchToJoinByCode()"
+                  (click)="switchToJoinByCodeStep()"
                   class="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                   </svg>
                   <span>Join by Code</span>
                 </button>
@@ -43,7 +42,7 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
               <!-- Create Classroom Button -->
               <div>
                 <button
-                  (click)="switchToCreateClass()"
+                  (click)="switchToCreateClassStep()"
                   class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -53,41 +52,39 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
               </div>
 
               <!-- Continue with existing user Button -->
-              @if(hasExistingUser()){
-               <div>
-                 <app-continue-existing-user
-                   [existingUserName]="getExistingUserName()"
-                   (continueClicked)="continueWithExistingUser()"
-                 />
-               </div>
+              @if (hasExistingUser()) {
+                <div>
+                  <app-continue-existing-user
+                    [existingUserName]="getExistingUserName()"
+                    (continueClicked)="continueWithExistingUser()"
+                  />
+                </div>
               }
 
             </div>
           }
-
           @case ('joinByCode') {
             <app-join-steps
-              (back)="goToInitial()"
+              (back)="switchToInitialStep()"
             />
           }
-
           @case ('createClass') {
             <app-create-steps
-              (back)="goToInitial()"
+              (back)="switchToInitialStep()"
               (goToAdmin)="goToAdmin()"
             />
           }
-
           @case ('hasError') {
             <div class="space-y-4 animate-fade-in text-center">
               <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto">
                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                 </svg>
               </div>
 
               <h3 class="text-lg font-semibold text-red-800">
-               Error Message</h3>
+                Error Message</h3>
               <p class="text-sm text-red-600">
 
               </p>
@@ -99,7 +96,7 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
               </button>
               -->
               <button
-                (click)="goToInitial()"
+                (click)="switchToInitialStep()"
                 class="w-full text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors">
                 Go Back
               </button>
@@ -110,7 +107,7 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
         <!-- Error Messages -->
         @if (errorMessage) {
           <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg animate-fade-in">
-            <p class="text-sm text-red-800">{{errorMessage}}</p>
+            <p class="text-sm text-red-800">{{ errorMessage }}</p>
           </div>
         }
       </div>
@@ -122,14 +119,20 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
       }
 
       @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     </style>
   `,
   changeDetection:ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent  {
   currentView: ViewMode = 'initial';
   joinStep = 1;
   createStep = 1;
@@ -139,37 +142,25 @@ export class HomeComponent implements OnInit, OnDestroy {
   isLoading = false;
   currentChannel: Channel | null = null;
 
-  private subscriptions: Subscription[] = [];
-
   constructor(
-    private channelService: ClassroomService,
     private userService: UserService,
     private userStore: UserStoreService,
     private router: Router,
-    private route: ActivatedRoute,
   ) {}
 
-  ngOnInit() {
-
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
-  }
-
   // Navigation methods
-  switchToJoinByCode() {
+  switchToJoinByCodeStep() {
     this.resetStepsState();
     this.currentView = 'joinByCode';
    }
 
-  switchToCreateClass() {
+  switchToCreateClassStep() {
     this.resetStepsState();
     this.currentView = 'createClass';
 
   }
 
-  goToInitial() {
+  switchToInitialStep() {
     this.resetStepsState();
     this.currentView = 'initial';
   }
@@ -196,6 +187,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   goToAdmin() {
     this.router.navigate(['/', RouteConstants.Paths.admin, RouteConstants.Paths.dashboard]);
   }
+
   goToClassRoom() {
     this.router.navigate(['/', RouteConstants.Paths.classroom]);
   }
