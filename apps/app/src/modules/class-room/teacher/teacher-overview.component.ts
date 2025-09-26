@@ -39,7 +39,7 @@ interface CreateLessonForm {
               </div>
               <div>
                 <h1 class="text-xl font-semibold text-gray-900">Pen2Class Admin</h1>
-                <p class="text-sm text-gray-500">Interactive Web Development Classroom</p>
+                <p class="text-sm text-gray-500"> MVP - Interactive Web Development Classroom</p>
               </div>
             </div>
 
@@ -61,13 +61,6 @@ interface CreateLessonForm {
 
             <!-- Right: Notifications and Profile -->
             <div class="flex items-center space-x-4">
-              <button class="p-2 text-gray-400 hover:text-gray-500 relative">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-3.5-3.5a.5.5 0 0 1 0-.7l.5-.5-3-3-.5.5a.5.5 0 0 1-.7 0L9.5 6.5 8 8l3.5 3.5a.5.5 0 0 1 0 .7l-.5.5 3 3 .5-.5a.5.5 0 0 1 .7 0L18.5 18.5 15 17zM9 21H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h4m0-10V3a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4m0 10v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4"></path>
-                </svg>
-                <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white"></span>
-              </button>
-
               @if (currentUser(); as user) {
                 <div class="flex items-center space-x-3">
                   <div class="text-right">

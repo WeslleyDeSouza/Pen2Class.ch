@@ -336,8 +336,7 @@ export class ExamDialogComponent {
   formatContent(content: string): string {
     if (!content) return '';
     return prettify(
-      content.replace(/\\n/g, '<br>')
-        .replace(/\n/g, '<br>'),
+      content,
       { ignore: ['style'] }
     )
       .replace('. ', '.')
