@@ -124,7 +124,9 @@ import { RouteConstants } from '../../../app/route.constants';
                 </div>
               </div>
 
-              <button class="w-full text-blue-600 text-sm font-medium hover:text-blue-700">
+              <button
+                (click)="viewAllExams()"
+                class="w-full text-blue-600 text-sm font-medium hover:text-blue-700">
                 View All Exams
               </button>
             </div>
@@ -351,6 +353,17 @@ export class StudentClassroomComponent implements OnInit, OnDestroy {
         lesson.id
       ]);
     }
+  }
+
+  viewAllExams(): void {
+    // Navigate to the exam overview page
+    this.router.navigate([
+      '/',
+      RouteConstants.Paths.student,
+      RouteConstants.Paths.classroom,
+      this.classroomId,
+      'exams'
+    ]);
   }
 }
 

@@ -14,6 +14,11 @@ export const routesStudent: Routes = [
     data: { title: 'Lesson' }
   },
   {
+    path: `${RouteConstants.Paths.classroom}/:${RouteConstants.Params.classRoomId}/exams`,
+    loadComponent: () => import('./student-exam-overview.component').then(m => m.StudentExamOverviewComponent),
+    data: { title: 'Exams' }
+  },
+  {
     path: '',
     component: StudentDashboardComponent,
     data: { title: 'Student Dashboard' },
