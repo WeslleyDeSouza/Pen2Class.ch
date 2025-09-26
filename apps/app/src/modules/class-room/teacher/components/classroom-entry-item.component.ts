@@ -5,11 +5,11 @@ import {RouterLink} from "@angular/router";
 import {RouteConstants} from "../../../../app/route.constants";
 
 @Component({
-  selector: 'app-classroom-item',
+  selector: 'app-classroom-entry-item',
   standalone: true,
   imports: [DatePipe, NgIf, RouterLink,],
   template: `
-    <div [routerLink]="linkPath" class="bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-colors h-full flex flex-col justify-between">
+    <div [routerLink]="linkPath" class="cursor-pointer bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-colors h-full flex flex-col justify-between">
       <div class="flex items-start justify-between">
         <!-- Left: Classroom Info -->
         <div class="flex items-center space-x-4">
@@ -77,7 +77,7 @@ import {RouteConstants} from "../../../../app/route.constants";
     </div>
   `
 })
-export class ClassroomItemComponent {
+export class ClassroomEntryItemComponent {
   @Input() classroom!: ClassroomSummary;
   @Input() lessonsCount = 0;
   @Output() copyCode = new EventEmitter<string>();

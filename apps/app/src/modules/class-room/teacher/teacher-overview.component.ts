@@ -7,7 +7,7 @@ import {Router} from "@angular/router";
 import { RouteConstants } from '../../../app/route.constants';
 import {UserStoreService} from "../../../common/store";
 import {UserDto} from "@ui-lib/apiClient";
-import { ClassroomItemComponent } from './components/classroom-item.component';
+import { ClassroomEntryItemComponent } from './components/classroom-entry-item.component';
 
 interface CreateChannelForm {
   name: string;
@@ -23,7 +23,7 @@ interface CreateLessonForm {
 @Component({
   selector: 'app-admin-class-room-item',
   standalone: true,
-  imports: [FormsModule, ClassroomItemComponent],
+  imports: [FormsModule, ClassroomEntryItemComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <!-- Header -->
@@ -145,25 +145,13 @@ interface CreateLessonForm {
           <!-- Real-time Views -->
           <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-600">Real-time Views</p>
-                <p class="text-2xl font-bold text-gray-900">23</p>
-                <p class="text-xs text-gray-500 mt-1">Teachers monitoring code</p>
-              </div>
+
             </div>
           </div>
         </div>
 
         <!-- Quick Actions Section -->
-        <div class="mb-8">
+        <div [hidden]="true" class="mb-8">
           <div class="flex items-center mb-4">
             <svg class="w-5 h-5 text-gray-900 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -284,11 +272,11 @@ interface CreateLessonForm {
               } @else {
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   @for (classroom of classroomFacade.classrooms(); track classroom.id) {
-                    <app-classroom-item
+                    <app-classroom-entry-item
                       [classroom]="classroom"
                       [lessonsCount]="getLessonsForClassroom(classroom.id).length || 0"
                       (copyCode)="copyToClipBoard($event)">
-                    </app-classroom-item>
+                    </app-classroom-entry-item>
                   }
                 </div>
               }

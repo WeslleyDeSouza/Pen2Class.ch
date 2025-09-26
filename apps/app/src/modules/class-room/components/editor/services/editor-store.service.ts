@@ -71,7 +71,6 @@ button:hover {
   const button = document.getElementById('myButton');
 
   button.addEventListener('click', function() {
-    alert('Hello from Pen2Class!');
     button.style.background = 'linear-gradient(45deg, #e74c3c, #f39c12)';
   });
 });`);

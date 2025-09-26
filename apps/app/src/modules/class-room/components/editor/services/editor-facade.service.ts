@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
-import { environment } from '../../../../environments/environment';
 import { EditorStoreService, EditorState } from './editor-store.service';
-import {ResourceDto, ResourcesService, ResourceType, } from '@ui-lib/apiClient';
-import {UserStoreService} from "../../../../common/store";
+import {ResourceDto, ResourcesService, } from '@ui-lib/apiClient';
+import { UserStoreService } from "apps/app/src/common/store";
+import {environment} from "../../../../../environments/environment";
 
 interface SaveOptions {
   objectId?: string;

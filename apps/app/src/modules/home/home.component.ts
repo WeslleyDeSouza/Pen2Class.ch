@@ -1,7 +1,8 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import { Router} from '@angular/router';
-import {UserService} from '../../common/services/user.service';
+import {UserService, UserType} from '../../common/services/user.service';
+import {ClassroomService} from '../../common/services/classroom.service';
 import {StepJoinComponent} from './components/step.join.component';
 import {StepCreateComponent} from './components/step.create.component';
 import {StepContinueComponent} from './components/step.continue.component';
@@ -11,7 +12,7 @@ import {RouteConstants} from "../../app/route.constants";
 import {UserStoreService} from "../../common/store";
 import {Classroom as Channel} from '../../common';
 
-type ViewMode = 'initial' | 'login' | 'joinByCode' | 'createClass' | 'hasError';
+type ViewMode = 'initial' | 'login' | 'register' | 'joinByCode' | 'createClass' | 'hasError';
 
 @Component({
   selector: 'app-home',
@@ -26,40 +27,27 @@ type ViewMode = 'initial' | 'login' | 'joinByCode' | 'createClass' | 'hasError';
         @switch (currentView) {
           @case ('initial') {
             <div class="space-y-4 animate-fade-in">
-              <!-- Join by Code Button -->
-              <div>
-                <button
-                  (click)="switchToJoinByCodeStep()"
-                  class="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                  </svg>
-                  <span>Join by Code</span>
-                </button>
-              </div>
-
-              <!-- Create Classroom Button -->
-              <div>
-                <button
-                  (click)="switchToCreateClassStep()"
-                  class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                  </svg>
-                  <span>Create Classroom</span>
-                </button>
-              </div>
-
               <!-- Login Button -->
               <div>
                 <button
                   (click)="switchToLoginStep()"
-                  class="w-full bg-purple-500 hover:bg-purple-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                  class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                   </svg>
                   <span>Login</span>
+                </button>
+              </div>
+
+              <!-- Register Button -->
+              <div>
+                <button
+                  (click)="switchToRegisterStep()"
+                  class="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                  </svg>
+                  <span>Register</span>
                 </button>
               </div>
 
@@ -75,6 +63,92 @@ type ViewMode = 'initial' | 'login' | 'joinByCode' | 'createClass' | 'hasError';
 
             </div>
           }
+          @case ('register') {
+            <div class="space-y-4 animate-fade-in">
+              <h2 class="text-xl font-semibold text-gray-800 text-center mb-6">Create your account</h2>
+
+              <!-- User Type Selection -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">I am a:</label>
+                <div class="flex space-x-4">
+                  <label class="flex items-center">
+                    <input
+                      type="radio"
+                      [(ngModel)]="registerUserType"
+                      value="teacher"
+                      name="userType"
+                      class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                    <span class="text-sm text-gray-700">Teacher</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input
+                      type="radio"
+                      [(ngModel)]="registerUserType"
+                      value="student"
+                      name="userType"
+                      class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                    <span class="text-sm text-gray-700">Student</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Name Field -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <input
+                  [(ngModel)]="registerName"
+                  type="text"
+                  placeholder="Enter your full name"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+              </div>
+
+              <!-- Email Field -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input
+                  [(ngModel)]="registerEmail"
+                  type="email"
+                  placeholder="your.email@example.com"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+              </div>
+
+              <!-- Password Field -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <input
+                  [(ngModel)]="registerPassword"
+                  type="password"
+                  placeholder="Create a password"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+              </div>
+
+              <!-- Classroom Code for Students -->
+              @if (registerUserType === 'student') {
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Classroom Code (Optional)</label>
+                  <input
+                    [(ngModel)]="registerClassroomCode"
+                    type="text"
+                    placeholder="Enter classroom code to join"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                  <p class="text-xs text-gray-500 mt-1">You can skip this and join a classroom later</p>
+                </div>
+              }
+
+              <button
+                (click)="registerUser()"
+                [disabled]="!isRegisterFormValid() || isLoading"
+                class="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                {{ isLoading ? 'Creating account...' : 'Create Account' }}
+              </button>
+
+              <button
+                (click)="switchToInitialStep()"
+                class="w-full text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors border border-gray-200 hover:border-gray-300 rounded-lg">
+                Back to Home
+              </button>
+            </div>
+          }
           @case ('login') {
             <div class="space-y-4 animate-fade-in">
               <h2 class="text-xl font-semibold text-gray-800 text-center mb-6">Login to your account</h2>
@@ -86,7 +160,7 @@ type ViewMode = 'initial' | 'login' | 'joinByCode' | 'createClass' | 'hasError';
                   type="email"
                   placeholder="your.email@example.com"
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  (keyup.enter)="loginPassword.focus()">
+                  (keyup.enter)="loginPasswordEl.focus()">
               </div>
 
               <div>
@@ -96,7 +170,7 @@ type ViewMode = 'initial' | 'login' | 'joinByCode' | 'createClass' | 'hasError';
                   type="password"
                   placeholder="Enter your password"
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  #loginPassword
+                  #loginPasswordEl
                   (keyup.enter)="loginUser()">
               </div>
 
@@ -197,10 +271,18 @@ export class HomeComponent  {
   loginEmail = '';
   loginPassword = '';
 
+  // Registration form state
+  registerUserType: 'teacher' | 'student' = 'student';
+  registerName = '';
+  registerEmail = '';
+  registerPassword = '';
+  registerClassroomCode = '';
+
   constructor(
     private userService: UserService,
     private userStore: UserStoreService,
     private router: Router,
+    private classroomService: ClassroomService,
   ) {}
 
   // Navigation methods
@@ -220,6 +302,11 @@ export class HomeComponent  {
     this.currentView = 'login';
   }
 
+  switchToRegisterStep() {
+    this.resetStepsState();
+    this.currentView = 'register';
+  }
+
   switchToInitialStep() {
     this.resetStepsState();
     this.currentView = 'initial';
@@ -232,6 +319,11 @@ export class HomeComponent  {
     this.currentChannel = null;
     this.loginEmail = '';
     this.loginPassword = '';
+    this.registerUserType = 'student';
+    this.registerName = '';
+    this.registerEmail = '';
+    this.registerPassword = '';
+    this.registerClassroomCode = '';
     this.clearError();
   }
 
@@ -269,6 +361,14 @@ export class HomeComponent  {
     return emailRegex.test(this.loginEmail) && this.loginPassword.length > 0;
   }
 
+  isRegisterFormValid(): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return this.registerName.trim().length > 0 &&
+           emailRegex.test(this.registerEmail) &&
+           this.registerPassword.length >= 6 &&
+           (this.registerUserType === 'teacher' || this.registerUserType === 'student');
+  }
+
   loginUser() {
     if (!this.isLoginFormValid()) {
       this.showError('Please enter a valid email and password');
@@ -295,6 +395,61 @@ export class HomeComponent  {
       this.showError(error.error?.message || 'Login failed. Please check your credentials.');
       this.isLoading = false;
     });
+  }
+
+  async registerUser() {
+    if (!this.isRegisterFormValid()) {
+      this.showError('Please fill in all required fields with valid information');
+      return;
+    }
+
+    this.isLoading = true;
+    this.clearError();
+
+    try {
+      // Determine user type
+      const userType = this.registerUserType === 'teacher' ? UserType.TEACHER : UserType.STUDENT;
+
+      // Create user account
+      const response = await this.userService.signup(
+        this.registerEmail.trim(),
+        this.registerPassword,
+        this.registerEmail.trim(),
+        this.registerName.trim(),
+        userType
+      );
+
+      // Store user data
+      this.userStore.user.set(response.user);
+      this.userStore.persist();
+
+      // If student and has classroom code, try to join the classroom
+      if (this.registerUserType === 'student' && this.registerClassroomCode.trim()) {
+        try {
+          await this.classroomService.joinClassroomByCode(
+            this.registerClassroomCode.trim(),
+            response.user.id!,
+            this.registerName.trim()
+          );
+        } catch (error) {
+          // Even if joining classroom fails, user creation succeeded
+          console.warn('Failed to join classroom by code:', error);
+          this.showError('Account created successfully, but failed to join classroom. You can join later.');
+        }
+      }
+
+      // Redirect based on user type
+      if (response.user.type === 2) { // Teacher
+        this.goToAdmin();
+      } else { // Student
+        this.goToClassRoom();
+      }
+
+      this.isLoading = false;
+    } catch (error: any) {
+      this.showError(error.error?.message || 'Registration failed. Please try again.');
+      this.isLoading = false;
+    }
   }
 
   continueWithExistingUser() {

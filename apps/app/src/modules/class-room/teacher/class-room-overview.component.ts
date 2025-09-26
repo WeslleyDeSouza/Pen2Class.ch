@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { LessonDialogComponent, LessonDialogModel } from './components/lesson-dialog.component';
+import { LessonEntryItemComponent } from './components/lesson-entry-item.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ClassroomManagementFacade, ClassroomSummary } from './facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from './facades/lesson-management.facade';
@@ -18,7 +19,7 @@ interface StudentSummary {
 @Component({
   selector: 'app-admin-class-room-overview',
   standalone: true,
-  imports: [CommonModule, DatePipe, LessonDialogComponent],
+  imports: [CommonModule, DatePipe, LessonDialogComponent, LessonEntryItemComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -72,7 +73,7 @@ interface StudentSummary {
             </div>
 
             <!-- Technologies -->
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <div [hidden]="true" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
               <div class="text-gray-900 font-medium mb-3">Technologies</div>
               <div class="flex flex-wrap gap-2">
                 <span class="px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-700" *ngFor="let tech of technologies">{{tech}}</span>
@@ -110,39 +111,19 @@ interface StudentSummary {
               </button>
             </div>
 
-            <ng-container  *ngFor="let l of lessons()">
-              <div class="lesson-item bg-white rounded-2xl border border-gray-200 shadow-sm p-0">
-                <div class="p-5 flex items-center">
-                  <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center mr-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10M4 18h6"/></svg>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                      <div class="font-medium text-gray-900 truncate">{{ l.name }}</div>
-                      <span class="text-xs px-2 py-0.5 rounded-full" [ngClass]="l.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'">
-                      {{ l.enabled ? 'active' : 'draft' }}
-                    </span>
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1 flex items-center gap-4">
-                      <span class="inline-flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M7 20H2v-2a3 3 0 015.356-1.857"/></svg>{{ members().length }} students</span>
-                      <span class="inline-flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/></svg>~{{ defaultDuration }} min</span>
-                    </div>
-                    <div class="mt-3">
-                      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-gray-900" [style.width.%]="l.enabled ? 100 : 75"></div>
-                      </div>
-                      <div class="text-[10px] text-right text-gray-400 mt-1">{{ l.enabled ? '100%' : '75%' }}</div>
-                    </div>
-                  </div>
-                  <div class="ml-4 flex items-center gap-3 text-gray-500">
-                    <button class="hover:text-gray-700" title="Preview"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553 2.276a1 1 0 010 1.788L15 16.34M4 6h16M4 18h16M4 12h8"/></svg></button>
-                    <button class="hover:text-gray-700" title="Options"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.75a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg></button>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+              <app-lesson-item
+                *ngFor="let l of lessons()"
+                [lesson]="l"
+                [classroomId]="classroomId"
+                [studentsCount]="members().length"
+                [activitiesCount]="0"
+                (edit)="editLesson($event)"
+                (delete)="deleteLesson($event)">
+              </app-lesson-item>
+            </div>
 
-            <div class="text-sm text-gray-500" *ngIf="!lessons().length">No lessons yet. Create one to get started.</div>
+            <div class="text-sm text-gray-500 text-center py-8" *ngIf="!lessons().length">No lessons yet. Create one to get started.</div>
           </div>
         </div>
       </div>
@@ -173,6 +154,7 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
   showLessonDialog = signal(false);
   lessonDialogModel: LessonDialogModel = { name: '', description: '', enabled: false };
   lessonDialogTitle = 'Create lesson';
+  editingLessonId: string | null = null;
 
   activeLessons = computed(() => this.lessons().filter(l => l.enabled).length);
 
@@ -228,12 +210,45 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
   async addLesson() {
     // Open create dialog; actual save handled in handleLessonDialogSave
     this.lessonDialogTitle = 'Create lesson';
-    this.lessonDialogModel = { name: 'New Lesson', description: 'Draft lesson', enabled: false };
+    this.lessonDialogModel = { name: '', description: '', enabled: true };
+    this.editingLessonId = null;
     this.showLessonDialog.set(true);
+  }
+
+  editLesson(lesson: LessonSummary) {
+    this.lessonDialogTitle = 'Edit lesson';
+    this.lessonDialogModel = {
+      name: lesson.name,
+      description: lesson.description || '',
+      enabled: lesson.enabled
+    };
+    this.editingLessonId = lesson.id;
+    this.showLessonDialog.set(true);
+  }
+
+  async deleteLesson(lesson: LessonSummary) {
+    if (!confirm(`Are you sure you want to delete lesson "${lesson.name}"?`)) {
+      return;
+    }
+
+    try {
+      const classId = this.classroomId || this.classroom()?.id;
+      const currentUser = this.userStore.getCurrentUser();
+      if (!classId || !currentUser?.id) return;
+
+      await this.lessonFacade.deleteLesson(classId, lesson.id, currentUser.id);
+
+      // Refresh local lessons list
+      const lessons = await this.lessonFacade.loadLessonsForClassroom(classId);
+      this.lessons.set(lessons);
+    } catch (e) {
+      console.error('Failed to delete lesson', e);
+    }
   }
 
   closeLessonDialog() {
     this.showLessonDialog.set(false);
+    this.editingLessonId = null;
   }
 
   async handleLessonDialogSave(data: LessonDialogModel) {
@@ -245,32 +260,46 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
         return;
       }
 
-      const created = await this.lessonFacade.createLesson(classId, {
-        createdBy: currentUser.id,
-        name: data.name,
-        description: data.description,
-        enabled: !!data.enabled,
-      });
+      if (this.editingLessonId) {
+        // Update existing lesson
+        const updated = await this.lessonFacade.updateLesson(classId, this.editingLessonId, {
+          name: data.name,
+          description: data.description,
+          enabled: !!data.enabled,
+        });
 
-      // Persist context
-      this.userStore.selectedClassId.set(classId);
-      this.userStore.selectedLessonId.set(created.id);
+        // Refresh local lessons list
+        const lessons = await this.lessonFacade.loadLessonsForClassroom(classId);
+        this.lessons.set(lessons);
+      } else {
+        // Create new lesson
+        const created = await this.lessonFacade.createLesson(classId, {
+          createdBy: currentUser.id,
+          name: data.name,
+          description: data.description,
+          enabled: !!data.enabled,
+        });
 
-      // Refresh local lessons list
-      const lessons = await this.lessonFacade.loadLessonsForClassroom(classId);
-      this.lessons.set(lessons);
+        // Persist context
+        this.userStore.selectedClassId.set(classId);
+        this.userStore.selectedLessonId.set(created.id);
 
-      // Navigate to lesson route
-      await this.router.navigate([
-        '/',
-        RouteConstants.Paths.admin,
-        RouteConstants.Paths.classroom,
-        classId,
-        RouteConstants.Paths.lesson,
-        created.id,
-      ]);
+        // Refresh local lessons list
+        const lessons = await this.lessonFacade.loadLessonsForClassroom(classId);
+        this.lessons.set(lessons);
+
+        // Navigate to lesson route
+        await this.router.navigate([
+          '/',
+          RouteConstants.Paths.admin,
+          RouteConstants.Paths.classroom,
+          classId,
+          RouteConstants.Paths.lesson,
+          created.id,
+        ]);
+      }
     } catch (e) {
-      console.error('Failed to add lesson from overview', e);
+      console.error('Failed to save lesson from overview', e);
     } finally {
       this.closeLessonDialog();
     }

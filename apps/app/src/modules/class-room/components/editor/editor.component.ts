@@ -6,8 +6,8 @@ import { JsEditorComponent } from './components/js-editor/js-editor.component';
 import { PreviewComponent } from './components/preview/preview.component';
 import {EditorService} from "./services/editor-facade.service";
 import { ActivatedRoute } from '@angular/router';
-import {RouteConstants} from "../../../app/route.constants";
-import {UserStoreService} from "../../../common/store";
+import {UserStoreService} from "../../../../common/store";
+import {RouteConstants} from "../../../../app/route.constants";
 
 @Component({
   selector: 'app-editor',
@@ -371,7 +371,6 @@ button:hover {
   const button = document.getElementById('myButton');
 
   button.addEventListener('click', function() {
-    alert('Hello from Pen2Class!');
     button.style.background = 'linear-gradient(45deg, #e74c3c, #f39c12)';
   });
 });`);
