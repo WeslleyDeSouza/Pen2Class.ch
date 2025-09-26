@@ -327,7 +327,7 @@ export class EditorComponent implements OnInit, OnDestroy {
   protected resetCode(): void {
     // Reset to default values
     this.editorStore.updateHtmlCode(`<div class="container">
-  <h1>Hello Pen2Class!</h1>
+  <h1>Hello!</h1>
   <p>Edit the code to see changes live.</p>
   <button id="myButton">Click me!</button>
 </div>`);

@@ -27,7 +27,7 @@ export class EditorStoreService {
   // Code content signals
   private _objectId = signal<string | undefined>(undefined);
   private _htmlCode = signal<string>(`<div class="container">
-  <h1>Hello Pen2Class!</h1>
+  <h1>Hello!</h1>
   <p>Edit the code to see changes live.</p>
   <button id="myButton">Click me!</button>
 </div>`);
