@@ -60,18 +60,19 @@ export class ClassroomService {
    * Peer IDs are not exposed in the response, consistent with getAllChannels.
    */
   async getAllClassroomsByUser(userId: string): Promise<Classroom[]> {
-    const channels = await this.classroomRepo.find({ relations: ['members'] });
+    const channels = await this.classroomRepo.find({ relations: ['members','lessons'] });
     const list = channels.filter((channel) =>
       channel.createdBy === userId || (channel.members || []).some((m) => m.userId === userId),
     );
     return list.map((channel) => ({
       ...channel,
-      members: (channel.members || []).map((m) => ({ ...m, peerId: undefined as any })),
+      memberCount: channel.members?.length || 0,
+      members: [],
     } as unknown as Classroom));
   }
 
   async getClassroom(classroomId: string): Promise<Classroom> {
-    const channel = await this.classroomRepo.findOne({ where: { id: classroomId }, relations: ['members'] });
+    const channel = await this.classroomRepo.findOne({ where: { id: classroomId }, relations: ['members','lessons'] });
     if (!channel) {
       throw new NotFoundException(`Channel ${classroomId} not found`);
     }

@@ -62,14 +62,15 @@ export class LessonService {
     classroomId: string,
     lessonId: string,
     requesterId: string,
-    patch: { name?: string; description?: string },
+    patch: { name?: string; description?: string , configuration?: Record<string, any>},
   ): Promise<Lesson> {
     const classroom = await this.classroomService.getClassroom(classroomId);
     const lesson = await this.typeRepo.findOne({ where: { id: lessonId, classroomId } });
     if (!lesson) throw new NotFoundException('Lesson not found');
-    if (classroom.createdBy !== requesterId) throw new ForbiddenException('Only owner can update lessons');
+     if (classroom.createdBy !== requesterId) throw new ForbiddenException('Only owner can update lessons');
     if (typeof patch.name === 'string' && patch.name.trim()) lesson.name = patch.name;
     if (typeof patch.description !== 'undefined') lesson.description = patch.description ?? null;
+    if (typeof patch.configuration !== 'undefined') lesson.configuration = patch.configuration ?? null;
     const saved = await this.typeRepo.save(lesson);
     return saved as unknown as Lesson;
   }

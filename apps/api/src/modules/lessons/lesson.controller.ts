@@ -41,9 +41,9 @@ export class LessonController {
   update(
     @Param('classroomId') classroomId: string,
     @Param('lessonId') lessonId: string,
-    @Body() body: UpdateLessonDto & { requestedBy: string },
+    @Body() body: UpdateLessonDto ,
   ) {
-    return this.service.update(classroomId, lessonId, (body as any).requestedBy, { name: body.name, description: body.description });
+    return this.service.update(classroomId, lessonId, body.userId, { name: body.name, description: body.description, configuration:body.configuration });
   }
 
   @Post(':lessonId/enable')

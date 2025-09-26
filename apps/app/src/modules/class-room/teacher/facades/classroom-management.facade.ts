@@ -68,7 +68,6 @@ export class ClassroomManagementFacade {
       );
 
       const classroomSummary = this.mapClassroomToSummary(classroom);
-
       // Refresh the list
       await this.loadClassrooms();
 
@@ -202,7 +201,8 @@ export class ClassroomManagementFacade {
       name: c.name,
       description: c.description as string,
       code: c.code,
-      memberCount: c.members.length,
+      //@ts-ignore
+      memberCount:  c['memberCount'] || c.members?.length ,
       createdAt: c.createdAt as any,
       ownerId: c.createdBy,
       configuration: c.configuration as any

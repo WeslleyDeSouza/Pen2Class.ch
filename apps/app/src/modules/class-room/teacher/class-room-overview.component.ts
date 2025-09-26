@@ -258,11 +258,21 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
   editLesson(lesson: LessonSummary) {
     this.lessonDialogTitle = 'Edit lesson';
     this.lessonDialogModel = {
+      ...lesson,
       name: lesson.name,
       description: lesson.description || '',
-      enabled: lesson.enabled
+      enabled: lesson.enabled,
+      configuration: (()=> {
+        try {
+         return typeof lesson.configuration == 'object' ? JSON.stringify(lesson.configuration):lesson.configuration
+        }catch (e){
+          console.log(e);
+        }
+        return ''
+      })()
     };
     this.editingLessonId = lesson.id;
+
     this.showLessonDialog.set(true);
   }
 
@@ -306,6 +316,8 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
           name: data.name,
           description: data.description,
           enabled: !!data.enabled,
+          configuration:  typeof data.configuration === 'string' ? JSON.parse(data.configuration) : data.configuration ,
+
         });
 
         // Refresh local lessons list

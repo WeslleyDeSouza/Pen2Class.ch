@@ -7,11 +7,21 @@ export interface LessonCreateRequest {
   name: string;
   description?: string;
   enabled?: boolean;
+
+}
+export interface LessonUpdateRequest {
+  createdBy: string;
+  name: string;
+  description?: string;
+  enabled?: boolean;
+  configuration?: string;
+
 }
 
 export interface LessonSummary {
   id: string;
   name: string;
+  configuration?: string;
   description?: string;
   channelId: string;
   enabled: boolean;
@@ -141,12 +151,16 @@ export class LessonManagementFacade {
   async updateLesson(
     classroomId: string,
     lessonId: string,
-    updates: Partial<LessonCreateRequest>
+    updates: Partial<LessonUpdateRequest>
   ): Promise<LessonSummary | null> {
     this.isLoadingSignal.set(true);
 
     try {
-      const lesson = await this.lessonService.update(classroomId, lessonId, updates);
+
+      const lesson = await this.lessonService.update(classroomId, lessonId, {
+        ...updates,
+        userId:this.userStore.getCurrentUser()?.id as string
+      });
       const lessonSummary = this.mapChannelTypeToSummary(lesson, classroomId);
 
       // Refresh lessons for this classroom
@@ -275,6 +289,7 @@ export class LessonManagementFacade {
     return {
       id: channelType.id,
       name: channelType.name,
+      configuration: channelType.configuration as string,
       description: channelType.description as string,
       channelId: classroomId,
       enabled: channelType.enabled || false,

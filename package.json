@@ -48,6 +48,7 @@
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
     "es-module-shims": "^1.5.12",
+    "htmlfy": "^1.0.0",
     "json-schema-ref-parser": "^9.0.9",
     "monaco-editor": "^0.53.0",
     "ng-openapi-gen": "^1.0.1",

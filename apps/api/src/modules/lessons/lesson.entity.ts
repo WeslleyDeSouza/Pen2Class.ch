@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { ClassroomEntity } from '../classrooms/classroom.entity';
 
 @Entity('channel_types')
 export class LessonEntity {
@@ -26,6 +27,10 @@ export class LessonEntity {
   @Column({ type: 'varchar', length: 36,   })
   classroomId!: string;
 
-  @ManyToOne('ClassroomEntity', 'id', { onDelete: 'CASCADE' })
-  classroom?: any;
+  @ManyToOne(() => ClassroomEntity, (classroom) => classroom.lessons, { onDelete: 'CASCADE' })
+  classroom!: ClassroomEntity;
+
+  @Column({ type: 'simple-json' , nullable: true})
+  configuration!: Record<string, any>;
+
 }

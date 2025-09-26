@@ -14,6 +14,11 @@ export class CreateLessonDto {
   @Expose()
   description?: string;
 
+
+  @ApiProperty({ example: 'Configuration of Classroom', required: false, nullable: true })
+  @Expose()
+  configuration!: Record<string, any>;
+
   @ApiProperty({ example: 'user_123' })
   @IsString()
   @Expose()
@@ -27,11 +32,23 @@ export class UpdateLessonDto {
   @Expose()
   name?: string;
 
+  @ApiProperty({ example: 'userId', required: true, nullable: true })
+  @IsOptional()
+  @IsString()
+  @Expose()
+  userId?: string;
+
   @ApiProperty({ example: 'Hands-on session', required: false, nullable: true })
   @IsOptional()
   @IsString()
   @Expose()
   description?: string;
+
+  @ApiProperty({ example: 'Configuration of Classroom', required: false, nullable: true })
+  @Expose()
+  @IsOptional()
+  configuration!: Record<string, any>;
+
 }
 
 export class ToggleLessonDto {
@@ -85,6 +102,10 @@ export class LessonDto {
   @ApiProperty({ example: '8f14e45f-ea9a-4b0a-9b7d-1234567890ab' })
   @Expose()
   classroomId!: string;
+
+  @ApiProperty({ example: 'Configuration', })
+  @Expose()
+  configuration!: Record<string, any>;
 }
 
 export class SuccessDto {

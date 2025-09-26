@@ -194,6 +194,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       if (success) {
         this.classCode = '';
       }
+      this.loadStudentData()
     } catch (error) {
       console.error('Failed to join class:', error);
       // TODO: Show error message to user

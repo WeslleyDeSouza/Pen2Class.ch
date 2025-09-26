@@ -40,7 +40,7 @@ export class LessonService {
   update(
     classroomId: string,
     lessonId: string,
-    body: { name?: string; description?: string; visible?: boolean }
+    body: { name?: string; description?: string;configuration?: string; visible?: boolean, userId:string }
   ): Promise<LessonDto> {
     return this.lessonApi.lessonUpdate({ classroomId, lessonId, body });
   }

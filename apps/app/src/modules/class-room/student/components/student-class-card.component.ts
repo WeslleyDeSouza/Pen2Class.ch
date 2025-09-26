@@ -6,6 +6,7 @@ export interface StudentClassroom {
   name: string;
   description?: string;
   teacherName: string;
+  lessons: any;
   progress: number;
   totalLessons: number;
   completedLessons: number;

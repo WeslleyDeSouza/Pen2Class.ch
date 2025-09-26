@@ -113,6 +113,7 @@ export class StudentClassroomFacade {
     return classrooms.find(c => c.id === classroomId) || null;
   }
 
+
   /**
    * Update progress for a lesson (this would typically come from lesson completion)
    */
@@ -166,6 +167,7 @@ export class StudentClassroomFacade {
       name: classroom.name,
       description: classroom.description,
       teacherName: classroom.createdBy || 'Instructor', // This would ideally come from user data
+      lessons:classroom.lessons,
       progress: mockProgress,
       totalLessons: mockTotalLessons,
       completedLessons: mockCompletedLessons,

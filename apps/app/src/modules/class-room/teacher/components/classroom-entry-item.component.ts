@@ -47,7 +47,7 @@ import {RouteConstants} from "../../../../app/route.constants";
       <!-- Stats Row -->
       <div class="mt-4 grid grid-cols-3 gap-4 text-center">
         <div>
-          <div class="text-2xl font-bold text-blue-600">{{($any(classroom).members?.length || 0)}}</div>
+          <div class="text-2xl font-bold text-blue-600">{{($any(classroom).memberCount || $any(classroom).members?.length || 0)}}</div>
           <div class="text-xs text-gray-500">Students</div>
         </div>
         <div>

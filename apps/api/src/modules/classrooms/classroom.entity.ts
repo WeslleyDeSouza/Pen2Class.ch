@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Index } from 'typeorm';
 import { ClassroomMemberEntity } from './classroom-member.entity';
+import { LessonEntity } from '../lessons/lesson.entity';
 
 @Entity('channels')
 export class ClassroomEntity {
@@ -27,4 +28,7 @@ export class ClassroomEntity {
 
   @OneToMany(() => ClassroomMemberEntity, (member) => member.classroom, { cascade: true })
   members!: ClassroomMemberEntity[];
+
+  @OneToMany(() => LessonEntity, (lesson) => lesson.classroom)
+  lessons!: LessonEntity[];
 }

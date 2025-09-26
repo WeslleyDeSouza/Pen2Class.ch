@@ -209,55 +209,14 @@ export class StudentClassroomComponent implements OnInit, OnDestroy {
   classroomId = '';
   cdr = inject(ChangeDetectorRef);
 
-  // Mock lesson data - in a real app this would come from a service
   lessons: Lesson[] = [
-    {
-      id: '1',
-      title: 'HTML Fundamentals',
-      description: 'Learn the basics of HTML structure and elements',
-      duration: 45,
-      type: 'Video',
-      status: 'completed',
-      completedDate: '2 days ago'
-    },
-    {
-      id: '2',
-      title: 'CSS Basics',
-      description: 'Introduction to styling with CSS',
-      duration: 50,
-      type: 'Interactive',
-      status: 'completed',
-      completedDate: '1 day ago'
-    },
-    {
-      id: '3',
-      title: 'CSS Flexbox Layout',
-      description: 'Master flexible box layouts',
-      duration: 40,
-      type: 'Interactive',
-      status: 'active'
-    },
-    {
-      id: '4',
-      title: 'JavaScript Variables',
-      description: 'Understanding variables and data types',
-      duration: 35,
-      type: 'Video',
-      status: 'locked'
-    },
-    {
-      id: '5',
-      title: 'DOM Manipulation',
-      description: 'Interacting with HTML elements using JavaScript',
-      duration: 60,
-      type: 'Interactive',
-      status: 'locked'
-    }
+
+
   ];
 
   nextLesson = {
-    title: 'CSS Flexbox Layout',
-    scheduledDate: 'Today, 2:00 PM'
+    title: '',
+    scheduledDate: ''
   };
 
   exams = {
@@ -275,7 +234,6 @@ export class StudentClassroomComponent implements OnInit, OnDestroy {
     this.sub.add(
       this.route.paramMap.subscribe(async params => {
         const id = params.get(RouteConstants.Params.classRoomId);
-
         if (id) {
           this.classroomId = id;
 
@@ -283,6 +241,7 @@ export class StudentClassroomComponent implements OnInit, OnDestroy {
           await this.studentFacade.loadEnrolledClassrooms();
 
           this.classroom = await this.studentFacade.getClassroom(id);
+          this.lessons = this.classroom?.lessons || [];
           this.cdr.detectChanges();
         }
       })

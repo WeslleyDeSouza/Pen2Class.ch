@@ -28,7 +28,7 @@ export class ClassroomController {
   @ApiParam({ name: 'userId', type: 'string', description: 'User ID' })
   @ApiOkResponse({ description: 'List of channels returned successfully', type: [ClassroomDto] })
   async getAllFromUser(@Param('userId') userId: string) {
-    return this.channelService.getAllClassroomsByUser(userId);
+    return this.channelService.getAllClassroomsByUser(userId)
   }
 
   @Get(':classroomId')

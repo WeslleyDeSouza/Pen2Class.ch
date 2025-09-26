@@ -75,6 +75,9 @@ export const appRoutes: Route[] = [
   {
     path: RouteConstants.Paths.student,
     children: routesStudent,
+    canActivate: [
+      canActivate
+    ]
   },
 
 

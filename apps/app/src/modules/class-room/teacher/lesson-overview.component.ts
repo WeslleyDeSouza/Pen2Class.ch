@@ -246,6 +246,7 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
         name: data.name,
         description: data.description,
         enabled: !!data.enabled,
+        configuration:  typeof data.configuration === 'string' ? JSON.parse(data.configuration) : data.configuration ,
       });
       if (updated) {
         this.lesson = updated;

@@ -2,6 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 import { Expose, Type } from 'class-transformer';
 
+import { LessonDto } from "../lessons/lesson.dto";
+
 // Request DTOs
 export class CreateClassroomDto {
   @ApiProperty({ example: 'Math 101' })
@@ -126,6 +128,11 @@ export class ClassroomDto {
   @Type(() => ClassroomMemberDto)
   @Expose()
   members!: ClassroomMemberDto[];
+
+  @ApiProperty({ type: () => [LessonDto] })
+  @Type(() => LessonDto)
+  @Expose()
+  lessons!: LessonDto[] ;
 
   @ApiProperty({ example: '123456' })
   @Expose()
