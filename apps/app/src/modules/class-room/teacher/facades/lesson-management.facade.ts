@@ -7,6 +7,7 @@ export interface LessonCreateRequest {
   name: string;
   description?: string;
   enabled?: boolean;
+  configuration?: string;
 
 }
 export interface LessonUpdateRequest {
@@ -63,6 +64,7 @@ export class LessonManagementFacade {
         createdBy: request.createdBy,
         name: request.name,
         description: request.description,
+        configuration: request.configuration,
       });
 
       const lessonSummary = this.mapChannelTypeToSummary(lesson, classroomId);

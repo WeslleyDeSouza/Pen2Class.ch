@@ -47,23 +47,28 @@ interface StudentSummary {
             <div id="classroom-card" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
               <div class="flex items-start justify-between">
                 <div>
-                  <div class="flex items-center space-x-2">
-                    <div class="text-sm text-gray-600">{{ classroom()?.name || 'Classroom' }}</div>
-                    <button (click)="editClassroom()" class="text-gray-400 hover:text-gray-600 transition-colors p-1" title="Edit classroom">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+
+                  <div class="text-sm text-gray-600 mt-1 flex">Access Code
+
+
+                  </div>
+                  <div class="text-3xl font-semibold tracking-wider text-gray-900 select-all flex justify-between">{{ classroom()?.code || '------' }}
+
+                    <button (click)="copyCode()" class="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600" title="Copy">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8a2 2 0 012 2v8m-2 2H8a2 2 0 01-2-2V9m2-6h8a2 2 0 012 2v2M6 5a2 2 0 012-2" />
                       </svg>
                     </button>
                   </div>
-                  <div class="text-sm text-gray-600 mt-1">Access Code</div>
-                  <div class="text-3xl font-semibold tracking-wider text-gray-900 select-all">{{ classroom()?.code || '------' }}</div>
                   <div class="text-xs text-gray-500 mt-2">Share this code with students</div>
-                </div>
-                <button (click)="copyCode()" class="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600" title="Copy">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8a2 2 0 012 2v8m-2 2H8a2 2 0 01-2-2V9m2-6h8a2 2 0 012 2v2M6 5a2 2 0 012-2" />
+                </div>  <div class="flex items-center  space-x-2">
+                <button (click)="editClassroom()" class="text-gray-400 hover:text-gray-600 transition-colors p-1" title="Edit classroom">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                   </svg>
                 </button>
+              </div>
+
               </div>
 
               <!-- Stats -->
@@ -139,6 +144,7 @@ interface StudentSummary {
             </div>
             <div class="text-sm text-gray-500 text-center py-8" *ngIf="!lessons().length">No lessons yet. Create one to get started.</div>
 
+            <hr/><br>
             <!-- Exams -->
             <div class="flex items-center justify-between">
               <div class="text-xl font-semibold text-gray-900">Exams</div>
@@ -361,6 +367,8 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
           name: data.name,
           description: data.description,
           enabled: !!data.enabled,
+          configuration:  typeof data.configuration === 'string' ? JSON.parse(data.configuration) : data.configuration ,
+
         });
 
         // Persist context

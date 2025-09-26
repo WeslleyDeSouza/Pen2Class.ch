@@ -42,14 +42,17 @@ export class LessonService {
     return lesson as unknown as Lesson;
   }
 
-  async create(classroomId: string, name: string, description: string | undefined, createdBy: string): Promise<Lesson> {
+  async create(classroomId: string, name: string, description: string | undefined,configuration:any, createdBy: string,): Promise<Lesson> {
     const classroom = await this.classroomService.getClassroom(classroomId);
+
     if (classroom.createdBy !== createdBy) {
       throw new ForbiddenException('Only owner can create lessons');
     }
+
     const entity = this.typeRepo.create({
       classroomId,
       name,
+      configuration,
       description: description ?? null,
       enabled: true,
       createdBy,
@@ -67,7 +70,7 @@ export class LessonService {
     const classroom = await this.classroomService.getClassroom(classroomId);
     const lesson = await this.typeRepo.findOne({ where: { id: lessonId, classroomId } });
     if (!lesson) throw new NotFoundException('Lesson not found');
-     if (classroom.createdBy !== requesterId) throw new ForbiddenException('Only owner can update lessons');
+    if (classroom.createdBy !== requesterId) throw new ForbiddenException('Only owner can update lessons');
     if (typeof patch.name === 'string' && patch.name.trim()) lesson.name = patch.name;
     if (typeof patch.description !== 'undefined') lesson.description = patch.description ?? null;
     if (typeof patch.configuration !== 'undefined') lesson.configuration = patch.configuration ?? null;

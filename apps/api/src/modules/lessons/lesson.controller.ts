@@ -21,7 +21,7 @@ export class LessonController {
   @ApiBody({ type: CreateLessonDto })
   @ApiOkResponse({ type: LessonDto })
   create(@Param('classroomId') classroomId: string, @Body() body: CreateLessonDto) {
-    return this.service.create(classroomId, body.name, body.description, body.createdBy);
+    return this.service.create(classroomId, body.name, body.description, body.configuration, body.createdBy);
   }
 
   @Get(':lessonId')

@@ -72,7 +72,9 @@ import {UserStoreService} from "../../../common/store";
                     <div *ngIf="getCurrentStep()?.sampleCodeExercise" class="mb-6">
                       <h3 class="text-sm font-semibold text-gray-900 mb-2">Sample Code Exercise</h3>
                       <div class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                        <div [innerHTML]="formatContent($any(getCurrentStep())?.sampleCodeExercise)"></div>
+                        <div  >
+                          {{formatContent($any(getCurrentStep())?.sampleCodeExercise)}}
+                        </div>
                       </div>
                     </div>
                   </div>
