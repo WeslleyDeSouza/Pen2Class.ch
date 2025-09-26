@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, IsObject, IsArray, IsEnum } from 'class-validator';
 import { ResourceType } from './resource.entity';
+import {Expose} from "class-transformer";
 
 export class ResourceDto {
   @ApiProperty({ description: 'Unique identifier of the object' })
@@ -39,6 +40,11 @@ export class ResourceDto {
   @IsOptional()
   comments?: any[];
 
+  @ApiProperty({ example: 'Configuration', required: false, nullable: true })
+  @IsOptional()
+  @Expose()
+  configuration!: Record<string, any>;
+
   static convert(obj){
     return Object.assign(new ResourceDto(),{
       id: obj.id,
@@ -47,6 +53,7 @@ export class ResourceDto {
       userId: obj.userId,
       lessonId: obj.lessonId,
       classroomId: obj.classroomId,
+      configuration: obj.configuration,
       comments: obj.comments || [],
       createdAt: obj.createdAt instanceof Date ?  obj.createdAt.toISOString() : obj.createdAt,
       updatedAt: obj.updatedAt instanceof Date ?  obj.updatedAt.toISOString() : obj.updatedAt,
@@ -80,6 +87,11 @@ export class CreateResourceDto {
   @IsArray()
   @IsOptional()
   comments?: any[];
+
+  @ApiProperty({ example: 'Configuration', required: false, nullable: true })
+  @IsOptional()
+  @Expose()
+  configuration!: Record<string, any>;
 }
 
 export class UpdateResourceDto {
@@ -97,4 +109,10 @@ export class UpdateResourceDto {
   @IsOptional()
   @IsArray()
   comments?: any[];
+
+
+  @ApiProperty({ example: 'Configuration ', required: false, nullable: true })
+  @IsOptional()
+  @Expose()
+  configuration!: Record<string, any>;
 }

@@ -110,10 +110,7 @@ export class EditorService {
     return this.resourceApi.resourceDelete({ id });
   }
 
-  /** List objects by channel id. */
-  listObjectsByChannel(classroomId: string): Promise<ResourceDto[]> {
-    return this.resourceApi.resourceGetByClassroom({ classroomId });
-  }
+
 
   /** Load editor state from an existing object (expects data payload with html/css/js). */
   async loadEditorStateFromObject(id: string): Promise<EditorState> {

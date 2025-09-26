@@ -2,14 +2,16 @@ import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { LessonDialogComponent, LessonDialogModel } from './components/lesson-dialog.component';
 import { ClassroomDialogComponent, ClassroomDialogModel } from './components/classroom-dialog.component';
+import { ExamDialogComponent, ExamDialogModel } from './components/exam-dialog.component';
 import { LessonEntryItemComponent } from './components/lesson-entry-item.component';
+import { ExamEntryItemComponent } from './components/exam-entry-item.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ClassroomManagementFacade, ClassroomSummary } from './facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from './facades/lesson-management.facade';
+import { ExamsManagementFacade, ExamSummary } from './facades/exams-management-facade.service';
 import { Subscription } from 'rxjs';
 import { ClassroomService } from '../../../common';
 import { UserStoreService } from '../../../common/store';
-import { RouteConstants } from '../../../app/route.constants';
 
 interface StudentSummary {
   userId: string;
@@ -20,7 +22,7 @@ interface StudentSummary {
 @Component({
   selector: 'app-admin-class-room-overview',
   standalone: true,
-  imports: [CommonModule, LessonDialogComponent, ClassroomDialogComponent, LessonEntryItemComponent],
+  imports: [CommonModule, LessonDialogComponent, ClassroomDialogComponent, ExamDialogComponent, LessonEntryItemComponent, ExamEntryItemComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -96,6 +98,7 @@ interface StudentSummary {
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3">
               <div class="flex items-center justify-between px-3 py-2">
                 <div class="text-gray-900 font-medium">Students ({{ members().length }})</div>
+                <button class="text-xs text-blue-600 hover:underline" (click)="reloadStudents()">Reload</button>
                 <button class="text-xs text-blue-600 hover:underline" (click)="viewAllStudents()">View All</button>
               </div>
               <ul class="divide-y divide-gray-100">
@@ -113,8 +116,9 @@ interface StudentSummary {
             </div>
           </div>
 
-          <!-- Right column: Lessons -->
+          <!-- Right column: Lessons & Exams -->
           <div class="lg:col-span-7 space-y-4">
+            <!-- Lessons -->
             <div class="flex items-center justify-between">
               <div class="text-xl font-semibold text-gray-900">Lessons</div>
               <button (click)="addLesson()" class="inline-flex items-center px-3 py-2 rounded-xl bg-black text-white hover:bg-gray-800">
@@ -122,7 +126,6 @@ interface StudentSummary {
                 Add Lesson
               </button>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
               <app-lesson-item
                 *ngFor="let l of lessons()"
@@ -134,8 +137,27 @@ interface StudentSummary {
                 (delete)="deleteLesson($event)">
               </app-lesson-item>
             </div>
-
             <div class="text-sm text-gray-500 text-center py-8" *ngIf="!lessons().length">No lessons yet. Create one to get started.</div>
+
+            <!-- Exams -->
+            <div class="flex items-center justify-between">
+              <div class="text-xl font-semibold text-gray-900">Exams</div>
+              <button (click)="addExam()" class="inline-flex items-center px-3 py-2 rounded-xl bg-purple-600 text-white hover:bg-purple-700">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Add Exam
+              </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+              <app-exam-item
+                *ngFor="let e of exams()"
+                [exam]="e"
+                [classroomId]="classroomId"
+                [studentsCount]="members().length"
+                (edit)="editExam($event)"
+                (delete)="deleteExam($event)">
+              </app-exam-item>
+            </div>
+            <div class="text-sm text-gray-500 text-center py-8" *ngIf="!exams().length">No exams yet. Create one to get started.</div>
           </div>
         </div>
       </div>
@@ -155,6 +177,14 @@ interface StudentSummary {
         (cancel)="closeClassroomDialog()"
         (save)="handleClassroomDialogSave($event)">
       </app-classroom-dialog>
+
+      <app-exam-dialog
+        [open]="showExamDialog()"
+        [title]="examDialogTitle"
+        [model]="examDialogModel"
+        (cancel)="closeExamDialog()"
+        (save)="handleExamDialogSave($event)">
+      </app-exam-dialog>
     </div>
   `
 })
@@ -164,6 +194,7 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
 
   classroom = signal<ClassroomSummary | null>(null);
   lessons = signal<LessonSummary[]>([]);
+  exams = signal<ExamSummary[]>([]);
   members = signal<StudentSummary[]>([]);
 
   // Simple mock for tags
@@ -175,6 +206,12 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
   lessonDialogModel: LessonDialogModel = { name: '', description: '', enabled: false };
   lessonDialogTitle = 'Create lesson';
   editingLessonId: string | null = null;
+
+  // Dialog state for create/edit exam
+  showExamDialog = signal(false);
+  examDialogModel: ExamDialogModel = { name: '', description: '', enabled: false };
+  examDialogTitle = 'Create exam';
+  editingExamId: string | null = null;
 
   // Dialog state for edit classroom
   showClassroomDialog = signal(false);
@@ -198,6 +235,7 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
     private router: Router,
     private classroomFacade: ClassroomManagementFacade,
     private lessonFacade: LessonManagementFacade,
+    private examsFacade: ExamsManagementFacade,
     private classroomService: ClassroomService,
     private userStore: UserStoreService,
   ) {}
@@ -214,17 +252,10 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
       const lessons = await this.lessonFacade.loadLessonsForClassroom(id);
       this.lessons.set(lessons);
 
-      try {
-        const members = await this.classroomService.getClassroomMembers(id);
-        const mapped: StudentSummary[] = (members || []).map(m => ({
-          userId: m.userId as string,
-          displayName: (m as any).displayName || (m.userId as string),
-          status: 'Active'
-        }));
-        this.members.set(mapped);
-      } catch {
-        this.members.set([]);
-      }
+      const exams = await this.examsFacade.getExams(id);
+      this.exams.set(exams);
+
+     this.reloadStudents()
     }));
   }
 
@@ -394,7 +425,112 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
     }
   }
 
+ async reloadStudents() {
+    try {
+      const members = await this.classroomService.getClassroomMembers( this.classroomId );
+      const mapped: StudentSummary[] = (members || []).map(m => ({
+        userId: m.userId as string,
+        displayName: (m as any).displayName || (m.userId as string),
+        status: 'Active'
+      }));
+      this.members.set(mapped);
+    } catch {
+      this.members.set([]);
+    }
+  }
   viewAllStudents() {
     // Placeholder: in future navigate to a dedicated students page
+  }
+
+  // Exam-related methods
+  async addExam() {
+    this.examDialogTitle = 'Create exam';
+    this.examDialogModel = { name: '', description: '', enabled: true };
+    this.editingExamId = null;
+    this.showExamDialog.set(true);
+  }
+
+  editExam(exam: ExamSummary) {
+    this.examDialogTitle = 'Edit exam';
+    this.examDialogModel = {
+      ...exam,
+      name: exam.name,
+      description: exam.description || '',
+      configuration: (() => {
+        try {
+          return typeof exam.configuration === 'object' ? JSON.stringify(exam.configuration, null, 2) : exam.configuration;
+        } catch (e) {
+          console.log(e);
+        }
+        return '';
+      })()
+    };
+    this.editingExamId = exam.id;
+    this.showExamDialog.set(true);
+  }
+
+  async deleteExam(exam: ExamSummary) {
+    if (!confirm(`Are you sure you want to delete exam "${exam.name}"?`)) {
+      return;
+    }
+
+    try {
+      const success = await this.examsFacade.deleteExam(exam.id);
+      if (success) {
+        // Refresh local exams list
+        const exams = await this.examsFacade.getExams(this.classroomId);
+        this.exams.set(exams);
+      }
+    } catch (e) {
+      console.error('Failed to delete exam', e);
+    }
+  }
+
+  closeExamDialog() {
+    this.showExamDialog.set(false);
+    this.editingExamId = null;
+  }
+
+  async handleExamDialogSave(data: ExamDialogModel) {
+    try {
+      const classId = this.classroomId || this.classroom()?.id;
+      const currentUser = this.userStore.getCurrentUser();
+      if (!classId || !currentUser?.id) {
+        console.warn('Missing classroom or user context for creating an exam');
+        return;
+      }
+
+      if (this.editingExamId) {
+        // Update existing exam
+        const updated = await this.examsFacade.updateExam(this.editingExamId, {
+          name: data.name,
+          description: data.description,
+          configuration: data.configuration ? JSON.parse(data.configuration)  : undefined
+        });
+
+        // Refresh local exams list
+        const exams = await this.examsFacade.getExams(classId);
+        this.exams.set(exams);
+      } else {
+        // Create new exam
+        const created = await this.examsFacade.createExam({
+          name: data.name,
+          description: data.description,
+          classroomId: classId,
+          userId: currentUser.id,
+          configuration: data.configuration ?  JSON.parse(data.configuration)  : undefined
+        });
+
+        if (created) {
+          // Refresh local exams list
+          const exams = await this.examsFacade.getExams(classId);
+          this.exams.set(exams);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to save exam', e);
+    } finally {
+      this.closeExamDialog();
+    }
   }
 }

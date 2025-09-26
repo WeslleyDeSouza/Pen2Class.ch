@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, Index } from 'typeorm';
 
 export enum ResourceType {
+  EXAM = 'EXAM',
   EDITOR = 'EDITOR',
   QUIZ = 'QUIZ',
 }
@@ -20,7 +21,7 @@ export class ResourceEntity {
   @Column({ type: 'varchar', length: 100, nullable: true, name: 'lessonId' })
   lessonId?: string | null;
 
-  @Column({ type: 'varchar', length: 100, name: 'channelId' })
+  @Column({ type: 'varchar', length: 100, name: 'classroomId' })
   classroomId!: string;
 
   @Column({ type: 'simple-json' })
@@ -31,6 +32,9 @@ export class ResourceEntity {
 
   @UpdateDateColumn({ type: 'datetime' })
   updatedAt!: Date;
+
+  @Column({ type: 'simple-json' , nullable: true})
+  configuration!: Record<string, any>;
 
   @Column({ type: 'simple-json', nullable: true })
   comments?: any[] | null;

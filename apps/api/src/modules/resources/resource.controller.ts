@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Put } from '@nestjs/common
 import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ResourceService } from './resource.service';
 import { CreateResourceDto, ResourceDto, UpdateResourceDto } from './resource.dto';
+import {ResourceType} from "./resource.entity";
 
 @ApiTags('Resources')
 @Controller('resources')
@@ -70,11 +71,15 @@ export class ResourceController {
     return this.resourceService.getById(id);
   }
 
-  @Get('by-classroom/:classroomId')
+  @Get('by-classroom/:classroomId/:type')
   @ApiOperation({ summary: 'List resources by classroom' })
   @ApiParam({ name: 'classroomId', type: 'string' })
+  @ApiParam({ name: 'type', enum: ResourceType })
   @ApiOkResponse({ type: [ResourceDto] })
-  getByClassroom(@Param('classroomId') classroomId: string) {
-    return this.resourceService.getByClassroom(classroomId);
+  getByClassroomAndType(
+    @Param('classroomId') classroomId: string,
+    @Param('type') type: ResourceType,
+  ) {
+    return this.resourceService.getByClassroom(classroomId,type);
   }
 }

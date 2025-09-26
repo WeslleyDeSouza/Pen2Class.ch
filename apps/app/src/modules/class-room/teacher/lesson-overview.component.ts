@@ -229,7 +229,7 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    this.router.navigate(['../../',{relativeTo: this.route}]);
+    this.router.navigate(['../',{relativeTo: this.route}]);
   }
 
   closeEditDialog() {

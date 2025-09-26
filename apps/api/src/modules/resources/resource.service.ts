@@ -27,6 +27,7 @@ export class ResourceService {
       userId: obj.userId,
       lessonId: obj.lessonId ?? undefined,
       classroomId: obj.classroomId,
+      configuration: obj.configuration,
       createdAt: obj.createdAt.toISOString(),
       updatedAt: obj.updatedAt.toISOString(),
       comments: obj.comments || [],
@@ -39,6 +40,7 @@ export class ResourceService {
       data: dto.data,
       userId: dto.userId,
       lessonId: dto.lessonId ?? null,
+      configuration: dto.configuration,
       classroomId: dto.classroomId,
       comments: dto.comments ?? [],
     });
@@ -84,6 +86,7 @@ export class ResourceService {
     if (dto.type !== undefined) existing.type = dto.type;
     if (dto.data !== undefined) existing.data = dto.data;
     if (dto.comments !== undefined) existing.comments = dto.comments;
+    if (dto.configuration !== undefined) existing.configuration = dto.configuration;
 
     const saved = await this.objectRepo.save(existing);
     const payload = this.toDto(saved);
@@ -124,8 +127,8 @@ export class ResourceService {
     return this.toDto(existing);
   }
 
-  async getByClassroom(classroomId: string): Promise<ResourceDto[]> {
-    const list = await this.objectRepo.find({ where: { classroomId } });
+  async getByClassroom(classroomId: string,type:ResourceType): Promise<ResourceDto[]> {
+    const list = await this.objectRepo.find({ where: { classroomId:classroomId || '-1' ,type:type} });
     return list.map((o) => this.toDto(o));
   }
 }
