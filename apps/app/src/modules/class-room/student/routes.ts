@@ -11,7 +11,13 @@ export const routesStudent: Routes = [
   {
     path: `${RouteConstants.Paths.classroom}/:${RouteConstants.Params.classRoomId}/${RouteConstants.Paths.lesson}/:${RouteConstants.Params.lessonId}`,
     loadComponent: () => import('./student-lesson.component').then(m => m.StudentLessonComponent),
-    data: { title: 'Lesson' }
+    data: { title: 'Lesson' },
+    children:[
+      {
+        path: '',
+        loadComponent: () => import('../components/editor').then(m => m.EditorComponent)
+      },
+    ]
   },
   {
     path: `${RouteConstants.Paths.classroom}/:${RouteConstants.Params.classRoomId}/exams`,

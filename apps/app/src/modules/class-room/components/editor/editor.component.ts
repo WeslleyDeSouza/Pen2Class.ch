@@ -166,11 +166,10 @@ export class EditorComponent implements OnInit, OnDestroy {
   viewModeUserId = signal<string | undefined>(undefined)
 
   skipFirstChange = 0
-  constructor() {
+  constructor(userStore: UserStoreService,) {
       // Initialize view mode userId from route params if present
-      const userIdParam = this.route.snapshot.paramMap.get(RouteConstants.Params.userId);
+      const userIdParam = this.route.snapshot.paramMap.get(RouteConstants.Params.userId) || userStore.user()?.id;
       this.viewModeUserId.set(userIdParam ?? undefined);
-
       effect(() => {
         const editorState = this.editorStore.editorState();
 

@@ -33,7 +33,7 @@ export class StudentClassroomFacade {
       registeredClasses: classes.length,
       activeLessons,
       completed: completedLessons,
-      exams: 2 // This would come from a separate exams service
+      exams: 0 // This would come from a separate exams service
     };
   });
 
@@ -158,7 +158,7 @@ export class StudentClassroomFacade {
 
     // For now, use mock progress data - in a real app this would come from user progress tracking
     const mockProgress = Math.floor(Math.random() * 100);
-    const mockTotalLessons = Math.floor(Math.random() * 12) + 4; // 4-15 lessons
+    const mockTotalLessons = classroom.lessons?.length;
     const mockCompletedLessons = Math.floor((mockProgress / 100) * mockTotalLessons);
     const isCompleted = mockProgress === 100;
 

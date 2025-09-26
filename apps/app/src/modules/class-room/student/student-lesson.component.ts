@@ -1,15 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { StudentClassroomFacade } from './facades/student-classroom.facade';
 import { RouteConstants } from '../../../app/route.constants';
 import {LessonService} from "../../../common/services/lesson.service";
+import {UserStoreService} from "../../../common/store";
 
 @Component({
   selector: 'app-student-lesson',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterOutlet],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -47,10 +48,15 @@ import {LessonService} from "../../../common/services/lesson.service";
           </div>
         </div>
 
-        <!-- Lesson Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Editor Sidebar -->
+        <div *ngIf="showEditor" class="w-full h-screen bg-white border border-gray-200 shadow-lg mb-6">
+          <router-outlet></router-outlet>
+        </div>
+
+        <!-- Content Area with Sidebar -->
+        <div class="flex gap-6">
           <!-- Main Content -->
-          <div class="lg:col-span-3">
+          <div class="flex-1">
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
               <!-- Lesson Content Area -->
               <div class="p-6">
@@ -112,8 +118,7 @@ import {LessonService} from "../../../common/services/lesson.service";
           </div>
 
           <!-- Sidebar Course Lessons -->
-          <div class="lg:col-span-1">
-            <!-- Lesson Navigation -->
+          <div class="w-80">
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
               <h3 class="text-sm font-medium text-gray-700 mb-3">Course Lessons</h3>
               <div class="space-y-2">
@@ -175,6 +180,7 @@ export class StudentLessonComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private userStore: UserStoreService,
     private studentFacade: StudentClassroomFacade,
     private lessonFacade: LessonService,
   ) {}
@@ -201,6 +207,10 @@ export class StudentLessonComponent implements OnInit, OnDestroy {
       this.classroomId,
       this.lessonId,
     ).then((lesson:any) => {
+
+      this.userStore.selectedLessonId.set(this.lessonId);
+      this.userStore.selectedClassId.set(this.classroomId);
+
       this.totalSteps = lesson.configuration?.length
       this.steps = lesson.configuration || [];
       this.loadStep()

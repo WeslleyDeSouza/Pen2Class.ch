@@ -96,7 +96,7 @@ import { RouteConstants } from '../../../app/route.constants';
             </div>
 
             <!-- Next Lesson -->
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6" *ngIf="nextLesson">
+            <div [hidden]="true" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6" *ngIf="nextLesson">
               <h3 class="text-sm font-semibold text-gray-900 mb-4">Next Lesson</h3>
               <div class="space-y-2">
                 <div class="font-medium text-gray-900">{{ nextLesson.title }}</div>
@@ -154,14 +154,16 @@ import { RouteConstants } from '../../../app/route.constants';
 
                       <!-- Lesson Info -->
                       <div>
-                        <div class="font-medium text-gray-900">{{ lesson.title }}</div>
+                        <div class="font-medium text-gray-900">{{ $any(lesson).name || lesson.title }}</div>
                         <div class="text-sm text-gray-500">{{ lesson.description }}</div>
                         <div class="flex items-center space-x-4 mt-1 text-xs text-gray-400">
                           <span class="flex items-center">
-                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            @if(lesson.duration){
+                              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            {{ lesson.duration }} min
+                              {{ lesson.duration }} min
+                            }
                           </span>
                           <span>{{ lesson.type }}</span>
                           <span *ngIf="lesson.completedDate">Completed {{ lesson.completedDate }}</span>
@@ -209,10 +211,7 @@ export class StudentClassroomComponent implements OnInit, OnDestroy {
   classroomId = '';
   cdr = inject(ChangeDetectorRef);
 
-  lessons: Lesson[] = [
-
-
-  ];
+  lessons: Lesson[] = [ ];
 
   nextLesson = {
     title: '',
