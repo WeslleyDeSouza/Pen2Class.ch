@@ -328,15 +328,7 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
         const lessons = await this.lessonFacade.loadLessonsForClassroom(classId);
         this.lessons.set(lessons);
 
-        // Navigate to lesson route
-        await this.router.navigate([
-          '/',
-          RouteConstants.Paths.admin,
-          RouteConstants.Paths.classroom,
-          classId,
-          RouteConstants.Paths.lesson,
-          created.id,
-        ]);
+
       }
     } catch (e) {
       console.error('Failed to save lesson from overview', e);

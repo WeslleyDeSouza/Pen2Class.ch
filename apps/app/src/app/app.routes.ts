@@ -57,6 +57,11 @@ export const appRoutes: Route[] = [
         loadComponent: () => import('../modules/class-room/teacher').then(m => m.AdminClassRoomItemComponent),
       },
       {
+        path: 'classroom',
+        pathMatch: 'full',
+        redirectTo: RC.Paths.dashboard,
+      } ,
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: RC.Paths.dashboard,
