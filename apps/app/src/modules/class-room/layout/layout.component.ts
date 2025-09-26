@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ClassroomManagementFacade, ClassroomSummary } from '../admin/facades/classroom-management.facade';
-import { LessonManagementFacade, LessonSummary } from '../admin/facades/lesson-management.facade';
 import { ClassroomService } from '../../../common';
 import {UserStoreService} from "../../../common/store";
+import {ClassroomManagementFacade, LessonManagementFacade} from "../teacher";
+import {LessonSummary} from "../teacher/facades/lesson-management.facade";
+import {ClassroomSummary} from "../teacher/facades/classroom-management.facade";
 
 interface JoinClassroomForm {
   code: string;

@@ -78,24 +78,32 @@ export class ClassroomService {
     return channel as unknown as Classroom;
   }
 
-  async joinClassroom(classroomId: string, userId: string, displayName?: string): Promise<{ success: boolean; classroom: Classroom }> {
-    const channel = await this.classroomRepo.findOne({ where: { id: classroomId }, relations: ['members'] });
-    if (!channel) throw new NotFoundException(`Channel ${classroomId} not found`);
+  async joinClassroomByCode(code: string, userId: string, displayName?: string): Promise<{ success: boolean; classroom: Classroom }> {
+    const channel = await this.classroomRepo.findOne({ where: { code: code }, relations: ['members'] });
+    if (!channel) throw new NotFoundException(`Channel ${code} not found`);
 
-    // Remove existing membership if any
-    await this.memberRepo.delete({ classroomId: classroomId, userId });
+    // lookup existing member or create new by channel.id and userId (idempotent join)
+    let member = await this.memberRepo.findOne({ where: { classroomId: channel.id, userId } });
 
-    const member = this.memberRepo.create({
-      classroomId: classroomId,
-      userId,
-      displayName,
-      classroom: channel,
-    });
-    await this.memberRepo.save(member);
+    if (member) {
+      // Optionally update displayName if a new one is provided
+      if (typeof displayName === 'string' && displayName.length > 0 && member.displayName !== displayName) {
+        member.displayName = displayName;
+        await this.memberRepo.save(member);
+      }
+      this.logger.log(`User ${userId}:${displayName ?? member.displayName ?? ''} is already a member of channel ${channel.name}`);
+    } else {
+      member = this.memberRepo.create({
+        classroomId: channel.id,
+        userId,
+        displayName,
+        classroom: channel,
+      });
+      await this.memberRepo.save(member);
+      this.logger.log(`User ${userId}:${displayName ?? ''} joined channel ${channel.name}`);
+    }
 
-    const updated = await this.classroomRepo.findOne({ where: { id: classroomId }, relations: ['members'] });
-
-    this.logger.log(`User ${userId}:${displayName} joined channel ${channel.name} `);
+    const updated = await this.classroomRepo.findOne({ where: { id: channel.id }, relations: ['members'] });
 
     return { success: true, classroom: updated as unknown as Classroom };
   }

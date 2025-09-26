@@ -1,7 +1,7 @@
-import {Component, EventEmitter, Output} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, inject, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {Classroom } from '../../../common';
+import {Classroom} from '../../../common';
 import {ClassroomService} from '../../../common/services/classroom.service';
 import {UserService, UserType} from '../../../common/services/user.service';
 import {Router} from '@angular/router';
@@ -84,7 +84,7 @@ import {UserStoreService} from "../../../common/store";
           </button>
         </div>
       }
-
+{{joinStep}}
       @if (joinStep === 2) {
         <div class="space-y-4">
           <div>
@@ -135,7 +135,8 @@ import {UserStoreService} from "../../../common/store";
         </button>
       </div>
     </div>
-  `
+  `,
+  changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class StepJoinComponent {
   // Local state managed inside the component
@@ -149,6 +150,8 @@ export class StepJoinComponent {
   errorMessage = '';
 
   @Output() back = new EventEmitter<void>();
+
+  protected cdr = inject(ChangeDetectorRef);
 
   constructor(
     private channelService: ClassroomService,
@@ -188,9 +191,11 @@ export class StepJoinComponent {
     this.userService
       .signup(this.username.trim(), this.password, this.username.trim(), this.username.trim(), UserType.STUDENT)
       .then(() => {
+        console.log('User created successfully');
         this.joinStep = 2;
         this.isLoading = false;
         this.userStore.persist();
+        this.cdr.detectChanges();
       })
       .catch((error) => {
         this.showError(error.error?.message || 'Failed to create account');
@@ -231,6 +236,7 @@ export class StepJoinComponent {
         this.joinStep = 3;
         this.isLoading = false;
         setTimeout(() => this.router.navigate(['/', RouteConstants.Paths.classroom]), 1000);
+        this.cdr.detectChanges();
       })
       .catch((error) => {
         let errorMessage = 'Failed to join classroom';
@@ -249,5 +255,6 @@ export class StepJoinComponent {
       this.joinStep = 1;
       this.clearError();
     }
+    this.cdr.detectChanges();
   }
 }

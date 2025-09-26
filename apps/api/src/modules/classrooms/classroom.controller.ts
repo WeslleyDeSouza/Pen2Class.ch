@@ -47,13 +47,13 @@ export class ClassroomController {
     return this.channelService.updateClassroom(body.id, body.name, body.description, body.configuration);
   }
 
-  @Post(':classroomId/join')
+  @Post(':code/join')
   @ApiOperation({ summary: 'Join a classroom' })
   @ApiParam({ name: 'classroomId', type: 'string', description: 'Classroom ID to join' })
   @ApiBody({ description: 'Join classroom payload', type: JoinClassroomDto })
   @ApiOkResponse({ description: 'Joined classroom successfully', type: JoinLeaveResponseDto })
-  async join(@Param('classroomId') classroomId: string, @Body() body: JoinClassroomDto) {
-    return this.channelService.joinClassroom(classroomId, body.userId,  body.displayName);
+  async join(@Param('code') code: string, @Body() body: JoinClassroomDto) {
+    return this.channelService.joinClassroomByCode(code, body.userId,  body.displayName);
   }
 
   @Post(':classroomId/leave')
@@ -83,7 +83,7 @@ export class ClassroomController {
     if (!channel) {
       throw new NotFoundException(`Classroom with code ${body.code} not found`);
     }
-    return this.channelService.joinClassroom(channel.id, body.userId,  body.displayName);
+    return this.channelService.joinClassroomByCode(channel.id, body.userId,  body.displayName);
   }
 
   @Get('by-code/:code')

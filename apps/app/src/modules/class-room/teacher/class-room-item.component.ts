@@ -4,14 +4,16 @@ import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ClassroomManagementFacade, ClassroomSummary } from './facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from './facades/lesson-management.facade';
-import {ClassroomService} from "../../../common";
-import { RouteConstants} from "../../../app/route.constants";
-import {UserStoreService} from "../../../common/store";
+
+import { ClassroomService } from "../../../common";
+import { RouteConstants } from "../../../app/route.constants";
+import { UserStoreService } from "../../../common/store";
+import { LessonDialogComponent, LessonDialogModel } from './components/lesson-dialog.component';
 
 @Component({
   selector: 'app-admin-class-room-lesson',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, DatePipe],
+  imports: [CommonModule, RouterOutlet, DatePipe, LessonDialogComponent],
   template: `
     <!-- Topbar -->
     <div class="bg-white/70 backdrop-blur-sm border-b border-white/40 sticky top-0 z-10">
@@ -111,6 +113,14 @@ import {UserStoreService} from "../../../common/store";
           }
         </div>
       </main>
+
+      <app-lesson-dialog
+        [open]="showEditDialog()"
+        [title]="'Edit Lesson'"
+        [model]="editDialogModel"
+        (cancel)="closeEditDialog()"
+        (save)="handleEditDialogSave($event)">
+      </app-lesson-dialog>
     </div>`
 })
 export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
@@ -119,6 +129,10 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
   members: any[] = [];
   hasChildContent = false;
   isFullscreen = signal(false);
+
+  // Edit dialog state
+  showEditDialog = signal(false);
+  editDialogModel: LessonDialogModel = { name: '', description: '', enabled: false };
 
   private subscriptions: Subscription[] = [];
 
@@ -151,10 +165,10 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach(s => s.unsubscribe());
   }
 
-
   private async reloadMembers() {
     const classId = this.classroom?.id || this.userStore.selectedClassId();
     if (!classId) return;
+
     try {
       const updated = await this.classroomService.getClassroomMembers(classId);
       this.members = updated as any[];
@@ -215,6 +229,114 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    this.router.navigate(['/admin/dashboard']);
+    this.router.navigate(['../']);
   }
+
+  async createLesson() {
+    try {
+      const classId = this.classroom?.id || this.userStore.selectedClassId();
+      const currentUser = this.userStore.getCurrentUser();
+      if (!classId || !currentUser?.id) {
+        console.warn('Missing classroom or user context for creating a lesson');
+        return;
+      }
+
+      const created = await this.lessonFacade.createLesson(classId, {
+        createdBy: currentUser.id,
+        name: 'New Lesson',
+        description: 'Draft lesson',
+        enabled: false,
+      });
+
+      // Persist context and navigate to the newly created lesson
+      this.userStore.selectedClassId.set(classId);
+      this.userStore.selectedLessonId.set(created.id);
+
+      await this.router.navigate([
+        '/',
+        RouteConstants.Paths.admin,
+        RouteConstants.Paths.classroom,
+        classId,
+        RouteConstants.Paths.lesson,
+        created.id,
+      ]);
+
+      // Optionally open editor for the current user
+      await this.openLesson(created.id, currentUser.id);
+    } catch (e) {
+      console.error('Failed to create lesson', e);
+    }
+  }
+
+  async editLesson(lessonId?: string) {
+    const classId = this.classroom?.id || this.userStore.selectedClassId();
+    const theLessonId = lessonId || this.lesson?.id || this.userStore.selectedLessonId();
+    if (!classId || !theLessonId) {
+      console.warn('Missing context for editing lesson');
+      return;
+    }
+
+    // Open dialog prefilled with current values
+    const current = await this.lessonFacade.getLesson(classId, theLessonId);
+    this.editDialogModel = {
+      name: current?.name || this.lesson?.name || 'Lesson',
+      description: current?.description || this.lesson?.description,
+      enabled: current?.enabled ?? this.lesson?.enabled ?? false,
+    } as any;
+    this.showEditDialog.set(true);
+  }
+
+  closeEditDialog() {
+    this.showEditDialog.set(false);
+  }
+
+  async handleEditDialogSave(data: LessonDialogModel) {
+    try {
+      const classId = this.classroom?.id || this.userStore.selectedClassId();
+      const theLessonId = this.lesson?.id || this.userStore.selectedLessonId();
+      if (!classId || !theLessonId) return;
+
+      const updated = await this.lessonFacade.updateLesson(classId, theLessonId, {
+        name: data.name,
+        description: data.description,
+        enabled: !!data.enabled,
+      });
+      if (updated) {
+        this.lesson = updated;
+      }
+    } catch (e) {
+      console.error('Failed to edit lesson', e);
+    } finally {
+      this.closeEditDialog();
+    }
+  }
+
+  async openLesson(lessonId?: string, userId?: string) {
+    const classId = this.classroom?.id || this.userStore.selectedClassId();
+    const theLessonId = lessonId || this.lesson?.id || this.userStore.selectedLessonId();
+    const targetUserId = userId || this.userStore.getCurrentUser()?.id;
+
+    if (!classId || !theLessonId || !targetUserId) {
+      console.warn('Missing context for opening lesson');
+      return;
+    }
+
+    // Save context
+    this.userStore.selectedClassId.set(classId);
+    this.userStore.selectedLessonId.set(theLessonId);
+
+    // Navigate to the editor route for the target user
+    await this.router.navigate([
+      '/',
+      RouteConstants.Paths.admin,
+      RouteConstants.Paths.classroom,
+      classId,
+      RouteConstants.Paths.lesson,
+      theLessonId,
+      RouteConstants.Paths.user,
+      targetUserId,
+      RouteConstants.Paths.editor,
+    ]);
+  }
+
 }

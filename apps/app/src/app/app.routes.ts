@@ -2,6 +2,7 @@ import {Route, Router} from '@angular/router';
 import {inject} from "@angular/core";
 import { RouteConstants as RC } from './route.constants';
 import {UserStoreService} from "../common/store";
+import {AdminClassRoomOverviewComponent} from "../modules/class-room/teacher";
 
 const canActivate = () => {
   const router = inject(Router)
@@ -19,14 +20,19 @@ const canActivate = () => {
 export const appRoutes: Route[] = [
   {
     path: RC.Paths.admin,
-    loadComponent: () => import('../modules/class-room/admin').then(m => m.AdminLayoutComponent),
+    loadComponent: () => import('../modules/class-room/teacher').then(m => m.AdminLayoutComponent),
     children:[
       {
         path: `${RC.Paths.classroom}/:${RC.Params.classRoomId}`,
         children:[
           {
+            path: '',
+            pathMatch: 'full',
+            loadComponent: () => import('../modules/class-room/teacher').then(m => m.AdminClassRoomOverviewComponent)
+          },
+          {
             path: `${RC.Paths.lesson}/:${RC.Params.lessonId}`,
-            loadComponent: () => import('../modules/class-room/admin').then(m => m.AdminClassRoomLessonComponent),
+            loadComponent: () => import('../modules/class-room/teacher').then(m => m.AdminClassRoomLessonComponent),
             children:[
               {
                 path:`${RC.Paths.user}/:${RC.Params.userId}`,
@@ -48,7 +54,7 @@ export const appRoutes: Route[] = [
       },
       {
         path: RC.Paths.dashboard,
-        loadComponent: () => import('../modules/class-room/admin').then(m => m.AdminDashboardComponent),
+        loadComponent: () => import('../modules/class-room/teacher').then(m => m.AdminClassRoomItemComponent),
       },
       {
         path: '',
@@ -66,10 +72,11 @@ export const appRoutes: Route[] = [
     children: [
       {
         path:`:${RC.Params.classRoomId}`,
+        component:AdminClassRoomOverviewComponent,
         children: [
           {
-            path: `${RC.Paths.lesson}/:${RC.Params.lessonId}`,
-          children:[
+           path: `${RC.Paths.lesson}/:${RC.Params.lessonId}`,
+           children:[
             {
               path: RC.Paths.editor,
               loadComponent: () => import('../modules/class-room').then(m => m.EditorComponent)
