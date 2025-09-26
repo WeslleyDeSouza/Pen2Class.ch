@@ -11,7 +11,7 @@ import {RouteConstants} from "../../app/route.constants";
 import {UserStoreService} from "../../common/store";
 import {Classroom as Channel} from '../../common';
 
-type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
+type ViewMode = 'initial' | 'login' | 'joinByCode' | 'createClass' | 'hasError';
 
 @Component({
   selector: 'app-home',
@@ -51,6 +51,18 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
                 </button>
               </div>
 
+              <!-- Login Button -->
+              <div>
+                <button
+                  (click)="switchToLoginStep()"
+                  class="w-full bg-purple-500 hover:bg-purple-600 text-white py-4 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                  </svg>
+                  <span>Login</span>
+                </button>
+              </div>
+
               <!-- Continue with existing user Button -->
               @if (hasExistingUser()) {
                 <div>
@@ -61,6 +73,45 @@ type ViewMode = 'initial' | 'joinByCode' | 'createClass' | 'hasError';
                 </div>
               }
 
+            </div>
+          }
+          @case ('login') {
+            <div class="space-y-4 animate-fade-in">
+              <h2 class="text-xl font-semibold text-gray-800 text-center mb-6">Login to your account</h2>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input
+                  [(ngModel)]="loginEmail"
+                  type="email"
+                  placeholder="your.email@example.com"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  (keyup.enter)="loginPassword.focus()">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <input
+                  [(ngModel)]="loginPassword"
+                  type="password"
+                  placeholder="Enter your password"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  #loginPassword
+                  (keyup.enter)="loginUser()">
+              </div>
+
+              <button
+                (click)="loginUser()"
+                [disabled]="!isLoginFormValid() || isLoading"
+                class="w-full bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                {{ isLoading ? 'Logging in...' : 'Login' }}
+              </button>
+
+              <button
+                (click)="switchToInitialStep()"
+                class="w-full text-gray-600 hover:text-gray-800 py-2 text-sm transition-colors border border-gray-200 hover:border-gray-300 rounded-lg">
+                Back to Home
+              </button>
             </div>
           }
           @case ('joinByCode') {
@@ -142,6 +193,10 @@ export class HomeComponent  {
   isLoading = false;
   currentChannel: Channel | null = null;
 
+  // Login form state
+  loginEmail = '';
+  loginPassword = '';
+
   constructor(
     private userService: UserService,
     private userStore: UserStoreService,
@@ -160,6 +215,11 @@ export class HomeComponent  {
 
   }
 
+  switchToLoginStep() {
+    this.resetStepsState();
+    this.currentView = 'login';
+  }
+
   switchToInitialStep() {
     this.resetStepsState();
     this.currentView = 'initial';
@@ -170,6 +230,8 @@ export class HomeComponent  {
     this.joinStep = 1;
     this.createStep = 1;
     this.currentChannel = null;
+    this.loginEmail = '';
+    this.loginPassword = '';
     this.clearError();
   }
 
@@ -200,6 +262,39 @@ export class HomeComponent  {
   getExistingUserName(): string {
     const user = this.userStore.getCurrentUser() as any;
     return user?.displayName || user?.username || 'User';
+  }
+
+  isLoginFormValid(): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(this.loginEmail) && this.loginPassword.length > 0;
+  }
+
+  loginUser() {
+    if (!this.isLoginFormValid()) {
+      this.showError('Please enter a valid email and password');
+      return;
+    }
+
+    this.isLoading = true;
+    this.clearError();
+
+    this.userService.login(this.loginEmail.trim(), this.loginPassword).then((response) => {
+      // Store user data and session
+      this.userStore.user.set(response.user);
+      this.userStore.persist();
+
+      // Redirect based on user type
+      if (response.user.type === 2) {
+        this.goToAdmin();
+      } else {
+        this.goToClassRoom();
+      }
+
+      this.isLoading = false;
+    }).catch((error) => {
+      this.showError(error.error?.message || 'Login failed. Please check your credentials.');
+      this.isLoading = false;
+    });
   }
 
   continueWithExistingUser() {

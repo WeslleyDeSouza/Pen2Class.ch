@@ -32,18 +32,55 @@ import {UserStoreService} from "../../../common/store";
       @if (joinStep === 1) {
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Enter your name</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Enter your email</label>
             <input
               [(ngModel)]="username"
-              placeholder="Your display name"
+              type="email"
+              placeholder="your.email@example.com"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              [class.border-red-300]="!isValidEmail() && username.length > 0"
+              (keyup.enter)="passwordField.focus()">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <input
+              [(ngModel)]="password"
+              type="password"
+              placeholder="Enter your password (min 8 characters)"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              [class.border-red-300]="password.length > 0 && password.length < 8"
+              #passwordField
+              (keyup.enter)="confirmPasswordField.focus()">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+            <input
+              [(ngModel)]="confirmPassword"
+              type="password"
+              placeholder="Confirm your password"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              [class.border-red-300]="$any(confirmPassword).length > 0 && password !== confirmPassword"
+              #confirmPasswordField
               (keyup.enter)="createUser()">
           </div>
+
+          @if (!isValidEmail() && username.length > 0) {
+            <div class="text-red-600 text-sm">Please enter a valid email address</div>
+          }
+          @if (password.length > 0 && password.length < 8) {
+            <div class="text-red-600 text-sm">Password must be at least 8 characters</div>
+          }
+          @if (confirmPassword.length > 0 && password !== confirmPassword) {
+            <div class="text-red-600 text-sm">Passwords do not match</div>
+          }
+
           <button
             (click)="createUser()"
-            [disabled]="!username.trim() || isLoading"
+            [disabled]="!isFormValid() || isLoading"
             class="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 px-4 rounded-lg font-medium transition-colors">
-            {{ isLoading ? 'Creating user...' : 'Continue' }}
+            {{ isLoading ? 'Creating account...' : 'Create Account' }}
           </button>
         </div>
       }
@@ -104,6 +141,8 @@ export class StepJoinComponent {
   // Local state managed inside the component
   joinStep = 1;
   username = '';
+  password = '';
+  confirmPassword = '';
   classroomCode = '';
   isLoading = false;
   currentClassroom: Classroom | null = null;
@@ -127,23 +166,34 @@ export class StepJoinComponent {
     this.errorMessage = '';
   }
 
+  isValidEmail(): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(this.username);
+  }
+
+  isFormValid(): boolean {
+    return this.isValidEmail() &&
+           this.password.length >= 8 &&
+           this.password === this.confirmPassword;
+  }
+
   createUser() {
-    if (!this.username.trim()) {
-      this.showError('Please enter your name');
+    if (!this.isFormValid()) {
+      this.showError('Please fill in all fields correctly');
       return;
     }
     this.isLoading = true;
     this.clearError();
 
     this.userService
-      .signup(this.username.trim(), undefined, this.username.trim(), UserType.STUDENT)
+      .signup(this.username.trim(), this.password, this.username.trim(), this.username.trim(), UserType.STUDENT)
       .then(() => {
         this.joinStep = 2;
         this.isLoading = false;
         this.userStore.persist();
       })
       .catch((error) => {
-        this.showError(error.error?.message || 'Failed to create user');
+        this.showError(error.error?.message || 'Failed to create account');
         this.isLoading = false;
       });
   }

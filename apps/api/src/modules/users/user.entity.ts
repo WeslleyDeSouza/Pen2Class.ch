@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 export enum EUserTypeEntity {
   STUDENT = 1,
@@ -22,6 +23,10 @@ export class UserEntity {
 
   @Column({ type: 'varchar', length: 50 })
   displayName!: string;
+
+  @Exclude()
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  passwordHash!: string;
 
   @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;

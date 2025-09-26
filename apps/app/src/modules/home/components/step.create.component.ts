@@ -126,8 +126,9 @@ export class StepCreateComponent {
     this.clearError();
 
     try {
-      const user = await this.userService.signup(
+      const response = await this.userService.signup(
         this.teacherName.trim(),
+        'TempPassword123!', // TODO: Add password fields to teacher signup
         undefined,
         this.teacherName.trim(),
         UserType.TEACHER,
@@ -136,7 +137,7 @@ export class StepCreateComponent {
       const channel = await this.channelService.createClassroom(
         this.classroomName.trim(),
         '',
-        user?.id,
+        response.user.id,
       );
 
       this.currentChannel = channel;

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {UserService as UserApiService, UserDto, UserChannelDto} from '@ui-lib/apiClient';
+import {UserService as UserApiService, UserDto, UserChannelDto, LoginResponseDto} from '@ui-lib/apiClient';
 import { environment } from '../../environments/environment';
 import {UserStoreService} from "../store";
 
@@ -19,12 +19,24 @@ export class UserService {
     userApiService.rootUrl = this.rootUrl;
   }
 
-  signup(username: string, email: string | undefined, displayName: string, type:UserType): Promise<UserDto> {
+  signup(username: string, password: string, email: string | undefined, displayName: string, type:UserType): Promise<LoginResponseDto> {
     return (
       this.userApiService.userSignup({
-        body: { username, email, displayName, type:type   }
+        body: { username, password, email, displayName, type:type   }
       }).then(res => {
-        this.userStore.user.set(res);
+        this.userStore.user.set(res.user);
+        this.userStore.persist();
+        return res
+      })
+    )
+  }
+
+  login(username: string, password: string): Promise<LoginResponseDto> {
+    return (
+      this.userApiService.userLogin({
+        body: { username, password }
+      }).then(res => {
+        this.userStore.user.set(res.user);
         this.userStore.persist();
         return res
       })
