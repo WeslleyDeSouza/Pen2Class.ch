@@ -85,9 +85,9 @@ interface StudentSummary {
             <div  class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
               <div class="text-gray-900 font-medium mb-3">Enabled Technologies</div>
               <div class="flex flex-wrap gap-2">
-                <span *ngIf="classroom()?.configuration?.enabledTechnologies?.html" class="px-3 py-1 rounded-full text-xs bg-orange-100 text-orange-700">HTML</span>
-                <span *ngIf="classroom()?.configuration?.enabledTechnologies?.css" class="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-700">CSS</span>
-                <span *ngIf="classroom()?.configuration?.enabledTechnologies?.javascript" class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">JavaScript</span>
+                <span *ngIf="classroom()?.configuration?.enabledTechnologies?.html!==false" class="px-3 py-1 rounded-full text-xs bg-orange-100 text-orange-700">HTML</span>
+                <span *ngIf="classroom()?.configuration?.enabledTechnologies?.css!==false" class="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-700">CSS</span>
+                <span *ngIf="classroom()?.configuration?.enabledTechnologies?.javascript!==false" class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">JavaScript</span>
                 <span *ngIf="!hasEnabledTechnologies()" class="px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-700">No technologies enabled</span>
               </div>
             </div>
