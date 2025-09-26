@@ -16,6 +16,13 @@ export interface ClassroomSummary {
   memberCount: number;
   createdAt: Date;
   ownerId: string;
+  configuration?: {
+    enabledTechnologies?: {
+      html?: boolean;
+      css?: boolean;
+      javascript?: boolean;
+    };
+  };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -147,6 +154,24 @@ export class ClassroomManagementFacade {
   }
 
   /**
+   * Update a classroom
+   */
+  async updateClassroom(classroomId: string, name: string, description?: string, configuration?: any): Promise<ClassroomSummary | null> {
+    this.isLoadingSignal.set(true);
+
+    try {
+      const updatedClassroom = await this.classroomService.updateClassroom(classroomId, name, description, configuration);
+      await this.loadClassrooms(); // Refresh the list
+      return this.mapClassroomToSummary(updatedClassroom);
+    } catch (error) {
+      console.error('Failed to update classroom:', error);
+      return null;
+    } finally {
+      this.isLoadingSignal.set(false);
+    }
+  }
+
+  /**
    * Delete a classroom
    */
   async deleteClassroom(classroomId: string): Promise<boolean> {
@@ -179,7 +204,8 @@ export class ClassroomManagementFacade {
       code: c.code,
       memberCount: c.members.length,
       createdAt: c.createdAt as any,
-      ownerId: c.createdBy
+      ownerId: c.createdBy,
+      configuration: c.configuration as any
     };
   }
 }

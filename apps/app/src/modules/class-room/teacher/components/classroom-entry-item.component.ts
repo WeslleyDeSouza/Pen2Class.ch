@@ -54,10 +54,7 @@ import {RouteConstants} from "../../../../app/route.constants";
           <div class="text-2xl font-bold text-green-600">{{lessonsCount || 0}}</div>
           <div class="text-xs text-gray-500">Lessons</div>
         </div>
-        <div>
-          <div class="text-2xl font-bold text-purple-600">2</div>
-          <div class="text-xs text-gray-500">Active</div>
-        </div>
+
       </div>
 
       <!-- Tags -->

@@ -44,7 +44,7 @@ interface CreateLessonForm {
             </div>
 
             <!-- Center: Search -->
-            <div class="flex-1 max-w-lg mx-8">
+            <div [hidden]="true" class="flex-1 max-w-lg mx-8">
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

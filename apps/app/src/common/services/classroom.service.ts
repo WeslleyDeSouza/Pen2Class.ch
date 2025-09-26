@@ -60,6 +60,12 @@ export class ClassroomService {
     }) as unknown as Promise<JoinLeaveResponseDto>;
   }
 
+  updateClassroom(classroomId: string, name: string, description?: string, configuration?: any): Promise<ClassroomDto> {
+    return this.classRoomApiService.classroomUpdate({
+      body: { id: classroomId, name, description, configuration }
+    }) as unknown as Promise<ClassroomDto>;
+  }
+
   deleteClassroom(classroomId: string): Promise<SuccessResponseDto> {
     return this.classRoomApiService.classroomDelete({ classroomId }) as unknown as Promise<SuccessResponseDto>;
   }

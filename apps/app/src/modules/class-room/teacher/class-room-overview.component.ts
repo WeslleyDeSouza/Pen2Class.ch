@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { LessonDialogComponent, LessonDialogModel } from './components/lesson-dialog.component';
+import { ClassroomDialogComponent, ClassroomDialogModel } from './components/classroom-dialog.component';
 import { LessonEntryItemComponent } from './components/lesson-entry-item.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ClassroomManagementFacade, ClassroomSummary } from './facades/classroom-management.facade';
@@ -19,7 +20,7 @@ interface StudentSummary {
 @Component({
   selector: 'app-admin-class-room-overview',
   standalone: true,
-  imports: [CommonModule, DatePipe, LessonDialogComponent, LessonEntryItemComponent],
+  imports: [CommonModule, DatePipe, LessonDialogComponent, ClassroomDialogComponent, LessonEntryItemComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -41,10 +42,18 @@ interface StudentSummary {
           <!-- Left column -->
           <div class="lg:col-span-5 space-y-6">
             <!-- Access code card -->
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <div id="classroom-card" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
               <div class="flex items-start justify-between">
                 <div>
-                  <div class="text-sm text-gray-600">Access Code</div>
+                  <div class="flex items-center space-x-2">
+                    <div class="text-sm text-gray-600">{{ classroom()?.name || 'Classroom' }}</div>
+                    <button (click)="editClassroom()" class="text-gray-400 hover:text-gray-600 transition-colors p-1" title="Edit classroom">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1">Access Code</div>
                   <div class="text-3xl font-semibold tracking-wider text-gray-900 select-all">{{ classroom()?.code || '------' }}</div>
                   <div class="text-xs text-gray-500 mt-2">Share this code with students</div>
                 </div>
@@ -73,10 +82,13 @@ interface StudentSummary {
             </div>
 
             <!-- Technologies -->
-            <div [hidden]="true" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-              <div class="text-gray-900 font-medium mb-3">Technologies</div>
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div class="text-gray-900 font-medium mb-3">Enabled Technologies</div>
               <div class="flex flex-wrap gap-2">
-                <span class="px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-700" *ngFor="let tech of technologies">{{tech}}</span>
+                <span *ngIf="classroom()?.configuration?.enabledTechnologies?.html" class="px-3 py-1 rounded-full text-xs bg-orange-100 text-orange-700">HTML</span>
+                <span *ngIf="classroom()?.configuration?.enabledTechnologies?.css" class="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-700">CSS</span>
+                <span *ngIf="classroom()?.configuration?.enabledTechnologies?.javascript" class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">JavaScript</span>
+                <span *ngIf="!hasEnabledTechnologies()" class="px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-700">No technologies enabled</span>
               </div>
             </div>
 
@@ -135,6 +147,14 @@ interface StudentSummary {
         (cancel)="closeLessonDialog()"
         (save)="handleLessonDialogSave($event)">
       </app-lesson-dialog>
+
+      <app-classroom-dialog
+        [open]="showClassroomDialog()"
+        [title]="classroomDialogTitle"
+        [model]="classroomDialogModel"
+        (cancel)="closeClassroomDialog()"
+        (save)="handleClassroomDialogSave($event)">
+      </app-classroom-dialog>
     </div>
   `
 })
@@ -155,6 +175,21 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
   lessonDialogModel: LessonDialogModel = { name: '', description: '', enabled: false };
   lessonDialogTitle = 'Create lesson';
   editingLessonId: string | null = null;
+
+  // Dialog state for edit classroom
+  showClassroomDialog = signal(false);
+  classroomDialogModel: ClassroomDialogModel = {
+    name: '',
+    enabled: true,
+    configuration: {
+      enabledTechnologies: {
+        html: true,
+        css: true,
+        javascript: true
+      }
+    }
+  };
+  classroomDialogTitle = 'Edit Classroom';
 
   activeLessons = computed(() => this.lessons().filter(l => l.enabled).length);
 
@@ -205,6 +240,11 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
     const code = this.classroom()?.code;
     if (!code) return;
     navigator.clipboard?.writeText(code).catch(() => {});
+  }
+
+  hasEnabledTechnologies(): boolean {
+    const config = this.classroom()?.configuration?.enabledTechnologies;
+    return !!(config?.html || config?.css || config?.javascript);
   }
 
   async addLesson() {
@@ -302,6 +342,51 @@ export class AdminClassRoomOverviewComponent implements OnInit, OnDestroy {
       console.error('Failed to save lesson from overview', e);
     } finally {
       this.closeLessonDialog();
+    }
+  }
+
+  editClassroom() {
+    const currentClassroom = this.classroom();
+    if (!currentClassroom) return;
+
+    this.classroomDialogModel = {
+      name: currentClassroom.name,
+      description: currentClassroom.description || '',
+      enabled: true,
+      configuration: {
+        enabledTechnologies: {
+          html: currentClassroom.configuration?.enabledTechnologies?.html ?? true,
+          css: currentClassroom.configuration?.enabledTechnologies?.css ?? true,
+          javascript: currentClassroom.configuration?.enabledTechnologies?.javascript ?? true
+        }
+      }
+    };
+    this.showClassroomDialog.set(true);
+  }
+
+  closeClassroomDialog() {
+    this.showClassroomDialog.set(false);
+  }
+
+  async handleClassroomDialogSave(data: ClassroomDialogModel) {
+    try {
+      const classId = this.classroomId || this.classroom()?.id;
+      if (!classId) return;
+
+      const updated = await this.classroomFacade.updateClassroom(
+        classId,
+        data.name,
+        data.description,
+        data.configuration
+      );
+
+      if (updated) {
+        this.classroom.set(updated);
+      }
+    } catch (e) {
+      console.error('Failed to update classroom', e);
+    } finally {
+      this.closeClassroomDialog();
     }
   }
 
