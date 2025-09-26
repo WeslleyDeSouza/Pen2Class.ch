@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import { Router} from '@angular/router';
 import {UserService, UserType} from '../../common/services/user.service';
@@ -278,6 +278,8 @@ export class HomeComponent  {
   registerPassword = '';
   registerClassroomCode = '';
 
+  cdr:ChangeDetectorRef = inject(ChangeDetectorRef);
+
   constructor(
     private userService: UserService,
     private userStore: UserStoreService,
@@ -342,9 +344,10 @@ export class HomeComponent  {
     this.router.navigate(['/', RouteConstants.Paths.admin, RouteConstants.Paths.dashboard]);
   }
 
-  goToClassRoom() {
-    this.router.navigate(['/', RouteConstants.Paths.classroom]);
+  goToStudentClassRoom() {
+    this.router.navigate(['/', RouteConstants.Paths.student]);
   }
+
 
   hasExistingUser(): boolean {
     const user = this.userStore.getCurrentUser();
@@ -387,7 +390,7 @@ export class HomeComponent  {
       if (response.user.type === 2) {
         this.goToAdmin();
       } else {
-        this.goToClassRoom();
+        this.goToStudentClassRoom();
       }
 
       this.isLoading = false;
@@ -406,7 +409,7 @@ export class HomeComponent  {
     this.isLoading = true;
     this.clearError();
 
-    try {
+
       // Determine user type
       const userType = this.registerUserType === 'teacher' ? UserType.TEACHER : UserType.STUDENT;
 
@@ -417,7 +420,14 @@ export class HomeComponent  {
         this.registerEmail.trim(),
         this.registerName.trim(),
         userType
-      );
+      ).catch( (error) => {
+        console.error('Registration failed:', error);
+        this.showError(error.error?.message || 'Registration failed. Please try again.');
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      })
+
+      if(!response) return;
 
       // Store user data
       this.userStore.user.set(response.user);
@@ -441,15 +451,13 @@ export class HomeComponent  {
       // Redirect based on user type
       if (response.user.type === 2) { // Teacher
         this.goToAdmin();
-      } else { // Student
-        this.goToClassRoom();
+      }
+      else { // Student
+        this.goToStudentClassRoom();
       }
 
       this.isLoading = false;
-    } catch (error: any) {
-      this.showError(error.error?.message || 'Registration failed. Please try again.');
-      this.isLoading = false;
-    }
+
   }
 
   continueWithExistingUser() {
@@ -467,7 +475,7 @@ export class HomeComponent  {
       this.userStore.persist();
 
       if(user.type == 2)this.goToAdmin();
-      else this.goToClassRoom();
+      else this.goToStudentClassRoom();
 
       this.isLoading = false;
     }).catch((error) => {

@@ -84,7 +84,7 @@ import {UserStoreService} from "../../../common/store";
           </button>
         </div>
       }
-{{joinStep}}
+
       @if (joinStep === 2) {
         <div class="space-y-4">
           <div>
@@ -163,6 +163,7 @@ export class StepJoinComponent {
   private showError(message: string) {
     this.errorMessage = message;
     setTimeout(() => (this.errorMessage = ''), 5000);
+    this.cdr.detectChanges();
   }
 
   private clearError() {
@@ -198,6 +199,7 @@ export class StepJoinComponent {
         this.cdr.detectChanges();
       })
       .catch((error) => {
+        console.error('Error creating user:', error);
         this.showError(error.error?.message || 'Failed to create account');
         this.isLoading = false;
       });

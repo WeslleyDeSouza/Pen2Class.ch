@@ -1,8 +1,9 @@
 import {Route, Router} from '@angular/router';
 import {inject} from "@angular/core";
-import { RouteConstants as RC } from './route.constants';
+import {RouteConstants, RouteConstants as RC} from './route.constants';
 import {UserStoreService} from "../common/store";
 import {AdminClassRoomOverviewComponent} from "../modules/class-room/teacher";
+import {routesStudent} from "../modules/class-room/student/routes";
 
 const canActivate = () => {
   const router = inject(Router)
@@ -72,29 +73,13 @@ export const appRoutes: Route[] = [
     ]
   },
   {
-    path: RC.Paths.classroom,
-    loadComponent: () => import('../modules/class-room/layout/layout.component').then(m => m.Layout),
-    children: [
-      {
-        path:`:${RC.Params.classRoomId}`,
-        component:AdminClassRoomOverviewComponent,
-        children: [
-          {
-           path: `${RC.Paths.lesson}/:${RC.Params.lessonId}`,
-           children:[
-            {
-              path: RC.Paths.editor,
-              loadComponent: () => import('../modules/class-room').then(m => m.EditorComponent)
-            },
-          ]
-          },
-        ]
-      }
-    ],
-    canActivate: [
-      canActivate
-    ]
+    path: RouteConstants.Paths.student,
+    children: routesStudent,
   },
+
+
+
+
   {
     path: RC.Paths.root,
     loadComponent: () => import('../modules/home').then(m => m.HomeComponent)

@@ -45,20 +45,10 @@ export interface StudentClassroom {
           </span>
         </div>
 
-        <!-- Progress -->
+        <!-- Lesson Count -->
         <div class="mb-4">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-sm font-medium text-gray-700">Progress</span>
-            <span class="text-sm font-semibold text-gray-900">{{ classroom.progress }}%</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div
-              class="bg-blue-600 h-2 rounded-full transition-all"
-              [style.width.%]="classroom.progress"
-            ></div>
-          </div>
-          <div class="text-xs text-gray-500 mt-1">
-            {{ classroom.completedLessons }}/{{ classroom.totalLessons }} lessons
+          <div class="text-sm text-gray-600">
+            {{ classroom.completedLessons }}/{{ classroom.totalLessons }} lessons completed
           </div>
         </div>
 

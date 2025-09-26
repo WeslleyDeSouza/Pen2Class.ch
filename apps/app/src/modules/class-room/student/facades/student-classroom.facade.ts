@@ -57,54 +57,14 @@ export class StudentClassroomFacade {
         throw new Error('User not authenticated');
       }
 
-      // This would typically fetch from a student-specific endpoint
-      // For now, we'll use mock data that matches the design
-      const mockClassrooms: StudentClassroom[] = [
-        {
-          id: '1',
-          name: 'Web Development Basics',
-          description: 'Learn the fundamentals of web development',
-          teacherName: 'Prof. Johnson',
-          progress: 75,
-          totalLessons: 8,
-          completedLessons: 6,
-          status: 'active',
-          technologies: ['HTML', 'CSS', 'JavaScript'],
-          nextLesson: {
-            title: 'CSS Flexbox Layout',
-            scheduledDate: 'Today, 2:00 PM'
-          }
-        },
-        {
-          id: '2',
-          name: 'Advanced JavaScript',
-          description: 'Master advanced JavaScript concepts',
-          teacherName: 'Dr. Smith',
-          progress: 45,
-          totalLessons: 12,
-          completedLessons: 5,
-          status: 'active',
-          technologies: ['JavaScript', 'React'],
-          nextLesson: {
-            title: 'Async/Await Patterns',
-            scheduledDate: 'Tomorrow, 10:00 AM'
-          }
-        },
-        {
-          id: '3',
-          name: 'CSS Layouts & Design',
-          description: 'Create beautiful layouts with CSS',
-          teacherName: 'Ms. Davis',
-          progress: 100,
-          totalLessons: 6,
-          completedLessons: 6,
-          status: 'completed',
-          technologies: ['CSS', 'HTML']
-        }
-      ];
+      // Fetch classrooms from the service
+      const classrooms = await this.classroomService.getClassroomsFromUser(currentUser.id);
 
-      this.enrolledClassroomsSignal.set(mockClassrooms);
-      return mockClassrooms;
+      // Map classroom data to student classroom format
+      const studentClassrooms: StudentClassroom[] = classrooms.map(classroom => this.mapToStudentClassroom(classroom));
+
+      this.enrolledClassroomsSignal.set(studentClassrooms);
+      return studentClassrooms;
     } catch (error) {
       console.error('Failed to load enrolled classrooms:', error);
       return [];
@@ -181,5 +141,40 @@ export class StudentClassroomFacade {
    */
   async refresh(): Promise<void> {
     await this.loadEnrolledClassrooms();
+  }
+
+  /**
+   * Map classroom data to student classroom format
+   */
+  private mapToStudentClassroom(classroom: any): StudentClassroom {
+    // Extract technologies from configuration or use defaults
+    const enabledTechnologies = classroom.configuration?.enabledTechnologies || {};
+    const technologies: string[] = [];
+
+    if (enabledTechnologies.html !== false) technologies.push('HTML');
+    if (enabledTechnologies.css !== false) technologies.push('CSS');
+    if (enabledTechnologies.javascript !== false) technologies.push('JavaScript');
+
+    // For now, use mock progress data - in a real app this would come from user progress tracking
+    const mockProgress = Math.floor(Math.random() * 100);
+    const mockTotalLessons = Math.floor(Math.random() * 12) + 4; // 4-15 lessons
+    const mockCompletedLessons = Math.floor((mockProgress / 100) * mockTotalLessons);
+    const isCompleted = mockProgress === 100;
+
+    return {
+      id: classroom.id,
+      name: classroom.name,
+      description: classroom.description,
+      teacherName: classroom.createdBy || 'Instructor', // This would ideally come from user data
+      progress: mockProgress,
+      totalLessons: mockTotalLessons,
+      completedLessons: mockCompletedLessons,
+      status: isCompleted ? 'completed' : 'active',
+      technologies: technologies.length > 0 ? technologies : ['HTML', 'CSS', 'JavaScript'],
+      nextLesson: !isCompleted ? {
+        title: 'Next Lesson',
+        scheduledDate: 'Available now'
+      } : undefined
+    };
   }
 }

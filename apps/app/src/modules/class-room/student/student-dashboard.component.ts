@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
+import {Component, OnDestroy, OnInit, computed, signal, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -158,6 +158,8 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   classCode = '';
   joiningClass = false;
 
+  private studentFacade: StudentClassroomFacade = inject(StudentClassroomFacade);
+
   // Use facade computed values
   stats = this.studentFacade.stats;
   enrolledClasses = this.studentFacade.enrolledClassrooms;
@@ -165,7 +167,6 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private studentFacade: StudentClassroomFacade
   ) {}
 
   ngOnInit(): void {

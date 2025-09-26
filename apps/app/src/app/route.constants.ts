@@ -9,6 +9,7 @@ export namespace RouteConstants {
     export const lesson = 'lesson';
     export const editor = 'editor';
     export const dashboard = 'dashboard';
+    export const student = 'student';
     export const user = 'u';
   }
 
