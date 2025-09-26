@@ -232,60 +232,6 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
     this.router.navigate(['../']);
   }
 
-  async createLesson() {
-    try {
-      const classId = this.classroom?.id || this.userStore.selectedClassId();
-      const currentUser = this.userStore.getCurrentUser();
-      if (!classId || !currentUser?.id) {
-        console.warn('Missing classroom or user context for creating a lesson');
-        return;
-      }
-
-      const created = await this.lessonFacade.createLesson(classId, {
-        createdBy: currentUser.id,
-        name: 'New Lesson',
-        description: 'Draft lesson',
-        enabled: false,
-      });
-
-      // Persist context and navigate to the newly created lesson
-      this.userStore.selectedClassId.set(classId);
-      this.userStore.selectedLessonId.set(created.id);
-
-      await this.router.navigate([
-        '/',
-        RouteConstants.Paths.admin,
-        RouteConstants.Paths.classroom,
-        classId,
-        RouteConstants.Paths.lesson,
-        created.id,
-      ]);
-
-      // Optionally open editor for the current user
-      await this.openLesson(created.id, currentUser.id);
-    } catch (e) {
-      console.error('Failed to create lesson', e);
-    }
-  }
-
-  async editLesson(lessonId?: string) {
-    const classId = this.classroom?.id || this.userStore.selectedClassId();
-    const theLessonId = lessonId || this.lesson?.id || this.userStore.selectedLessonId();
-    if (!classId || !theLessonId) {
-      console.warn('Missing context for editing lesson');
-      return;
-    }
-
-    // Open dialog prefilled with current values
-    const current = await this.lessonFacade.getLesson(classId, theLessonId);
-    this.editDialogModel = {
-      name: current?.name || this.lesson?.name || 'Lesson',
-      description: current?.description || this.lesson?.description,
-      enabled: current?.enabled ?? this.lesson?.enabled ?? false,
-    } as any;
-    this.showEditDialog.set(true);
-  }
-
   closeEditDialog() {
     this.showEditDialog.set(false);
   }

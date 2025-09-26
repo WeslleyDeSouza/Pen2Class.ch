@@ -33,7 +33,7 @@ export class ClassroomService {
   }
 
   joinClassroom(classroomId: string, userId: string, displayName: string): Promise<JoinLeaveResponseDto> {
-    return this.classRoomApiService.classroomJoin({
+    return this.classRoomApiService.classroomJoinById({
       classroomId,
       body: { userId, displayName }
     }) as unknown as Promise<JoinLeaveResponseDto>;
@@ -55,9 +55,8 @@ export class ClassroomService {
   }
 
   joinClassroomByCode(code: string, userId: string, displayName: string): Promise<JoinLeaveResponseDto> {
-    return this.classRoomApiService.classroomJoin({
-      classroomId: code,
-      body: { userId, displayName }
+    return this.classRoomApiService.classroomJoinByCode({
+      body: { userId, displayName ,  code: code,}
     }) as unknown as Promise<JoinLeaveResponseDto>;
   }
 

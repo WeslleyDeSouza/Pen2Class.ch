@@ -110,35 +110,37 @@ interface StudentSummary {
               </button>
             </div>
 
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-0" *ngFor="let l of lessons()">
-              <div class="p-5 flex items-center">
-                <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center mr-4">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10M4 18h6"/></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2">
-                    <div class="font-medium text-gray-900 truncate">{{ l.name }}</div>
-                    <span class="text-xs px-2 py-0.5 rounded-full" [ngClass]="l.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'">
+            <ng-container  *ngFor="let l of lessons()">
+              <div class="lesson-item bg-white rounded-2xl border border-gray-200 shadow-sm p-0">
+                <div class="p-5 flex items-center">
+                  <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center mr-4">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10M4 18h6"/></svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <div class="font-medium text-gray-900 truncate">{{ l.name }}</div>
+                      <span class="text-xs px-2 py-0.5 rounded-full" [ngClass]="l.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'">
                       {{ l.enabled ? 'active' : 'draft' }}
                     </span>
-                  </div>
-                  <div class="text-xs text-gray-500 mt-1 flex items-center gap-4">
-                    <span class="inline-flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M7 20H2v-2a3 3 0 015.356-1.857"/></svg>{{ members().length }} students</span>
-                    <span class="inline-flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/></svg>~{{ defaultDuration }} min</span>
-                  </div>
-                  <div class="mt-3">
-                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div class="h-full bg-gray-900" [style.width.%]="l.enabled ? 100 : 75"></div>
                     </div>
-                    <div class="text-[10px] text-right text-gray-400 mt-1">{{ l.enabled ? '100%' : '75%' }}</div>
+                    <div class="text-xs text-gray-500 mt-1 flex items-center gap-4">
+                      <span class="inline-flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M7 20H2v-2a3 3 0 015.356-1.857"/></svg>{{ members().length }} students</span>
+                      <span class="inline-flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/></svg>~{{ defaultDuration }} min</span>
+                    </div>
+                    <div class="mt-3">
+                      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-gray-900" [style.width.%]="l.enabled ? 100 : 75"></div>
+                      </div>
+                      <div class="text-[10px] text-right text-gray-400 mt-1">{{ l.enabled ? '100%' : '75%' }}</div>
+                    </div>
                   </div>
-                </div>
-                <div class="ml-4 flex items-center gap-3 text-gray-500">
-                  <button class="hover:text-gray-700" title="Preview"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553 2.276a1 1 0 010 1.788L15 16.34M4 6h16M4 18h16M4 12h8"/></svg></button>
-                  <button class="hover:text-gray-700" title="Options"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.75a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg></button>
+                  <div class="ml-4 flex items-center gap-3 text-gray-500">
+                    <button class="hover:text-gray-700" title="Preview"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553 2.276a1 1 0 010 1.788L15 16.34M4 6h16M4 18h16M4 12h8"/></svg></button>
+                    <button class="hover:text-gray-700" title="Options"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.75a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg></button>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ng-container>
 
             <div class="text-sm text-gray-500" *ngIf="!lessons().length">No lessons yet. Create one to get started.</div>
           </div>
