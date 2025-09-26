@@ -354,7 +354,7 @@ interface CreateLessonForm {
     </div>
    `
 })
-export class AdminClassRoomItemComponent implements OnInit, OnDestroy {
+export class AdminClassTeacherOverviewComponent implements OnInit, OnDestroy {
   currentUser = signal<UserDto | null>(null);
 
   searchQuery = '';

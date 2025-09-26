@@ -15,7 +15,7 @@ interface JoinClassroomForm {
 }
 
 @Component({
-  selector: 'app-class-room-layout',
+  selector: 'app-layout',
   standalone: true,
   imports: [RouterOutlet, FormsModule, CommonModule],
   template: `
@@ -203,7 +203,7 @@ interface JoinClassroomForm {
     }
   `]
 })
-export class ClassRoomLayout implements OnInit, OnDestroy {
+export class Layout implements OnInit, OnDestroy {
   joinForm: JoinClassroomForm = { code: '' };
   isJoining = false;
   joinError = '';
@@ -211,6 +211,7 @@ export class ClassRoomLayout implements OnInit, OnDestroy {
 
   selectedClassroom = signal<ClassroomSummary | null>(null);
   selectedLesson = signal<LessonSummary | null>(null);
+
   expandedClassrooms = new Set<string>();
 
   private subscriptions: Subscription[] = [];

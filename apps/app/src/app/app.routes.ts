@@ -54,7 +54,7 @@ export const appRoutes: Route[] = [
       },
       {
         path: RC.Paths.dashboard,
-        loadComponent: () => import('../modules/class-room/teacher').then(m => m.AdminClassRoomItemComponent),
+        loadComponent: () => import('../modules/class-room/teacher').then(m => m.AdminClassTeacherOverviewComponent),
       },
       {
         path: 'classroom',
@@ -73,7 +73,7 @@ export const appRoutes: Route[] = [
   },
   {
     path: RC.Paths.classroom,
-    loadComponent: () => import('../modules/class-room/layout/layout.component').then(m => m.ClassRoomLayout),
+    loadComponent: () => import('../modules/class-room/layout/layout.component').then(m => m.Layout),
     children: [
       {
         path:`:${RC.Params.classRoomId}`,
