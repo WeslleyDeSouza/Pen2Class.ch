@@ -21,7 +21,7 @@ export class ResourceEntity {
   @Column({ type: 'varchar', length: 100, nullable: true, name: 'lessonId' })
   lessonId?: string | null;
 
-  @Column({ type: 'varchar', length: 100, name: 'channelId' })
+  @Column({ type: 'varchar', length: 100, nullable: true, name: 'classroomId' })
   classroomId!: string;
 
   @Column({ type: 'simple-json' })
