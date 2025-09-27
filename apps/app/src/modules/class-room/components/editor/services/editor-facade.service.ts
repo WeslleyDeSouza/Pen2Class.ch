@@ -45,7 +45,7 @@ export class EditorService {
     }
 
     return this.resourceApi.resourceGetByKey({
-      type: 'EDITOR_STATE',
+      type: 'EDITOR',
       userId: userId,
       classroomId: classroomId,
       lessonId: lessonId,

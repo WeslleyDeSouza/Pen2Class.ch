@@ -81,7 +81,6 @@ export class EditorComponent extends BaseEditor implements ControlValueAccessor 
 
   protected initMonaco(options: any, insideNg: boolean): void {
 
-    console.log(options,this.monaco);
     const hasModel = !!options.model;
 
     if (hasModel) {

@@ -105,7 +105,8 @@ import { LessonDialogComponent, LessonDialogModel } from './components/lesson-di
           class="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow p-4 transition-all duration-300"
           [ngClass]="isFullscreen() ? 'min-h-screen' : 'min-h-[400px]'"
         >
-          <router-outlet></router-outlet>
+          @if(visible){<router-outlet/>}
+
           @if (!hasChildContent) {
             <div class="text-center py-12 text-gray-500">
               Select a Member to begin or your own Editor to start writing.
@@ -124,6 +125,7 @@ import { LessonDialogComponent, LessonDialogModel } from './components/lesson-di
     </div>`
 })
 export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
+  visible = false
   classroom: ClassroomSummary | null = null;
   lesson: LessonSummary | null = null;
   members: any[] = [];
@@ -220,8 +222,13 @@ export class AdminClassRoomLessonComponent implements OnInit, OnDestroy {
   }
 
   onMemberSelect(member: any) {
+    this.visible = false
     // navigate to member profile
     this.router.navigate(['/', RouteConstants.Paths.admin, RouteConstants.Paths.classroom, this.classroom?.id, RouteConstants.Paths.lesson, this.lesson?.id, RouteConstants.Paths.user, member.userId]);
+
+  setTimeout(() => {
+    this.visible = true
+  })
   }
 
   toggleFullscreen() {

@@ -141,12 +141,15 @@ export class EditorComponent implements OnInit, OnDestroy {
 
   lessonName!:string
 
+  blocked = false
+
   protected readonly userStore = inject(UserStoreService);
   protected readonly editorStore = inject(EditorStoreService);
   protected readonly editorApi = inject(EditorService);
   private readonly route = inject(ActivatedRoute);
 
   private saveTimeout: any = null;
+  private getByKeyTimeout: any = null;
 
   protected readonly tabs = [
     { id: 'html' as const, label: 'HTML', color: 'text-orange-500' },
@@ -173,7 +176,12 @@ export class EditorComponent implements OnInit, OnDestroy {
       effect(() => {
         const editorState = this.editorStore.editorState();
 
-        if (!this.userStore.selectedLessonId()) return;
+        if(this.blocked)return console.log('Disabled');
+
+        if (!this.userStore.selectedLessonId()) {
+          console.error('No lesson selected');
+          return;
+        }
 
         // Clear existing timeout
         if (this.saveTimeout) {
@@ -193,9 +201,12 @@ export class EditorComponent implements OnInit, OnDestroy {
 
       effect(() => {
         const selectedLessonId = this.userStore.selectedLessonId() || this.route.snapshot.paramMap.get(RouteConstants.Params.userId);
+
         if (selectedLessonId ) this.getByKey();
       });
-    }
+    const selectedLessonId = this.userStore.selectedLessonId() || this.route.snapshot.paramMap.get(RouteConstants.Params.userId);
+
+  }
 
   get id(){
     return ''
@@ -212,6 +223,18 @@ export class EditorComponent implements OnInit, OnDestroy {
   }
 
   getByKey(){
+    // Clear existing timeout
+    if (this.getByKeyTimeout) {
+      clearTimeout(this.getByKeyTimeout);
+    }
+
+    // Debounce the getByKey call by 300ms
+    this.getByKeyTimeout = setTimeout(() => {
+      this.executeGetByKey();
+    }, 300);
+  }
+
+  private executeGetByKey(){
     this.editorApi.getByKey(this.objectKey).then(data => {
       if (data?.data) {
         const editorData = data.data as any;
@@ -235,6 +258,7 @@ export class EditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+
     // Any initialization logic can go here
     console.log('Editor component initialized');
   }
@@ -245,6 +269,13 @@ export class EditorComponent implements OnInit, OnDestroy {
       clearTimeout(this.saveTimeout);
       this.saveTimeout = null;
     }
+    // Clean up the getByKey timeout
+    if (this.getByKeyTimeout) {
+      clearTimeout(this.getByKeyTimeout);
+      this.getByKeyTimeout = null;
+    }
+    this.blocked = false
+    this.editorStore.flush()
     console.log('Editor component destroyed');
   }
 

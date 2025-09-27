@@ -68,7 +68,7 @@ export class ResourceController {
   }
 
 
-  @Get(':userId/:type/:classroomId/:lessonId')
+  @Get('byKey/:userId/:type/:classroomId/:lessonId')
   @ApiOperation({ summary: 'Get an resource by composite key (userId, type, classroomId, lessonId)' })
   @ApiParam({ name: 'userId', type: 'string' })
   @ApiParam({ name: 'type', type: 'string' })

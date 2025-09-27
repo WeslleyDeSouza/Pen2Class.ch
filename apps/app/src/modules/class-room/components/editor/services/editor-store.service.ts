@@ -352,4 +352,10 @@ button:hover {
 
     this._jsErrors.set(errors);
   }
+
+  flush(){
+    this._jsCode.set('');
+    this._cssCode.set('');
+    this._htmlCode.set('');
+  }
 }
