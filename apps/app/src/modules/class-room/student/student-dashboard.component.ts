@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { RouteConstants } from '../../../app/route.constants';
 import { StudentClassCardComponent, StudentClassroom } from './components/student-class-card.component';
 import { StudentClassroomFacade, StudentStats } from './facades/student-classroom.facade';
+import {UserStoreService} from "../../../common/store";
 
 
 
@@ -15,12 +16,51 @@ import { StudentClassroomFacade, StudentStats } from './facades/student-classroo
   imports: [CommonModule, FormsModule, StudentClassCardComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <!-- Header -->
-        <div class="mb-8">
-          <h1 class="text-2xl font-bold text-gray-900">Student Dashboard</h1>
-          <p class="text-gray-600 mt-1">Track your learning progress and manage your classes</p>
+      <!-- Header -->
+      <div class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center py-4">
+            <!-- Left: Logo and Title -->
+            <div class="flex items-center space-x-4">
+              <div class="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                </svg>
+              </div>
+              <div>
+                <h1 class="text-xl font-semibold text-gray-900">Student Dashboard</h1>
+                <p class="text-sm text-gray-500">Track your learning progress and manage your classes</p>
+              </div>
+            </div>
+
+            <!-- Right: Profile and Logout -->
+            <div class="flex items-center space-x-4">
+              @if (currentUser(); as user) {
+                <div class="flex items-center space-x-3">
+                  <div class="text-right">
+                    <div class="text-sm font-medium text-gray-900">Student</div>
+                    <div class="text-xs text-gray-500">{{user.displayName}}</div>
+                  </div>
+                  <div class="h-8 w-8 rounded-full bg-green-600 flex items-center justify-center">
+                    <span class="text-sm font-medium text-white">{{$any(user).displayName?.charAt(0) || 'S'}}</span>
+                  </div>
+                  <button
+                    (click)="logout()"
+                    class="ml-3 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200 flex items-center space-x-1"
+                    title="Logout">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m10 0v-1a3 3 0 00-3-3H6a3 3 0 00-3-3h7a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -159,11 +199,13 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   joiningClass = false;
 
   private studentFacade: StudentClassroomFacade = inject(StudentClassroomFacade);
+  private userStore: UserStoreService = inject(UserStoreService);
 
   // Use facade computed values
   stats = this.studentFacade.stats;
   enrolledClasses = this.studentFacade.enrolledClassrooms;
   isLoading = this.studentFacade.isLoading;
+  currentUser = this.userStore.user;
 
   constructor(
     private router: Router,
@@ -220,5 +262,11 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       input.focus();
       input.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+  }
+
+  logout(): void {
+    this.userStore.user.set(undefined);
+    this.userStore.persist();
+    this.router.navigate(['/']);
   }
 }

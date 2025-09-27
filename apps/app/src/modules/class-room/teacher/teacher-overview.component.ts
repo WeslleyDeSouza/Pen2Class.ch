@@ -4,7 +4,6 @@ import { Subscription } from 'rxjs';
 import { ClassroomManagementFacade, ClassroomSummary } from './facades/classroom-management.facade';
 import { LessonManagementFacade, LessonSummary } from './facades/lesson-management.facade';
 import {Router} from "@angular/router";
-import { RouteConstants } from '../../../app/route.constants';
 import {UserStoreService} from "../../../common/store";
 import {UserDto} from "@ui-lib/apiClient";
 import { ClassroomEntryItemComponent } from './components/classroom-entry-item.component';
@@ -21,7 +20,7 @@ interface CreateLessonForm {
 }
 
 @Component({
-  selector: 'app-admin-class-room-item',
+  selector: 'app-admin-teacher-overview',
   standalone: true,
   imports: [FormsModule, ClassroomEntryItemComponent],
   template: `
@@ -70,6 +69,15 @@ interface CreateLessonForm {
                   <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
                     <span class="text-sm font-medium text-white">{{$any(user).displayName?.charAt(0) || 'T'}}</span>
                   </div>
+                  <button
+                    (click)="logout()"
+                    class="ml-3 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200 flex items-center space-x-1"
+                    title="Logout">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m10 0v-1a3 3 0 00-3-3H6a3 3 0 00-3-3h7a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span>Logout</span>
+                  </button>
                 </div>
               }
             </div>
@@ -367,7 +375,8 @@ export class AdminClassTeacherOverviewComponent implements OnInit, OnDestroy {
   constructor(
     private userStore: UserStoreService,
     public classroomFacade: ClassroomManagementFacade,
-    public lessonFacade: LessonManagementFacade
+    public lessonFacade: LessonManagementFacade,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -476,6 +485,12 @@ export class AdminClassTeacherOverviewComponent implements OnInit, OnDestroy {
     if (this.logEntries.length > 100) {
       this.logEntries = this.logEntries.slice(0, 100);
     }
+  }
+
+  logout() {
+    this.userStore.user.set(undefined);
+    this.userStore.persist();
+    this.router.navigate(['/']);
   }
 
 }
