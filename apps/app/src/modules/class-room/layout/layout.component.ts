@@ -19,7 +19,7 @@ interface JoinClassroomForm {
   standalone: true,
   imports: [RouterOutlet, FormsModule, CommonModule],
   template: `
-    <div class="flex h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="flex h-screen  from-blue-50 to-indigo-100">
       <!-- Sidebar -->
       <div class="w-80 bg-white/80 backdrop-blur-sm shadow-lg flex flex-col border-r border-white/50">
         <!-- Top section - Join Classroom -->

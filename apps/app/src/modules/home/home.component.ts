@@ -381,7 +381,8 @@ export class HomeComponent  {
     this.isLoading = true;
     this.clearError();
 
-    this.userService.login(this.loginEmail.trim(), this.loginPassword).then((response) => {
+    this.userService.login(this.loginEmail.trim(), this.loginPassword)
+      .then((response) => {
       // Store user data and session
       this.userStore.user.set(response.user);
       this.userStore.persist();
@@ -395,8 +396,10 @@ export class HomeComponent  {
 
       this.isLoading = false;
     }).catch((error) => {
+      console.error('Login failed:', error);
       this.showError(error.error?.message || 'Login failed. Please check your credentials.');
       this.isLoading = false;
+      this.cdr.detectChanges();
     });
   }
 

@@ -248,7 +248,7 @@ export class StudentLessonComponent implements OnInit, OnDestroy {
   formatContent(content: string): string {
     if (!content) return '';
     // Basic HTML formatting - replace newlines with <br> tags
-    return content.replace(/\n/g, '<br>');
+    return content
   }
 
   nextLesson(): void {

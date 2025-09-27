@@ -35,7 +35,7 @@ export interface StudentClassroom {
             </div>
             <div>
               <h3 class="font-semibold text-gray-900">{{ classroom.name }}</h3>
-              <p class="text-sm text-gray-600">{{ classroom.teacherName }}</p>
+              <p class="text-sm text-gray-600"></p>
             </div>
           </div>
           <span
@@ -54,7 +54,7 @@ export interface StudentClassroom {
         </div>
 
         <!-- Next Lesson (if available) -->
-        <div *ngIf="classroom.nextLesson && classroom.status === 'active'" class="mb-4">
+        <div *ngIf="classroom.nextLesson && classroom.status === 'active'" [hidden]="true" class="mb-4">
           <div class="flex items-center space-x-2 text-sm">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
