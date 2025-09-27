@@ -50,7 +50,7 @@ import { RouteConstants } from '../../../app/route.constants';
           <!-- Sidebar -->
           <div class="lg:col-span-1 space-y-6">
             <!-- Progress -->
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <div [hidden]="true" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
               <h3 class="text-sm font-semibold text-gray-900 mb-4">Progress</h3>
 
               <div class="mb-4">
