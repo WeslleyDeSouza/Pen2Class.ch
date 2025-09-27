@@ -9,6 +9,10 @@ import { appRoutes } from './app.routes';
 import {provideMonacoEditor} from "@class2pen/monaco-editor";
 import {MonacoEditorService} from "../modules/class-room";
 
+import { Chart, registerables} from 'chart.js';
+
+Chart.register(...registerables);
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),

@@ -42,6 +42,32 @@ export class ResourceController {
     return this.resourceService.delete(id);
   }
 
+  @Get('by-classroom/:classroomId/:type')
+  @ApiOperation({ summary: 'List resources by classroom' })
+  @ApiParam({ name: 'classroomId', type: 'string' })
+  @ApiParam({ name: 'type', enum: ResourceType })
+  @ApiOkResponse({ type: [ResourceDto] })
+  getByClassroomAndType(
+    @Param('classroomId') classroomId: string,
+    @Param('type') type: ResourceType,
+  ) {
+    return this.resourceService.getByClassroom(classroomId,type);
+  }
+
+  @Get('by-user-classroom/:userId/:classroomId/:type')
+  @ApiOperation({ summary: 'List resources by classroom' })
+  @ApiParam({ name: 'classroomId', type: 'string' })
+  @ApiParam({ name: 'type', enum: ResourceType })
+  @ApiOkResponse({ type: [ResourceDto] })
+  getByUserClassroomAndType(
+    @Param('userId') userId: string,
+    @Param('classroomId') classroomId: string,
+    @Param('type') type: ResourceType,
+  ) {
+    return this.resourceService.getByUserClassroom(userId,classroomId,type);
+  }
+
+
   @Get(':userId/:type/:classroomId/:lessonId')
   @ApiOperation({ summary: 'Get an resource by composite key (userId, type, classroomId, lessonId)' })
   @ApiParam({ name: 'userId', type: 'string' })
@@ -71,15 +97,5 @@ export class ResourceController {
     return this.resourceService.getById(id);
   }
 
-  @Get('by-classroom/:classroomId/:type')
-  @ApiOperation({ summary: 'List resources by classroom' })
-  @ApiParam({ name: 'classroomId', type: 'string' })
-  @ApiParam({ name: 'type', enum: ResourceType })
-  @ApiOkResponse({ type: [ResourceDto] })
-  getByClassroomAndType(
-    @Param('classroomId') classroomId: string,
-    @Param('type') type: ResourceType,
-  ) {
-    return this.resourceService.getByClassroom(classroomId,type);
-  }
+
 }

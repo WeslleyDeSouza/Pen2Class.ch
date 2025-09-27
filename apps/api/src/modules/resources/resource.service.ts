@@ -127,6 +127,11 @@ export class ResourceService {
     return this.toDto(existing);
   }
 
+  async getByUserClassroom(userId:string,classroomId: string,type:ResourceType): Promise<ResourceDto[]> {
+    const list = await this.objectRepo.find({ where: {userId, classroomId: classroomId || '-1' , type: type} });
+   console.log({userId, classroomId: classroomId || '-1' , type: type})
+    return list.map((o) => this.toDto(o));
+  }
   async getByClassroom(classroomId: string,type:ResourceType): Promise<ResourceDto[]> {
     const list = await this.objectRepo.find({ where: { classroomId:classroomId || '-1' ,type:type} });
     return list.map((o) => this.toDto(o));

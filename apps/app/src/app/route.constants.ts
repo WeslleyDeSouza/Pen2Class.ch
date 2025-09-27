@@ -11,11 +11,14 @@ export namespace RouteConstants {
     export const dashboard = 'dashboard';
     export const student = 'student';
     export const user = 'u';
+    export const exam = 'exam';
+    export const results = 'results';
   }
 
   export namespace Params {
     export const classRoomId = 'classRoomId';
     export const lessonId = 'lessonId';
     export const userId = 'userId';
+    export const examId = 'examId';
   }
 }

@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, Index } from 'typeorm';
 
 export enum ResourceType {
+  EXAM_RESULT = 'EXAM_RESULT',
   EXAM = 'EXAM',
   EDITOR = 'EDITOR',
   QUIZ = 'QUIZ',

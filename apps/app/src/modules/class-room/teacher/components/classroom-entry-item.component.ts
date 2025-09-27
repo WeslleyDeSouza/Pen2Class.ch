@@ -21,7 +21,7 @@ import {RouteConstants} from "../../../../app/route.constants";
           <div>
             <div class="flex items-center space-x-2 mb-1">
               <h3 class="text-lg font-semibold text-gray-900">{{classroom?.name}}</h3>
-              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              <span [hidden]="true" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 <div class="w-1.5 h-1.5 bg-green-400 rounded-full mr-1"></div>
                 active
               </span>

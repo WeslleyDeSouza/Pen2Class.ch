@@ -69,10 +69,10 @@ import { RouteConstants } from '../../../../app/route.constants';
 
       <!-- Open Exam Button -->
       <div class="mt-4">
-        <button [routerLink]="linkPath"
-                class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+        <a [routerLink]="resultsLinkPath"
+           class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium inline-block text-center">
           View exam results
-        </button>
+        </a>
       </div>
     </div>
   `
@@ -87,6 +87,10 @@ export class ExamEntryItemComponent {
 
   get linkPath() {
     return ['/', RouteConstants.Paths.admin, RouteConstants.Paths.classroom, this.classroomId, 'exam', this.exam.id];
+  }
+
+  get resultsLinkPath() {
+    return ['/', RouteConstants.Paths.admin, RouteConstants.Paths.classroom, this.classroomId, RouteConstants.Paths.exam, this.exam.id, RouteConstants.Paths.results];
   }
 
   getTotalQuestions(): number {

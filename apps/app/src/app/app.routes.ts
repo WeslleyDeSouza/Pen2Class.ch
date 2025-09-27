@@ -50,6 +50,10 @@ export const appRoutes: Route[] = [
                 ]
               }
             ]
+          },
+          {
+            path: `${RC.Paths.exam}/:${RC.Params.examId}/${RC.Paths.results}`,
+            loadComponent: () => import('../modules/class-room/teacher/components/exam-results.component').then(m => m.ExamResultsComponent)
           }
         ]
       },

@@ -40,6 +40,7 @@ export interface Exames extends ExamSummary {}
 @Injectable({ providedIn: 'root' })
 export class ExamsManagementFacade {
   private readonly type = "EXAM";
+  private readonly typeResult = "EXAM_RESULT";
 
   // Reactive signals for state management
   private examsSignal = signal<ExamsByClassroom>({});
@@ -247,6 +248,86 @@ export class ExamsManagementFacade {
       return updatedExams;
     } finally {
       this.isLoadingSignal.set(false);
+    }
+  }
+
+
+
+  submitResult(classroomId:string,data:any){
+   return  this.resource.resourceCreate({
+      body: {
+        classroomId: classroomId,
+        userId: this.userStore.getCurrentUser()?.id as string,
+        type: this.typeResult as any,
+        data: Object.assign(data, {
+          displayName: this.userStore.getCurrentUser()?.displayName || '',
+        })
+      }
+    })
+  }
+
+  getUsersSubmitedResult(classroomId:string){
+    return this.resource.resourceGetByUserClassroomAndType({
+      classroomId: classroomId,
+      userId: this.userStore.getCurrentUser()?.id as string,
+      type: this.typeResult as any,
+    }).then(res=>{
+      return res.map(r=> Object.assign(r,r.data || {}))
+    })
+  }
+
+  /**
+   * Get all exam results for a specific exam
+   */
+  async getExamResults(examId: string, classroomId: string): Promise<any[]> {
+    try {
+      const results:any[] = await this.resource.resourceGetByClassroomAndType({
+        classroomId: classroomId,
+        type: this.typeResult as any
+      });
+
+
+      // Filter results for this specific exam and transform data
+      return results
+        .filter(result => result.data?.examId === examId)
+        .map(result => {
+          const data = result.data || {};
+          const score = data.score || 0;
+          const correctAnswers = data.correctAnswers || 0;
+          const totalQuestions = data.totalQuestions || 1;
+          const percentage = Math.round((correctAnswers / totalQuestions) * 100);
+
+          return {
+            id: result.id!,
+            userId: result.userId,
+            examId: examId,
+            score: score,
+            correctAnswers: correctAnswers,
+            totalQuestions: totalQuestions,
+            percentage: percentage,
+            userInfo: {
+              name: data.userInfo?.name || data.displayName || result.userId,
+              email: data.userInfo?.email || ''
+            },
+            submittedAt: result.createdAt
+          };
+        });
+    } catch (error) {
+      console.error('Failed to get exam results:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Delete an exam result
+   */
+  async deleteExamResult(resultId: string): Promise<boolean> {
+    try {
+      await this.resource.resourceDelete({ id: resultId });
+      return true;
+    } catch (error) {
+      console.error('Failed to delete exam result:', error);
+      return false;
     }
   }
 
