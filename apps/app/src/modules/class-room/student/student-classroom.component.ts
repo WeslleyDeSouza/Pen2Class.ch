@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { StudentClassroomFacade } from './facades/student-classroom.facade';
 import { StudentClassroom } from './components/student-class-card.component';
 import { RouteConstants } from '../../../app/route.constants';
+import { ExamsManagementFacade } from '../teacher/facades/exams-management-facade.service';
 
 @Component({
   selector: 'app-student-classroom',
@@ -219,14 +220,15 @@ export class StudentClassroomComponent implements OnInit, OnDestroy {
   };
 
   exams = {
-    available: 1,
-    completed: 1
+    available: 0,
+    completed: 0
   };
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private studentFacade: StudentClassroomFacade
+    private studentFacade: StudentClassroomFacade,
+    private examsFacade: ExamsManagementFacade
   ) {}
 
   ngOnInit(): void {
@@ -241,6 +243,7 @@ export class StudentClassroomComponent implements OnInit, OnDestroy {
 
           this.classroom = await this.studentFacade.getClassroom(id);
           this.lessons = this.classroom?.lessons || [];
+          await this.loadExamStatistics(id);
           this.cdr.detectChanges();
         }
       })
@@ -253,6 +256,35 @@ export class StudentClassroomComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/', RouteConstants.Paths.student]);
+  }
+
+  private async loadExamStatistics(classroomId: string): Promise<void> {
+    try {
+      // Load all exams for this classroom
+      const allExams = await this.examsFacade.getExams(classroomId);
+
+      // Load user's exam submissions to see which ones are completed
+      const submissions = await this.examsFacade.getUsersSubmitedResult(classroomId);
+
+      // Parse submissions to get exam IDs that are completed
+      const completedExamIds = new Set();
+      if (Array.isArray(submissions)) {
+        submissions.forEach((sub: any) => {
+          if (sub.data?.examId) {
+            completedExamIds.add(sub.data.examId);
+          }
+        });
+      }
+
+      // Update exam statistics
+      this.exams = {
+        available: allExams.length,
+        completed: completedExamIds.size
+      };
+    } catch (error) {
+      console.error('Failed to load exam statistics:', error);
+      // Keep default values on error
+    }
   }
 
   getProgressPercentage(): number {
