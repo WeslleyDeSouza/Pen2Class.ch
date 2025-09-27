@@ -64,7 +64,7 @@ import { RouteConstants } from '../../../../app/route.constants';
       <div class="mt-4">
         <button [routerLink]="linkPath"
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
-          View Students
+          View Students Work / Open Editor
         </button>
       </div>
     </div>
